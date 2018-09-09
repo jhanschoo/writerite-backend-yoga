@@ -2,15 +2,19 @@
   "name": "@writerite/backend-yoga",
   "version": "1.0.0",
   "description": "graphql-yoga implementation of WriteRite backend",
-  "main": "index.js",
+  "main": "src/index.ts",
   "repository": "https://gitlab.com/jhanschoo/writerite",
   "author": "Johannes Choo",
   "license": "AGPL-3.0-or-later",
   "private": false,
   "dependencies": {
-    "graphql-yoga": "^1.16.2"
+    "graphql": "^14.0.2",
+    "graphql-tools": "^3.1.1",
+    "graphql-yoga": "^1.16.2",
+    "prisma-binding": "^2.1.5"
   },
   "devDependencies": {
+    "@types/ws": "^6.0.1",
     "tslint": "^5.11.0",
     "typescript": "^3.0.3"
   }
