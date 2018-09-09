@@ -1,0 +1,12 @@
+type User {
+  id: ID! @unique
+  name: String!
+  decks: [Deck!]!
+}
+
+type Deck {
+  id: ID! @unique
+  name: String!
+  published: Boolean! @default(value: "false")
+  author: User
+}
