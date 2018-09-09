@@ -2,4 +2,8 @@
 node_modules/
 
 # generated files
+<<<<<<< HEAD
 src/generated/
+=======
+src/generated/**/*.graphql
+>>>>>>> 7f68ad4c501e51ef7bae9f05c8d4067955fe2765
