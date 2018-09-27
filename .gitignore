@@ -3,3 +3,6 @@ node_modules/
 
 # generated files
 src/generated/
+
+# Editor Config
+.vscode/
