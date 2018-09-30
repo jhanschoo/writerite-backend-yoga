@@ -1,12 +1,12 @@
-import { GraphQLServer } from "graphql-yoga";
-import { Prisma } from "prisma-binding";
+import { GraphQLServer } from 'graphql-yoga';
+import { Prisma } from 'prisma-binding';
 
-import resolvers from "./resolvers/";
+import resolvers from './resolvers/';
 
 const db = new Prisma({
   debug: true,
-  endpoint: "http://localhost:4466",
-  typeDefs: "src/generated/prisma.graphql",
+  endpoint: 'http://localhost:4466',
+  typeDefs: 'src/generated/prisma.graphql',
 });
 
 const server = new GraphQLServer({
@@ -15,5 +15,5 @@ const server = new GraphQLServer({
     db,
   }),
   resolvers,
-  typeDefs: "src/schema.graphql",
+  typeDefs: 'src/schema.graphql',
 });

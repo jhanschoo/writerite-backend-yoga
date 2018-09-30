@@ -1,17 +1,13 @@
 import { GraphQLFieldResolver } from "graphql";
 
-export const login: GraphQLFieldResolver<any, any> = async (
-  parent: any,
-  { email, password }: any,
-  { db }: any,
+const signup: GraphQLFieldResolver<any, any> = async (
+  parent,
+  { email, token, authorizer, identifier, persist },
+  { db },
 ) => {
   return {};
 };
 
-export const signup: GraphQLFieldResolver<any, any> = async (
-  parent: any,
-  args: any,
-  { db }: any,
-) => {
-  return {};
+export const authorizationMutation = {
+  signup,
 };
