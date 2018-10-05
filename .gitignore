@@ -6,3 +6,9 @@ src/generated/
 
 # Editor Config
 .vscode/
+
+# logs
+yarn-error.log
+
+# dist
+dist/

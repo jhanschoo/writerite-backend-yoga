@@ -1,7 +1,11 @@
 type User {
   id: ID! @unique
   email: String! @unique
+  passwordHash: String
+  googleId: String
+  facebookId: String
   decks: [Deck!]!
+  defaultRoles: [String!]!
   ownerOfRoom: [Room!]! @relation(name: "UserOwningRooms")
   occupyingRoom: [Room!]! @relation(name: "UsersOccupyingRooms")
 }

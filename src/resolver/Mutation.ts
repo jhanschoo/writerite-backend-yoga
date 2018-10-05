@@ -7,9 +7,9 @@ import { roomMutation } from './Room';
 
 const Mutation: IResolverObject = {
   ...authorizationMutation,
-  ...cardMutation,
-  ...deckMutation,
-  ...roomMutation,
+  //...cardMutation,
+  //...deckMutation,
+  //...roomMutation,
 };
 
 export default Mutation;

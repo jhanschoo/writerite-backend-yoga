@@ -1,19 +1,21 @@
 import { GraphQLServer } from 'graphql-yoga';
-import { Prisma } from 'prisma-binding';
+import { prisma } from './generated/prisma-client';
+import helmet from 'helmet';
 
-import resolvers from './resolvers/';
-
-const db = new Prisma({
-  debug: true,
-  endpoint: 'http://localhost:4466',
-  typeDefs: 'src/generated/prisma.graphql',
-});
+import resolvers from './resolver';
+import { getClaims } from './util';
 
 const server = new GraphQLServer({
   context: (req) => ({
     ...req,
-    db,
+    ...getClaims(req),
+    prisma,
   }),
   resolvers,
-  typeDefs: 'src/schema.graphql',
+  typeDefs: 'src/schema/schema.graphql',
 });
+
+server.express.use(helmet());
+
+// tslint:disable-next-line no-console
+server.start(() => console.log(`Server is running on http://localhost:4000`));

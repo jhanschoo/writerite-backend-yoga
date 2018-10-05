@@ -1,0 +1,94 @@
+# TODO: refactor once graphql-yoga supports `extend`
+type Query {
+  _empty: String
+  # User
+  users: [User!]
+  user(id: String!): User
+  # Deck
+  userDecks: [Deck!]
+  deck(id: String): Deck
+  # Card
+  card(id: String): Card
+  cardsFromDeck(id: String): [Card!]
+  # Room
+  room(id: ID!): Room
+}
+
+type Mutation {
+  _empty: String
+  # Authorization
+  signin(
+    email: String!
+    token: String!
+    authorizer: String!
+    identifier: String!
+    persist: Boolean
+  ): AuthResponse
+  # Deck
+  deckSave(id: ID, name: String!): Deck
+  deckDelete(id: ID!): Deck
+  # Card
+  cardSave(id: ID front: String! back:String! deck: ID!): Card
+  cardDelete(id: ID!): Card
+  # Room
+  roomCreate(owner: ID!): Room
+  roomAddOccupant(room: ID! occupant: ID!): Room
+  roomAddMessage(room: ID! messageContent: String!): Room
+}
+
+type Subscription {
+  _empty: String
+  # RoomMessage
+  newRoomMessage(room: ID!): RoomMessage!
+}
+
+# Deck
+
+type Deck {
+  id: ID!
+  name: String!
+  owner: User!
+  cards: [Card!]!
+}
+
+# Card
+
+type Card {
+  id: ID!
+  front: String!
+  back: String!
+  deck: Deck!
+}
+
+# Room
+
+type Room {
+  id: ID!
+  owner: User!
+  occupants: [User!]!
+  messages: [RoomMessage!]!
+}
+
+# RoomMessage
+
+type RoomMessage {
+  id: ID!
+  content: String!
+  sender: String
+}
+
+# Authorization
+
+type AuthResponse {
+  user: User!
+  token: String!
+}
+
+# User
+
+type User {
+  id: ID!
+  email: String!
+  roles: [String!]!
+  decks: [Deck!]!
+}
