@@ -21,7 +21,6 @@
     "prisma": "^1.17.1",
     "prisma-binding": "^2.1.5",
     "prisma-client-lib": "^1.17.1",
-    "source-map-support": "^0.5.9",
     "upgrade": "^1.1.0"
   },
   "devDependencies": {
@@ -38,6 +37,6 @@
   },
   "scripts": {
     "start": "tsc && node dist/index.js",
-    "test": "jest"
+    "test": "jest --forceExit"
   }
 }

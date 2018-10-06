@@ -1,64 +1,74 @@
 import { userQuery } from '../src/resolver/User';
-import { prisma } from '../src/generated/prisma-client';
+import { prisma, UserNode } from '../src/generated/prisma-client';
 
 import { ICurrentUser, Roles } from '../src/interface/ICurrentUser';
 
 const { user, users } = userQuery;
 
-const email = 'abc@xyz';
+const EMAIL = 'abc@xyz';
+const OTHER_EMAIL = 'def@xyz';
+const NEW_EMAIL = 'ghi@xyz';
 
-describe('User resolvers', () => {
-  describe('user', () => {
-    beforeEach(async () => {
-      await prisma.deleteManyUsers({});
-    });
+describe('User resolvers', async () => {
+  let USER: UserNode;
+  let OTHER_USER: UserNode;
+  const commonBeforeEach = async () => {
+    await prisma.deleteManyUsers({});
+    USER = await prisma.createUser({ email: EMAIL });
+    OTHER_USER = await prisma.createUser({ email: OTHER_EMAIL });
+  };
+  const commonAfterEach = async () => {
+    await prisma.deleteManyUsers({});
+  };
+  describe('user', async () => {
+    beforeEach(commonBeforeEach);
+    afterEach(commonAfterEach);
 
-    afterEach(async () => {
-      await prisma.deleteManyUsers({});
-    });
-
-    test('it should return null on no user present', () => {
-      expect(user(null, { id: '1234567' })).resolves.toBeNull();
+    test('it should return null on no user present', async () => {
+      expect.assertions(1);
+      const userNode = await user(null, { id: '1234567' });
+      expect(userNode).toBeNull();
     });
 
     test('it should return user if it exists', async () => {
-      const userNode = await prisma.createUser({ email });
-      const retrievedUser = await user(null, { id: userNode.id });
-      expect(retrievedUser.id).toBe(userNode.id);
+      expect.assertions(1);
+      const retrievedUser = await user(null, { id: USER.id });
+      expect(retrievedUser.id).toBe(USER.id);
     });
   });
 
-  describe('users', () => {
-    beforeEach(async () => {
-      await prisma.deleteManyUsers({});
+  describe('users', async () => {
+    beforeEach(commonBeforeEach);
+    afterEach(commonAfterEach);
+
+    test('it should return null if sub.roles is not present', async () => {
+      expect.assertions(2);
+      const userNode1 = await users(null, null, null);
+      expect(userNode1).toBeNull();
+      const userNode2 = await users(null, null, { sub: ({} as ICurrentUser) });
+      expect(userNode2).toBeNull();
     });
 
-    afterEach(async () => {
-      await prisma.deleteManyUsers({});
-    });
-
-    test('it should return null if sub.roles is not present', () => {
-      expect(users(null, null, null)).resolves.toBeNull();
-      expect(users(null, null, { sub: ({} as ICurrentUser) })).resolves.toBeNull();
-    });
-
-    test('it should return null if not authorized as admin', () => {
-      expect(users(null, null, {
+    test('it should return null if not authorized as admin', async () => {
+      expect.assertions(1);
+      const userNode = await users(null, null, {
         sub: ({
           roles: ['user'],
         } as ICurrentUser),
-      })).resolves.toBeNull();
+      });
+      expect(userNode).toBeNull();
     });
 
     test('it should return users if they exist', async () => {
-      const userNode = await prisma.createUser({ email });
-      const retrievedUsers = await users(null, null, {
+      expect.assertions(1);
+      const userNodes = await users(null, null, {
         sub: ({
+          id: USER.id,
           roles: ['user', 'admin'],
         } as ICurrentUser),
       });
-      expect(retrievedUsers).toContainEqual(expect.objectContaining({
-        id: userNode.id,
+      expect(userNodes).toContainEqual(expect.objectContaining({
+        id: USER.id,
       }));
     });
   });

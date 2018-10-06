@@ -28,18 +28,18 @@ type Mutation {
   deckSave(id: ID, name: String!): Deck
   deckDelete(id: ID!): Deck
   # Card
-  cardSave(id: ID front: String! back:String! deck: ID!): Card
+  cardSave(id: ID front: String! back:String! deckId: ID!): Card
   cardDelete(id: ID!): Card
   # Room
-  roomCreate(owner: ID!): Room
-  roomAddOccupant(room: ID! occupant: ID!): Room
-  roomAddMessage(room: ID! messageContent: String!): Room
+  roomCreate: Room
+  roomAddOccupant(id: ID! occupantId: ID!): Room
+  roomAddMessage(id: ID! messageContent: String!): Room
 }
 
 type Subscription {
   _empty: String
   # RoomMessage
-  newRoomMessage(room: ID!): RoomMessage!
+  roomNewMessage(id: ID!): RoomMessage!
 }
 
 # Deck

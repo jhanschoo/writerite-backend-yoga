@@ -35,14 +35,14 @@ describe('JWTs', () => {
 
 describe('passwords', () => {
   test('comparePassword fails on malformed', async () => {
-    const passwordResultP = comparePassword('123', 'abc');
-    expect(passwordResultP).resolves.toBe(false);
+    const passwordResultP = await comparePassword('123', 'abc');
+    expect(passwordResultP).toBe(false);
   });
 
   test('hashPassword generates a hash compatible with comparePassword', async () => {
     const hash = await hashPassword('12345');
-    const passwordResultP = comparePassword('12345', hash);
-    expect(passwordResultP).resolves.toBe(true);
+    const passwordResultP = await comparePassword('12345', hash);
+    expect(passwordResultP).toBe(true);
   });
 });
 

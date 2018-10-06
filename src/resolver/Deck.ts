@@ -4,11 +4,11 @@ import { ICurrentUser } from '../interface/ICurrentUser';
 
 // TODO
 async function userDecks(parent: any, args: any, ctx: any) {
-  if (ctx && ctx.sub && ctx.sub.id) {
-    const sub: ICurrentUser = ctx.sub;
-    return prisma.decks({ where: { owner: { id: ctx.sub.id } } });
+  if (!(ctx && ctx.sub && ctx.sub.id)) {
+    return null;
   }
-  return null;
+  const sub: ICurrentUser = ctx.sub;
+  return prisma.decks({ where: { owner: { id: ctx.sub.id } } });
 }
 
 async function deck(parent: any, { id }: any) {
@@ -16,32 +16,32 @@ async function deck(parent: any, { id }: any) {
 }
 
 async function deckSave(parent: any, { id, name }: any, ctx: any) {
-  if (ctx && ctx.sub && ctx.sub.id) {
-    const sub: ICurrentUser = ctx.sub;
-    if (id) {
-      if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
-        return prisma.updateDeck({
-          data: { name },
-          where: { id },
-        });
-      }
-    } else {
-      return prisma.createDeck({ name, owner: { connect: { id: sub.id } } });
-    }
+  if (!(ctx && ctx.sub && ctx.sub.id)) {
+    return null;
   }
-  return null;
+  const sub: ICurrentUser = ctx.sub;
+  if (id) {
+    if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
+      return prisma.updateDeck({
+        data: { name },
+        where: { id },
+      });
+    }
+  } else {
+    return prisma.createDeck({ name, owner: { connect: { id: sub.id } } });
+  }
 }
 
 async function deckDelete(parent: any, { id }: any, ctx: any) {
-  if (ctx && ctx.sub && ctx.sub.id) {
-    const sub: ICurrentUser = ctx.sub;
-    if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
-      return prisma.deleteDeck({ id });
-    } else {
-      return null;
-    }
+  if (!(ctx && ctx.sub && ctx.sub.id)) {
+    return null;
   }
-  return null;
+  const sub: ICurrentUser = ctx.sub;
+  if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
+    return prisma.deleteDeck({ id });
+  } else {
+    return null;
+  }
 }
 
 export const deckQuery = {
