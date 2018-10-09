@@ -37,6 +37,7 @@
   },
   "scripts": {
     "start": "tsc && node dist/index.js",
+    "start:dev": "tsc && NODE_ENV=development node dist/index.js",
     "test": "jest --forceExit"
   }
 }

@@ -1,9 +1,11 @@
 // tslint:disable-next-line:no-submodule-imports
-import { IResolverObject } from 'graphql-yoga/dist/types';
-import { roomSubscription } from './Room';
+import { IResolverOptions } from 'graphql-yoga/dist/types';
+import { roomMessageSubscription } from './RoomMessage';
+import { deckSubscription } from './Deck';
 
-const Subscription: IResolverObject = {
-  ...roomSubscription,
-};
+const Subscription: IResolverOptions = {
+  ...deckSubscription,
+  ...roomMessageSubscription,
+} as IResolverOptions;
 
 export default Subscription;

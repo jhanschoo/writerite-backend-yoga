@@ -1,47 +1,161 @@
-import { GraphQLFieldResolver } from 'graphql';
-import { prisma } from '../generated/prisma-client';
-import { ICurrentUser } from '../interface/ICurrentUser';
+import { PubSub } from 'graphql-yoga';
+import { prisma, DeckNode } from '../generated/prisma-client';
+import { ICurrentUser, IUpdate, MutationType, ResolvesTo } from '../types';
+
+import { IUser, IBakedUser, userNodeToIUser } from './User';
+import { ICard, IBakedCard, cardNodeToICard } from './Card';
+import { fieldGetter } from '../util';
+
+export interface IDeck {
+  id: ResolvesTo<string>;
+  name: ResolvesTo<string>;
+  owner: ResolvesTo<IUser>;
+  cards: ResolvesTo<ICard[]>;
+}
+
+export const Deck: ResolvesTo<IDeck> = {
+  id: fieldGetter('id'),
+  name: fieldGetter('name'),
+  owner: fieldGetter('owner'),
+  cards: fieldGetter('cards'),
+};
+
+export interface IBakedDeck extends IDeck {
+  id: string;
+  name: string;
+  owner: ResolvesTo<IBakedUser>;
+  cards: ResolvesTo<IBakedCard[]>;
+}
+
+interface IDeckUserPayload {
+  deckUpdatesOfUser: IUpdate<IDeck>;
+}
+
+export function deckNodeToIDeck(deckNode: DeckNode): IBakedDeck {
+  return {
+    id: deckNode.id,
+    name: deckNode.name,
+    owner: async () => userNodeToIUser(
+      await prisma.deck({ id: deckNode.id }).owner()),
+    cards: async () => (
+      await prisma.deck({ id: deckNode.id }).cards()
+    ).map(cardNodeToICard),
+  };
+}
+
+function deckTopicFromUser(id: string) {
+  return `user-deck:${id}`;
+}
 
 // TODO
-async function userDecks(parent: any, args: any, ctx: any) {
+async function userDecks(
+  parent: any,
+  args: any,
+  ctx: any): Promise<IDeck[]|null> {
   if (!(ctx && ctx.sub && ctx.sub.id)) {
     return null;
   }
   const sub: ICurrentUser = ctx.sub;
-  return prisma.decks({ where: { owner: { id: ctx.sub.id } } });
+  const deckNodes = await prisma.decks({ where: { owner: { id: ctx.sub.id } } });
+  if (deckNodes) {
+    return deckNodes.map(deckNodeToIDeck);
+  }
+  return null;
 }
 
-async function deck(parent: any, { id }: any) {
-  return prisma.deck({ id });
+export async function deck(
+  parent: any,
+  { id }: { id: string }) {
+  const deckNode = await prisma.deck({ id });
+  if (deckNode) {
+    return deckNodeToIDeck(deckNode);
+  }
+  return null;
 }
 
-async function deckSave(parent: any, { id, name }: any, ctx: any) {
+async function deckSave(
+  parent: any,
+  { id, name }: { id: string, name: string },
+  ctx: any) {
   if (!(ctx && ctx.sub && ctx.sub.id)) {
     return null;
   }
   const sub: ICurrentUser = ctx.sub;
+  const pubsub: PubSub = ctx.pubsub;
   if (id) {
     if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
-      return prisma.updateDeck({
+      const deckNode = await prisma.updateDeck({
         data: { name },
         where: { id },
       });
+      if (deckNode) {
+        const deckObj = deckNodeToIDeck(deckNode);
+        const deckUpdate: IDeckUserPayload = {
+          deckUpdatesOfUser: {
+            mutation: MutationType.UPDATED,
+            new: deckObj,
+            old: null,
+          },
+        };
+        pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+        return deckObj;
+      }
     }
+    return null;
   } else {
-    return prisma.createDeck({ name, owner: { connect: { id: sub.id } } });
+    const deckNode = await prisma.createDeck({ name, owner: { connect: { id: sub.id } } });
+    if (deckNode) {
+      const deckObj = deckNodeToIDeck(deckNode);
+      const deckUpdate: IDeckUserPayload = {
+        deckUpdatesOfUser: {
+          mutation: MutationType.CREATED,
+          new: deckObj,
+          old: null,
+        },
+      };
+      pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+      return deckObj;
+    }
+    return null;
   }
 }
 
-async function deckDelete(parent: any, { id }: any, ctx: any) {
+async function deckDelete(
+  parent: any,
+  { id }: { id: string },
+  ctx: any) {
   if (!(ctx && ctx.sub && ctx.sub.id)) {
     return null;
   }
   const sub: ICurrentUser = ctx.sub;
+  const pubsub: PubSub = ctx.pubsub;
   if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
-    return prisma.deleteDeck({ id });
-  } else {
+    const deckNode = await prisma.deleteDeck({ id });
+    if (deckNode) {
+      const deckObj = deckNodeToIDeck(deckNode);
+      const deckUpdate: IDeckUserPayload = {
+        deckUpdatesOfUser: {
+          mutation: MutationType.DELETED,
+          new: null,
+          // TODO: querying through relations on a deleted node
+          //   may fail.
+          old: deckNodeToIDeck(deckNode),
+        },
+      };
+      pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+      return deckObj;
+    }
+  }
+  return null;
+}
+
+function deckUpdatesOfUser(parent: any, args: any, ctx: any): AsyncIterator<IDeckUserPayload>|null {
+  if (!(ctx && ctx.sub && ctx.sub.id)) {
     return null;
   }
+  const sub: ICurrentUser = ctx.sub;
+  const pubsub: PubSub = ctx.pubsub;
+  return pubsub.asyncIterator<IDeckUserPayload>(deckTopicFromUser(sub.id));
 }
 
 export const deckQuery = {
@@ -50,4 +164,10 @@ export const deckQuery = {
 
 export const deckMutation = {
   deckSave, deckDelete,
+};
+
+export const deckSubscription = {
+  deckUpdatesOfUser: {
+    subscribe: deckUpdatesOfUser,
+  },
 };

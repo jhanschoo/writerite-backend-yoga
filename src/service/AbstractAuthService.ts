@@ -2,17 +2,21 @@ import config from 'config';
 
 import { UserNode } from '../generated/prisma-client';
 import { generateJWT } from '../util';
+import { userNodeToIUser } from '../resolver/User';
+import { IAuthResponse } from '../resolver/Authorization';
 
 export abstract class AbstractAuthService {
   protected static async authResponseFromUser(
-    user: UserNode,
+    userNode: UserNode,
     persist: boolean = false,
-  ) {
-    const id = user.id;
-    const email = user.email;
-    const roles = user.defaultRoles;
+  ): Promise<IAuthResponse> {
+    const user = userNodeToIUser(userNode);
     return {
-      token: generateJWT({ id, email, roles }, persist),
+      token: generateJWT({
+        id: userNode.id,
+        email: userNode.email,
+        roles: userNode.defaultRoles,
+      }, persist),
       user,
     };
   }

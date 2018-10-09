@@ -1,8 +1,15 @@
 import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
+import { ResolvesTo } from './types';
 
 const SALT_ROUNDS = 10;
+
+export function fieldGetter<T>(field: string): ResolvesTo<T> {
+  return (parent: any) => {
+    return parent[field] instanceof Function ? parent[field]() : parent[field];
+  };
+}
 
 const EC_KEYPAIR = (
   new KJUR.crypto.ECDSA({ curve: 'secp256r1' })
@@ -56,18 +63,30 @@ export function getClaims(ctx: Context) {
   if (ctx.sub) {
     return { sub: ctx.sub };
   }
-  if (!ctx.request || !ctx.request.get) {
-    return null;
+  let authorization = null;
+  if (ctx.request && ctx.request.get) {
+    authorization = ctx.request.get('Authorization');
+  } else if (ctx.connection && ctx.connection.context) {
+    if (ctx.connection.context.Authorization) {
+      authorization = ctx.connection.context.Authorization;
+    } else if (ctx.connection.context.authorization) {
+      authorization = ctx.connection.context.authorization;
+    }
   }
-  const authorization = ctx.request.get('Authorization');
   if (!authorization) {
     return null;
   }
   const jwt = authorization.slice(7);
-  if (jwt && KJUR.jws.JWS.verify(jwt, PUBLIC_KEY, ['ES256'])) {
-    const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub;
-    ctx.sub = sub;
-    return { sub };
+  if (jwt) {
+    try {
+      if (KJUR.jws.JWS.verify(jwt, PUBLIC_KEY, ['ES256'])) {
+        const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub;
+        ctx.sub = sub;
+        return { sub };
+      }
+    } catch (e) {
+      return null;
+    }
   }
   return null;
 }

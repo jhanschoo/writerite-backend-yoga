@@ -21,5 +21,11 @@ const server = new GraphQLServer({
 
 server.express.use(helmet());
 
-// tslint:disable-next-line no-console
-server.start(() => console.log(`Server is running on http://localhost:4000`));
+server.start({
+  cors: {
+    origin: [/localhost/, /https:\/\/writerite.site/],
+    credentials: true,
+  },
+  debug: true,
+  // tslint:disable-next-line no-console
+}, () => console.log(`Server is running on http://localhost:4000`));

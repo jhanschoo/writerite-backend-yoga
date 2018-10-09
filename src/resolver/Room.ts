@@ -1,13 +1,46 @@
-import { PubSub } from 'graphql-yoga';
-import { prisma } from '../generated/prisma-client';
-import { ICurrentUser } from '../interface/ICurrentUser';
+import { prisma, RoomNode } from '../generated/prisma-client';
+import { ICurrentUser, ResolvesTo } from '../types';
+import { IUser, IBakedUser, userNodeToIUser } from './User';
+import { IRoomMessage, IBakedRoomMessage, simpleUserRoomMessageNodeToIRoomMessage } from './RoomMessage';
+import { fieldGetter } from '../util';
 
-function topicFromRoom(id: string) {
-  return `room:${id}`;
+export interface IRoom {
+  id: ResolvesTo<string>;
+  owner: ResolvesTo<IUser>;
+  occupants: ResolvesTo<IUser[]>;
+  messages: ResolvesTo<IRoomMessage[]>;
+}
+
+export const Room = {
+  id: fieldGetter('id'),
+  owner: fieldGetter('owner'),
+  occupants: fieldGetter('occupants'),
+  messages: fieldGetter('messages'),
+};
+
+export interface IBakedRoom extends IRoom {
+  id: string;
+  owner: ResolvesTo<IBakedUser>;
+  occupants: ResolvesTo<IBakedUser[]>;
+  messages: ResolvesTo<IBakedRoomMessage[]>;
+}
+
+export function roomNodeToIRoom(roomNode: RoomNode): IBakedRoom {
+  return {
+    id: roomNode.id,
+    owner: async () => userNodeToIUser(
+      await prisma.room({ id: roomNode.id }).owner()),
+    occupants: async () => (await prisma.room({ id: roomNode.id }).occupants()).map(userNodeToIUser),
+    messages: async () => (
+      await prisma.room({ id: roomNode.id }).messages()).map(simpleUserRoomMessageNodeToIRoomMessage),
+  };
 }
 
 async function room(parent: any, { id }: any) {
-  return prisma.room({ id });
+  const roomNode = await prisma.room({ id });
+  if (roomNode) {
+    return roomNodeToIRoom(roomNode);
+  }
 }
 
 async function roomCreate(parent: any, args: any, ctx: any) {
@@ -15,7 +48,10 @@ async function roomCreate(parent: any, args: any, ctx: any) {
     return null;
   }
   const sub: ICurrentUser = ctx.sub;
-  return prisma.createRoom({ active: true, owner: { connect: { id: sub.id } } });
+  const roomNode = await prisma.createRoom({ active: true, owner: { connect: { id: sub.id } } });
+  if (roomNode) {
+    return roomNodeToIRoom(roomNode);
+  }
 }
 
 // TODO: access control: owner or self only
@@ -25,47 +61,23 @@ async function roomAddOccupant(parent: any, { id, occupantId }: any) {
   } else if (!await prisma.$exists.user({ id: occupantId })) {
     return null;
   } else {
-    const occupants = await prisma.room({ id }).occupants();
-    if (!occupants.map((user) => user.id).includes(occupantId)) {
-      return await prisma.updateRoom({
+    const occupantNodes = await prisma.room({ id }).occupants();
+    if (!occupantNodes.map((user) => user.id).includes(occupantId)) {
+      const roomNode = await prisma.updateRoom({
         data: { occupants: {
           connect: { id: occupantId },
         } },
         where: { id },
       });
+      if (roomNode) {
+        return roomNodeToIRoom(roomNode);
+      }
+    } else {
+      const roomNode = await prisma.room({ id });
+      return roomNodeToIRoom(roomNode);
     }
-    return await prisma.room({ id });
   }
-}
-
-async function roomAddMessage(parent: any, { id, messageContent }: any, ctx: any) {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
-    return null;
-  }
-  const sub: ICurrentUser = ctx.sub;
-  const pubsub: PubSub = ctx.pubsub;
-  if (!(await prisma.$exists.room({ id }))
-  || (!(await prisma.room({ id }).occupants())
-  .map((user) => user.id).includes(sub.id))) {
-    return null;
-  }
-  const roomMessageNode = await prisma.createSimpleUserRoomMessage({
-    content: messageContent,
-    room: { connect: { id } },
-    sender: { connect: { id: sub.id }},
-  });
-  if (roomMessageNode) {
-    pubsub.publish(topicFromRoom(id), roomMessageNode);
-  }
-  return await prisma.room({ id });
-}
-
-async function roomNewMessage(parent: any, { id }: any, ctx: any) {
-  const pubsub: PubSub = ctx.pubsub;
-  if (!(await prisma.$exists.room({ id }))) {
-    return null;
-  }
-  return pubsub.asyncIterator(topicFromRoom(id));
+  return null;
 }
 
 export const roomQuery = {
@@ -73,9 +85,5 @@ export const roomQuery = {
 };
 
 export const roomMutation = {
-  roomCreate, roomAddOccupant, roomAddMessage,
-};
-
-export const roomSubscription = {
-  roomNewMessage,
+  roomCreate, roomAddOccupant,
 };

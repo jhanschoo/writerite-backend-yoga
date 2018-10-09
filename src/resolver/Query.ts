@@ -10,6 +10,6 @@ const Query: IResolverObject = {
   ...deckQuery,
   ...roomQuery,
   ...userQuery,
-};
+} as IResolverObject;
 
 export default Query;

@@ -2,13 +2,13 @@
 type Query {
   _empty: String
   # User
+  user(id: ID!): User
   users: [User!]
-  user(id: String!): User
   # Deck
+  deck(id: ID!): Deck
   userDecks: [Deck!]
-  deck(id: String): Deck
   # Card
-  card(id: String): Card
+  card(id: ID!): Card
   cardsFromDeck(id: String): [Card!]
   # Room
   room(id: ID!): Room
@@ -33,13 +33,33 @@ type Mutation {
   # Room
   roomCreate: Room
   roomAddOccupant(id: ID! occupantId: ID!): Room
-  roomAddMessage(id: ID! messageContent: String!): Room
+  roomMessageCreate(roomId: ID! messageContent: String!): RoomMessage
 }
 
 type Subscription {
   _empty: String
+  # Deck
+  deckUpdatesOfUser: DeckUpdate!
   # RoomMessage
-  roomNewMessage(id: ID!): RoomMessage!
+  roomMessageUpdatesOfRoom(id: ID!): RoomMessageUpdate!
+}
+
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+type DeckUpdate {
+  mutation: MutationType!
+  new: Deck
+  old: Deck
+}
+
+type RoomMessageUpdate {
+  mutation: MutationType!
+  new: RoomMessage
+  old: RoomMessage
 }
 
 # Deck
@@ -74,7 +94,7 @@ type Room {
 type RoomMessage {
   id: ID!
   content: String!
-  sender: String
+  sender: User
 }
 
 # Authorization
