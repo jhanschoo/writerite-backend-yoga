@@ -1,7 +1,7 @@
 import { userQuery } from '../src/resolver/User';
 import { prisma, UserNode } from '../src/generated/prisma-client';
 
-import { ICurrentUser, Roles } from '../src/interface/ICurrentUser';
+import { ICurrentUser, Roles, IWrContext } from '../src/types';
 
 const { user, users } = userQuery;
 
@@ -41,32 +41,30 @@ describe('User resolvers', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
-    test('it should return null if sub.roles is not present', async () => {
+    test('it should return null if sub is not present', async () => {
       expect.assertions(2);
       const userNode1 = await users(null, null, null);
       expect(userNode1).toBeNull();
-      const userNode2 = await users(null, null, { sub: ({} as ICurrentUser) });
-      expect(userNode2).toBeNull();
     });
 
     test('it should return null if not authorized as admin', async () => {
       expect.assertions(1);
       const userNode = await users(null, null, {
-        sub: ({
-          roles: ['user'],
-        } as ICurrentUser),
-      });
+        sub: {
+          roles: [Roles.user],
+        },
+      } as IWrContext);
       expect(userNode).toBeNull();
     });
 
     test('it should return users if they exist', async () => {
       expect.assertions(1);
       const userNodes = await users(null, null, {
-        sub: ({
+        sub: {
           id: USER.id,
-          roles: ['user', 'admin'],
-        } as ICurrentUser),
-      });
+          roles: [Roles.user, Roles.admin],
+        },
+      } as IWrContext);
       expect(userNodes).toContainEqual(expect.objectContaining({
         id: USER.id,
       }));

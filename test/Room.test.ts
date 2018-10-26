@@ -1,13 +1,15 @@
 import { PubSub } from 'graphql-yoga';
-import { roomQuery, roomMutation, roomSubscription } from '../src/resolver/Room';
+import { roomQuery, roomMutation } from '../src/resolver/Room';
+import { roomMessageMutation, roomMessageSubscription } from '../src/resolver/RoomMessage';
 import { prisma, RoomNode, UserNode } from '../src/generated/prisma-client';
-import { ICurrentUser, Roles } from '../src/interface/ICurrentUser';
+import { IWrContext } from '../src/types';
 
 const pubsub = new PubSub();
 
 const { room } = roomQuery;
-const { roomCreate, roomAddOccupant, roomMessageCreate } = roomMutation;
-const { roomMessageUpdatesOfRoom } = roomSubscription;
+const { roomCreate, roomAddOccupant } = roomMutation;
+const { roomMessageCreate } = roomMessageMutation;
+const { roomMessageUpdatesOfRoom } = roomMessageSubscription;
 
 const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
@@ -59,17 +61,15 @@ describe('Room resolvers', async () => {
   describe('roomCreate', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
-    test('it should return null if sub.id is not present', async () => {
+    test('it should return null if sub is not present', async () => {
       expect.assertions(2);
-      const roomNode1 = await roomCreate(null, null, null)
+      const roomNode1 = await roomCreate(null, null, null);
       expect(roomNode1).toBeNull();
-      const roomNode2 = await roomCreate(null, null, { sub: {} })
-      expect(roomNode2).toBeNull();
     });
 
     test('it creates a room once sub.id is present', async () => {
       expect.assertions(2);
-      const roomNode = await roomCreate(null, null, { sub: { id: USER.id } });
+      const roomNode = await roomCreate(null, null, { sub: { id: USER.id } } as IWrContext);
       expect(roomNode).toHaveProperty('id');
       // work around typescript thinking deckNode may be null
       if (roomNode) {
@@ -133,18 +133,18 @@ describe('Room resolvers', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
-    test('it should return null if sub.id is not present', async () => {
+    test('it should return null if sub is not present', async () => {
       expect.assertions(2);
       const roomMessageNode1 = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub },
+        { pubsub } as IWrContext,
       );
       expect(roomMessageNode1).toBeNull();
       const roomMessageNode2 = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: {} },
+        { pubsub } as IWrContext,
       );
       expect(roomMessageNode2).toBeNull();
     });
@@ -153,7 +153,7 @@ describe('Room resolvers', async () => {
       const roomMessageNode = await roomMessageCreate(
         null,
         { roomId: '1234567', messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } },
+        { pubsub, sub: { id: USER.id } } as IWrContext,
       );
       expect(roomMessageNode).toBeNull();
     });
@@ -162,7 +162,7 @@ describe('Room resolvers', async () => {
       const roomMessageNode = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: OTHER_USER.id } },
+        { pubsub, sub: { id: OTHER_USER.id } } as IWrContext,
       );
       expect(roomMessageNode).toBeNull();
     });
@@ -171,7 +171,7 @@ describe('Room resolvers', async () => {
       const roomMessageNode = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } },
+        { pubsub, sub: { id: USER.id } } as IWrContext,
       );
       expect(roomMessageNode).toBeTruthy();
       const roomNode = await prisma.room({ id: ROOM.id });
@@ -190,17 +190,17 @@ describe('Room resolvers', async () => {
     afterEach(commonAfterEach);
     test('it should return null on no room present', async () => {
       expect.assertions(1);
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: '1234567' }, { pubsub });
+      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: '1234567' }, { pubsub } as IWrContext);
       expect(subscr).toBeNull();
     });
     test('it should return an AsyncIterator on room present', async () => {
       expect.assertions(1);
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub });
+      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
       expect(subscr).toHaveProperty('next');
     });
     test('subscription on room present is done if no new messages', async () => {
       expect.assertions(1);
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub });
+      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
       expect(subscr).toBeTruthy();
       if (subscr) {
         subscr.next().then(() => {
@@ -211,11 +211,11 @@ describe('Room resolvers', async () => {
     });
     test('subscription on room reproduces message posted in room using roomAddMessage since subscription', async () => {
       expect.assertions(5);
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub });
+      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
       const roomMessageNode = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } },
+        { pubsub, sub: { id: USER.id } } as IWrContext,
       );
       expect(roomMessageNode).toBeTruthy();
       if (roomMessageNode) {
@@ -235,9 +235,9 @@ describe('Room resolvers', async () => {
       await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } },
+        { pubsub, sub: { id: USER.id } } as IWrContext,
       );
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub });
+      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
       expect(subscr).toBeTruthy();
       if (subscr) {
         const nextResult = subscr.next();

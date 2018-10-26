@@ -1,8 +1,9 @@
 import { prisma, RoomNode } from '../generated/prisma-client';
-import { ICurrentUser, ResolvesTo } from '../types';
+import { ICurrentUser, ResolvesTo, IUpdate, IWrContext } from '../types';
 import { IUser, IBakedUser, userNodeToIUser } from './User';
 import { IRoomMessage, IBakedRoomMessage, simpleUserRoomMessageNodeToIRoomMessage } from './RoomMessage';
 import { fieldGetter } from '../util';
+import { PubSub } from 'graphql-yoga';
 
 export interface IRoom {
   id: ResolvesTo<string>;
@@ -25,6 +26,10 @@ export interface IBakedRoom extends IRoom {
   messages: ResolvesTo<IBakedRoomMessage[]>;
 }
 
+interface IRoomPayload {
+  [field: string]: IUpdate<IRoom>;
+}
+
 export function roomNodeToIRoom(roomNode: RoomNode): IBakedRoom {
   return {
     id: roomNode.id,
@@ -36,18 +41,36 @@ export function roomNodeToIRoom(roomNode: RoomNode): IBakedRoom {
   };
 }
 
-async function room(parent: any, { id }: any) {
+function activeRoomTopic() {
+  return 'active-room';
+}
+
+async function room(parent: any, { id }: { id: string }) {
   const roomNode = await prisma.room({ id });
   if (roomNode) {
     return roomNodeToIRoom(roomNode);
   }
 }
 
-async function roomCreate(parent: any, args: any, ctx: any) {
-  if (!ctx || !ctx.sub || !ctx.sub.id) {
+async function activeRooms(
+  parent: any,
+  args: any,
+  { sub }: IWrContext,
+): Promise<IRoom[]|null> {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
+  const roomNodes = await prisma.rooms({ where: { active: true } });
+  if (roomNodes) {
+    return roomNodes.map(roomNodeToIRoom);
+  }
+  return null;
+}
+
+async function roomCreate(parent: any, args: any, { sub }: IWrContext) {
+  if (!sub) {
+    return null;
+  }
   const roomNode = await prisma.createRoom({ active: true, owner: { connect: { id: sub.id } } });
   if (roomNode) {
     return roomNodeToIRoom(roomNode);
@@ -55,7 +78,9 @@ async function roomCreate(parent: any, args: any, ctx: any) {
 }
 
 // TODO: access control: owner or self only
-async function roomAddOccupant(parent: any, { id, occupantId }: any) {
+async function roomAddOccupant(
+  parent: any,
+  { id, occupantId }: { id: string, occupantId: string }) {
   if (!await prisma.$exists.room({ id })) {
     return null;
   } else if (!await prisma.$exists.user({ id: occupantId })) {
@@ -80,10 +105,24 @@ async function roomAddOccupant(parent: any, { id, occupantId }: any) {
   return null;
 }
 
+async function activeRoomUpdates(
+  parent: any,
+  args: any,
+  { pubsub }: IWrContext,
+): Promise<AsyncIterator<IRoomPayload>|null> {
+  return pubsub.asyncIterator<IRoomPayload>(activeRoomTopic());
+}
+
 export const roomQuery = {
-  room,
+  room, activeRooms,
 };
 
 export const roomMutation = {
   roomCreate, roomAddOccupant,
+};
+
+export const roomSubscription = {
+  activeRoomUpdates: {
+    subscribe: activeRoomUpdates,
+  },
 };

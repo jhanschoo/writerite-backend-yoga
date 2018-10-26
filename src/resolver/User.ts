@@ -1,6 +1,6 @@
 import { prisma, UserNode } from '../generated/prisma-client';
 
-import { ICurrentUser, Roles, ResolvesTo } from '../types';
+import { ICurrentUser, Roles, ResolvesTo, IWrContext } from '../types';
 import { IDeck, IBakedDeck, deckNodeToIDeck } from './Deck';
 import { fieldGetter } from '../util';
 
@@ -36,11 +36,10 @@ export function userNodeToIUser(userNode: UserNode): IBakedUser {
   };
 }
 
-async function users(parent: any, args: any, ctx: any): Promise<IUser[]|null> {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+async function users(parent: any, args: any, { sub }: IWrContext): Promise<IUser[]|null> {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
   if (sub.roles.includes(Roles.admin)) {
     const userNodes = await prisma.users();
     if (userNodes) {
@@ -50,7 +49,7 @@ async function users(parent: any, args: any, ctx: any): Promise<IUser[]|null> {
   return null;
 }
 
-async function user(parent: any, { id }: any): Promise<IUser|null> {
+async function user(parent: any, { id }: { id: string }): Promise<IUser|null> {
   const userNode = await prisma.user({ id });
   if (userNode) {
     return userNodeToIUser(userNode);

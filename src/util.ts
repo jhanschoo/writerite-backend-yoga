@@ -1,7 +1,7 @@
 import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
-import { ResolvesTo } from './types';
+import { ResolvesTo, ICurrentUser, Roles } from './types';
 
 const SALT_ROUNDS = 10;
 
@@ -9,6 +9,14 @@ export function fieldGetter<T>(field: string): ResolvesTo<T> {
   return (parent: any) => {
     return parent[field] instanceof Function ? parent[field]() : parent[field];
   };
+}
+
+export function isCurrentUser(o: any): o is ICurrentUser {
+  return o && o.id && typeof o.id === 'string'
+  && o.email && o.email === 'string'
+  && o.roles && o.roles instanceof Array && o.roles.every((r: any) => {
+    return r === Roles.admin || r === Roles.user;
+  });
 }
 
 const EC_KEYPAIR = (
@@ -81,8 +89,10 @@ export function getClaims(ctx: Context) {
     try {
       if (KJUR.jws.JWS.verify(jwt, PUBLIC_KEY, ['ES256'])) {
         const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub;
-        ctx.sub = sub;
-        return { sub };
+        if (isCurrentUser(sub)) {
+          ctx.sub = sub;
+          return { sub };
+        }
       }
     } catch (e) {
       return null;

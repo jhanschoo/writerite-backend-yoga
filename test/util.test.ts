@@ -5,8 +5,13 @@ describe('getClaims', () => {
     expect(getClaims({})).toBeNull();
   });
 
-  test('getClaims returns sub if present', () => {
+  test('getClaims returns null if sub is malformed', () => {
     const sub = { hello: 'world' };
+    expect(getClaims({ sub })).toBeNull();
+  });
+
+  test('getClaims returns sub if sub has ICurrentUser shape', () => {
+    const sub = { id: 'a', email: 'b', roles: [] };
     expect(getClaims({ sub })).toHaveProperty('sub', sub);
   });
 

@@ -1,6 +1,6 @@
 import { PubSub } from 'graphql-yoga';
 import { prisma, DeckNode } from '../generated/prisma-client';
-import { ICurrentUser, IUpdate, MutationType, ResolvesTo } from '../types';
+import { ICurrentUser, IUpdate, MutationType, ResolvesTo, IWrContext } from '../types';
 
 import { IUser, IBakedUser, userNodeToIUser } from './User';
 import { ICard, IBakedCard, cardNodeToICard } from './Card';
@@ -51,12 +51,11 @@ function deckTopicFromUser(id: string) {
 async function userDecks(
   parent: any,
   args: any,
-  ctx: any): Promise<IDeck[]|null> {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+  { sub }: IWrContext): Promise<IDeck[]|null> {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
-  const deckNodes = await prisma.decks({ where: { owner: { id: ctx.sub.id } } });
+  const deckNodes = await prisma.decks({ where: { owner: { id: sub.id } } });
   if (deckNodes) {
     return deckNodes.map(deckNodeToIDeck);
   }
@@ -75,13 +74,11 @@ export async function deck(
 
 async function deckSave(
   parent: any,
-  { id, name }: { id: string, name: string },
-  ctx: any) {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+  { id, name }: { id?: string, name: string },
+  { sub, pubsub }: IWrContext) {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
-  const pubsub: PubSub = ctx.pubsub;
   if (id) {
     if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
       const deckNode = await prisma.updateDeck({
@@ -123,12 +120,10 @@ async function deckSave(
 async function deckDelete(
   parent: any,
   { id }: { id: string },
-  ctx: any) {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+  { sub, pubsub }: IWrContext) {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
-  const pubsub: PubSub = ctx.pubsub;
   if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
     const deckNode = await prisma.deleteDeck({ id });
     if (deckNode) {
@@ -149,12 +144,10 @@ async function deckDelete(
   return null;
 }
 
-function deckUpdatesOfUser(parent: any, args: any, ctx: any): AsyncIterator<IDeckUserPayload>|null {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+function deckUpdatesOfUser(parent: any, args: any, { sub, pubsub }: IWrContext): AsyncIterator<IDeckUserPayload>|null {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
-  const pubsub: PubSub = ctx.pubsub;
   return pubsub.asyncIterator<IDeckUserPayload>(deckTopicFromUser(sub.id));
 }
 

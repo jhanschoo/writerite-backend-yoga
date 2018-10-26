@@ -1,6 +1,6 @@
 import { prisma, SimpleCardNode } from '../generated/prisma-client';
 import { IDeck, IBakedDeck, deckNodeToIDeck } from './Deck';
-import { ICurrentUser, ResolvesTo } from '../types';
+import { ICurrentUser, ResolvesTo, IWrContext } from '../types';
 import { fieldGetter } from '../util';
 
 export interface ICard {
@@ -38,7 +38,10 @@ export function cardNodeToICard(simpleCardNode: SimpleCardNode): IBakedCard {
 
 // Query resolvers
 
-export async function card(parent: any, { id }: any): Promise<ICard|null> {
+export async function card(
+  parent: any,
+  { id }: { id: string },
+): Promise<ICard|null> {
   const simpleCardNode = await prisma.simpleCard({ id });
   if (simpleCardNode) {
     return cardNodeToICard(simpleCardNode);
@@ -59,11 +62,10 @@ async function cardsFromDeck(parent: any, { id }: any): Promise<ICard[]|null> {
 
 // Mutation resolvers
 
-async function cardSave(parent: any, { id, front, back, deckId }: any, ctx: any): Promise<ICard|null> {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+async function cardSave(parent: any, { id, front, back, deckId }: any, { sub }: IWrContext): Promise<ICard|null> {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
   if (id) {
     if (await prisma.$exists.simpleCard({ id, deck: { id: (deckId as string), owner: { id: sub.id } } })) {
       const cardNode = await prisma.updateSimpleCard({ data: { front, back }, where: { id }});
@@ -84,11 +86,14 @@ async function cardSave(parent: any, { id, front, back, deckId }: any, ctx: any)
   return null;
 }
 
-async function cardDelete(parent: any, { id }: any, ctx: any): Promise<ICard|null> {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+async function cardDelete(
+  parent: any,
+  { id }: { id: string },
+  { sub }: IWrContext,
+): Promise<ICard|null> {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
   if (await prisma.$exists.simpleCard({ id, deck: { owner: { id: sub.id } } })) {
     const cardNode = await prisma.deleteSimpleCard({ id });
     if (cardNode) {

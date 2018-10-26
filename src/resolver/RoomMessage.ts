@@ -1,7 +1,5 @@
-
-import { PubSub } from 'graphql-yoga';
 import { IUser, IBakedUser, userNodeToIUser } from './User';
-import { ICurrentUser, IUpdate, MutationType, ResolvesTo } from '../types';
+import { IUpdate, MutationType, ResolvesTo, IWrContext } from '../types';
 import { prisma, SimpleUserRoomMessageNode } from '../generated/prisma-client';
 import { fieldGetter } from '../util';
 
@@ -27,8 +25,8 @@ export interface IBakedRoomMessage extends IRoomMessage {
   sender: ResolvesTo<IBakedUser>;
 }
 
-interface IRoomMessageRoomPayload {
-  roomMessageUpdatesOfRoom: IUpdate<IRoomMessage>;
+interface IRoomMessagePayload {
+  [field: string]: IUpdate<IRoomMessage>;
 }
 
 export function simpleUserRoomMessageNodeToIRoomMessage(
@@ -47,12 +45,11 @@ export function simpleUserRoomMessageNodeToIRoomMessage(
 async function roomMessageCreate(
   parent: any,
   { roomId, messageContent }: { roomId: string , messageContent: string },
-  ctx: any) {
-  if (!(ctx && ctx.sub && ctx.sub.id)) {
+  { sub, pubsub }: IWrContext,
+  ) {
+  if (!sub) {
     return null;
   }
-  const sub: ICurrentUser = ctx.sub;
-  const pubsub: PubSub = ctx.pubsub;
   if (!(await prisma.$exists.room({ id: roomId }))
   || (!(await prisma.room({ id: roomId }).occupants())
   .map((user) => user.id).includes(sub.id))) {
@@ -65,7 +62,7 @@ async function roomMessageCreate(
   });
   if (roomMessageNode) {
     const roomMessageObj = simpleUserRoomMessageNodeToIRoomMessage(roomMessageNode);
-    const roomMessageUpdate: IRoomMessageRoomPayload = {
+    const roomMessageUpdate: IRoomMessagePayload = {
       roomMessageUpdatesOfRoom: {
         mutation: MutationType.CREATED,
         new: roomMessageObj,
@@ -81,12 +78,12 @@ async function roomMessageCreate(
 async function roomMessageUpdatesOfRoom(
   parent: any,
   { id }: { id: string },
-  ctx: any): Promise<AsyncIterator<IRoomMessageRoomPayload>|null> {
-  const pubsub: PubSub = ctx.pubsub;
+  { pubsub }: IWrContext,
+): Promise<AsyncIterator<IRoomMessagePayload>|null> {
   if (!(await prisma.$exists.room({ id }))) {
     return null;
   }
-  return pubsub.asyncIterator<IRoomMessageRoomPayload>(roomMessageTopicFromRoom(id));
+  return pubsub.asyncIterator<IRoomMessagePayload>(roomMessageTopicFromRoom(id));
 }
 
 export const roomMessageMutation = {

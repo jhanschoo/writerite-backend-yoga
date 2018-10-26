@@ -12,6 +12,7 @@ type Query {
   cardsFromDeck(id: String): [Card!]
   # Room
   room(id: ID!): Room
+  activeRooms: [Room!]
 }
 
 type Mutation {
@@ -40,6 +41,8 @@ type Subscription {
   _empty: String
   # Deck
   deckUpdatesOfUser: DeckUpdate!
+  # Room
+  activeRoomUpdates: RoomUpdate!
   # RoomMessage
   roomMessageUpdatesOfRoom(id: ID!): RoomMessageUpdate!
 }
@@ -60,6 +63,12 @@ type RoomMessageUpdate {
   mutation: MutationType!
   new: RoomMessage
   old: RoomMessage
+}
+
+type RoomUpdate {
+  mutation: MutationType!
+  new: Room
+  old: Room
 }
 
 # Deck
