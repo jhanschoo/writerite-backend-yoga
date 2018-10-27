@@ -1,6 +1,7 @@
 import { cardQuery, cardMutation } from '../src/resolver/Card';
 import { prisma, DeckNode, UserNode, SimpleCardNode } from '../src/generated/prisma-client';
-import { IWrContext, resolveField } from '../src/types';
+import { IWrContext } from '../src/types';
+import { resolveField } from '../src/util'
 
 const { card, cardsFromDeck } = cardQuery;
 const { cardSave, cardDelete } = cardMutation;
