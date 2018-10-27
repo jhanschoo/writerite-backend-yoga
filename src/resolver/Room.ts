@@ -50,6 +50,7 @@ async function room(parent: any, { id }: { id: string }) {
   if (roomNode) {
     return roomNodeToIRoom(roomNode);
   }
+  return null;
 }
 
 async function activeRooms(
@@ -75,6 +76,7 @@ async function roomCreate(parent: any, args: any, { sub }: IWrContext) {
   if (roomNode) {
     return roomNodeToIRoom(roomNode);
   }
+  return null;
 }
 
 // TODO: access control: owner or self only
