@@ -11,6 +11,16 @@ export function fieldGetter<T>(field: string): ResolvesTo<T> {
   };
 }
 
+export async function resolveField<T>(f: ResolvesTo<T>, parent = null): Promise<T> {
+  return new Promise<T>((res, rej) => {
+    if (f instanceof Function) {
+      res(f(parent));
+    } else {
+      res(f);
+    }
+  });
+}
+
 export function isCurrentUser(o: any): o is ICurrentUser {
   return o && o.id && typeof o.id === 'string'
   && o.email && o.email === 'string'
@@ -67,7 +77,7 @@ export function generateJWT(sub: any, persist = false) {
   return jwt;
 }
 
-export function getClaims(ctx: Context) {
+export function getClaims(ctx: Context): { sub: ICurrentUser }|null {
   if (ctx.sub) {
     return { sub: ctx.sub };
   }
@@ -88,13 +98,12 @@ export function getClaims(ctx: Context) {
   if (jwt) {
     try {
       if (KJUR.jws.JWS.verify(jwt, PUBLIC_KEY, ['ES256'])) {
-        const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub;
-        if (isCurrentUser(sub)) {
-          ctx.sub = sub;
-          return { sub };
-        }
+        const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub as ICurrentUser;
+        ctx.sub = sub;
+        return { sub };
       }
     } catch (e) {
+      ctx.sub = null;
       return null;
     }
   }
