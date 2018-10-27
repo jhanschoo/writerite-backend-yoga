@@ -20,6 +20,15 @@ describe('User resolvers', async () => {
   const commonAfterEach = async () => {
     await prisma.deleteManyUsers({});
   };
+
+  beforeEach(async () => {
+    await prisma.deleteManySimpleUserRoomMessages({});
+    await prisma.deleteManyRooms({});
+    await prisma.deleteManySimpleCards({});
+    await prisma.deleteManyDecks({});
+    await prisma.deleteManyUsers({});
+  });
+
   describe('user', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
@@ -29,11 +38,12 @@ describe('User resolvers', async () => {
       const userNode = await user(null, { id: '1234567' });
       expect(userNode).toBeNull();
     });
-
     test('it should return user if it exists', async () => {
       expect.assertions(1);
       const retrievedUser = await user(null, { id: USER.id });
-      expect(retrievedUser.id).toBe(USER.id);
+      if (retrievedUser) {
+        expect(retrievedUser.id).toBe(USER.id);
+      }
     });
   });
 
@@ -42,30 +52,29 @@ describe('User resolvers', async () => {
     afterEach(commonAfterEach);
 
     test('it should return null if sub is not present', async () => {
-      expect.assertions(2);
-      const userNode1 = await users(null, null, null);
-      expect(userNode1).toBeNull();
+      expect.assertions(1);
+      const userObj1 = await users(null, null, {} as IWrContext);
+      expect(userObj1).toBeNull();
     });
-
     test('it should return null if not authorized as admin', async () => {
       expect.assertions(1);
-      const userNode = await users(null, null, {
+      const userObj = await users(null, null, {
         sub: {
           roles: [Roles.user],
         },
       } as IWrContext);
-      expect(userNode).toBeNull();
+      expect(userObj).toBeNull();
     });
 
     test('it should return users if they exist', async () => {
       expect.assertions(1);
-      const userNodes = await users(null, null, {
+      const userObjs = await users(null, null, {
         sub: {
           id: USER.id,
           roles: [Roles.user, Roles.admin],
         },
       } as IWrContext);
-      expect(userNodes).toContainEqual(expect.objectContaining({
+      expect(userObjs).toContainEqual(expect.objectContaining({
         id: USER.id,
       }));
     });

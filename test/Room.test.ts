@@ -42,38 +42,47 @@ describe('Room resolvers', async () => {
     await prisma.deleteManyUsers({});
   };
 
+  beforeEach(async () => {
+    await prisma.deleteManySimpleUserRoomMessages({});
+    await prisma.deleteManyRooms({});
+    await prisma.deleteManySimpleCards({});
+    await prisma.deleteManyDecks({});
+    await prisma.deleteManyUsers({});
+  });
+
   describe('room', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
+
     test('it should return null on no room present', async () => {
       expect.assertions(1);
-      const roomNode = await room(null, { id: '1234567' });
-      expect(roomNode).toBeNull();
+      const roomObj = await room(null, { id: '1234567' });
+      expect(roomObj).toBeNull();
     });
-
     test('it should return room if it exists', async () => {
       expect.assertions(1);
-      const roomNode = await room(null, { id: ROOM.id });
-      expect(roomNode.id).toBe(ROOM.id);
+      const roomObj = await room(null, { id: ROOM.id });
+      if (roomObj) {
+      expect(roomObj.id).toBe(ROOM.id);
+      }
     });
   });
 
   describe('roomCreate', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
-    test('it should return null if sub is not present', async () => {
-      expect.assertions(2);
-      const roomNode1 = await roomCreate(null, null, null);
-      expect(roomNode1).toBeNull();
-    });
 
+    test('it should return null if sub is not present', async () => {
+      expect.assertions(1);
+      const roomObj = await roomCreate(null, null, {} as IWrContext);
+      expect(roomObj).toBeNull();
+    });
     test('it creates a room once sub.id is present', async () => {
       expect.assertions(2);
-      const roomNode = await roomCreate(null, null, { sub: { id: USER.id } } as IWrContext);
-      expect(roomNode).toHaveProperty('id');
-      // work around typescript thinking deckNode may be null
-      if (roomNode) {
-        const ownerId = await prisma.room({ id: roomNode.id }).owner().id();
+      const roomObj = await roomCreate(null, null, { sub: { id: USER.id } } as IWrContext);
+      expect(roomObj).toHaveProperty('id');
+      if (roomObj) {
+        const ownerId = await prisma.room({ id: roomObj.id }).owner().id();
         expect(ownerId).toBe(USER.id);
       }
     });
@@ -85,43 +94,39 @@ describe('Room resolvers', async () => {
 
     test('it should return null on neither room nor occupant present', async () => {
       expect.assertions(1);
-      const roomNode = await roomAddOccupant(null, { id: '1234567', occupantId: '1234567' });
-      expect(roomNode).toBeNull();
+      const roomObj = await roomAddOccupant(null, { id: '1234567', occupantId: '1234567' });
+      expect(roomObj).toBeNull();
     });
-
     test('it should return null on no room present', async () => {
       expect.assertions(1);
-      const roomNode = await roomAddOccupant(null, { id: '1234567', occupantId: USER.id });
-      expect(roomNode).toBeNull();
+      const roomObj = await roomAddOccupant(null, { id: '1234567', occupantId: USER.id });
+      expect(roomObj).toBeNull();
     });
-
     test('it should return null on no occupant present', async () => {
       expect.assertions(1);
-      const roomNode = await roomAddOccupant(null, { id: ROOM.id, occupantId: '1234567' });
-      expect(roomNode).toBeNull();
+      const roomObj = await roomAddOccupant(null, { id: ROOM.id, occupantId: '1234567' });
+      expect(roomObj).toBeNull();
     });
-
     test('it makes no noticeable change when occupant is already in room', async () => {
       expect.assertions(3);
       const priorOccupants = await prisma.room({ id: ROOM.id }).occupants();
       expect(priorOccupants).toContainEqual(expect.objectContaining({ id: USER.id }));
-      const roomNode = await roomAddOccupant(null, { id: ROOM.id, occupantId: USER.id });
-      expect(roomNode).toBeTruthy();
-      if (roomNode) {
-        const actualOccupants = (await prisma.room({ id: roomNode.id }).occupants())
+      const roomObj = await roomAddOccupant(null, { id: ROOM.id, occupantId: USER.id });
+      expect(roomObj).toBeTruthy();
+      if (roomObj) {
+        const actualOccupants = (await prisma.room({ id: roomObj.id }).occupants())
           .map((user) => user.id).sort();
         expect(actualOccupants).toEqual(priorOccupants.map((user) => user.id).sort());
       }
     });
-
     test('it adds occupant when occupant is not already in room', async () => {
       expect.assertions(3);
       const priorOccupants = await prisma.room({ id: ROOM.id }).occupants();
       expect(priorOccupants).not.toContainEqual(expect.objectContaining({ id: OTHER_USER.id }));
-      const roomNode = await roomAddOccupant(null, { id: ROOM.id, occupantId: OTHER_USER.id });
-      expect(roomNode).toBeTruthy();
-      if (roomNode) {
-        const actualIds = (await prisma.room({ id: roomNode.id }).occupants())
+      const roomObj = await roomAddOccupant(null, { id: ROOM.id, occupantId: OTHER_USER.id });
+      expect(roomObj).toBeTruthy();
+      if (roomObj) {
+        const actualIds = (await prisma.room({ id: roomObj.id }).occupants())
           .map((user) => user.id).sort();
         const expectedIds = (priorOccupants.map((user) => user.id).concat([ OTHER_USER.id ])).sort();
         expect(actualIds).toEqual(expectedIds);
@@ -135,45 +140,45 @@ describe('Room resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(2);
-      const roomMessageNode1 = await roomMessageCreate(
+      const roomMessageObj1 = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
         { pubsub } as IWrContext,
       );
-      expect(roomMessageNode1).toBeNull();
-      const roomMessageNode2 = await roomMessageCreate(
+      expect(roomMessageObj1).toBeNull();
+      const roomMessageObj2 = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
         { pubsub } as IWrContext,
       );
-      expect(roomMessageNode2).toBeNull();
+      expect(roomMessageObj2).toBeNull();
     });
     test('it should return null on no room present', async () => {
       expect.assertions(1);
-      const roomMessageNode = await roomMessageCreate(
+      const roomMessageObj = await roomMessageCreate(
         null,
         { roomId: '1234567', messageContent: NEW_CONTENT },
         { pubsub, sub: { id: USER.id } } as IWrContext,
       );
-      expect(roomMessageNode).toBeNull();
+      expect(roomMessageObj).toBeNull();
     });
     test('it should return null if sub.id is not an occupant', async () => {
       expect.assertions(1);
-      const roomMessageNode = await roomMessageCreate(
+      const roomMessageObj = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
         { pubsub, sub: { id: OTHER_USER.id } } as IWrContext,
       );
-      expect(roomMessageNode).toBeNull();
+      expect(roomMessageObj).toBeNull();
     });
     test('it should add message null if sub.id is an occupant', async () => {
       expect.assertions(3);
-      const roomMessageNode = await roomMessageCreate(
+      const roomMessageObj = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
         { pubsub, sub: { id: USER.id } } as IWrContext,
       );
-      expect(roomMessageNode).toBeTruthy();
+      expect(roomMessageObj).toBeTruthy();
       const roomNode = await prisma.room({ id: ROOM.id });
       expect(roomNode).toBeTruthy();
       if (roomNode) {
@@ -188,6 +193,7 @@ describe('Room resolvers', async () => {
   describe('roomMessageUpdatesOfRoom', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
+
     test('it should return null on no room present', async () => {
       expect.assertions(1);
       const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: '1234567' }, { pubsub } as IWrContext);
@@ -209,28 +215,32 @@ describe('Room resolvers', async () => {
       }
       return await new Promise((res) => setTimeout(res, 500));
     });
-    test('subscription on room reproduces message posted in room using roomAddMessage since subscription', async () => {
+    test(
+      'subscription on room reproduces message posted in room using roomMessageCreate since subscription',
+      async () => {
       expect.assertions(5);
       const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
-      const roomMessageNode = await roomMessageCreate(
+      const roomMessageObj = await roomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
         { pubsub, sub: { id: USER.id } } as IWrContext,
       );
-      expect(roomMessageNode).toBeTruthy();
-      if (roomMessageNode) {
+      expect(roomMessageObj).toBeTruthy();
+      if (roomMessageObj) {
         expect(subscr).toBeTruthy();
         if (subscr) {
           const newMessage = await subscr.next();
-          const value: any = newMessage.value;
+          if (newMessage.value && newMessage.value.roomMessageUpdatesOfRoom) {
+            const payload: any = newMessage.value.roomMessageUpdatesOfRoom;
+            expect(payload.mutation).toBe('CREATED');
+            expect(payload.new).toEqual(roomMessageObj);
+          }
           expect(newMessage.done).toBe(false);
-          expect(value.mutation).toBe('CREATED');
-          expect(value.new).toEqual(roomMessageNode);
         }
       }
     });
     test(`subscription on room does not reproduce message posted in
-    room using roomAddMessage before subscription`, async () => {
+    room using roomMessageCreate before subscription`, async () => {
       expect.assertions(1);
       await roomMessageCreate(
         null,
