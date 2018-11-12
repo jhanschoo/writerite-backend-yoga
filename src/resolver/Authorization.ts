@@ -20,7 +20,7 @@ export interface IAuthResponse {
 async function signin(
   parent: any,
   { email, token, authorizer, identifier, persist }: any,
-): Promise<IAuthResponse|null> {
+): Promise<IAuthResponse | null> {
   if (authorizer === AuthorizerType.LOCAL) {
     return localAuth.signin(email, token, identifier, persist);
   }

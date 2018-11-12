@@ -63,7 +63,7 @@ describe('Room resolvers', async () => {
       expect.assertions(1);
       const roomObj = await room(null, { id: ROOM.id });
       if (roomObj) {
-      expect(roomObj.id).toBe(ROOM.id);
+        expect(roomObj.id).toBe(ROOM.id);
       }
     });
   });
@@ -128,7 +128,7 @@ describe('Room resolvers', async () => {
       if (roomObj) {
         const actualIds = (await prisma.room({ id: roomObj.id }).occupants())
           .map((user) => user.id).sort();
-        const expectedIds = (priorOccupants.map((user) => user.id).concat([ OTHER_USER.id ])).sort();
+        const expectedIds = (priorOccupants.map((user) => user.id).concat([OTHER_USER.id])).sort();
         expect(actualIds).toEqual(expectedIds);
       }
     });
@@ -210,52 +210,55 @@ describe('Room resolvers', async () => {
       expect(subscr).toBeTruthy();
       if (subscr) {
         subscr.next().then(() => {
-            throw new Error();
-        });
-      }
-      return await new Promise((res) => setTimeout(res, 500));
-    });
-    test(
-      'subscription on room reproduces message posted in room using roomMessageCreate since subscription',
-      async () => {
-      expect.assertions(5);
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
-      const roomMessageObj = await roomMessageCreate(
-        null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } } as IWrContext,
-      );
-      expect(roomMessageObj).toBeTruthy();
-      if (roomMessageObj) {
-        expect(subscr).toBeTruthy();
-        if (subscr) {
-          const newMessage = await subscr.next();
-          if (newMessage.value && newMessage.value.roomMessageUpdatesOfRoom) {
-            const payload: any = newMessage.value.roomMessageUpdatesOfRoom;
-            expect(payload.mutation).toBe('CREATED');
-            expect(payload.new).toEqual(roomMessageObj);
-          }
-          expect(newMessage.done).toBe(false);
-        }
-      }
-    });
-    test(`subscription on room does not reproduce message posted in
-    room using roomMessageCreate before subscription`, async () => {
-      expect.assertions(1);
-      await roomMessageCreate(
-        null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { pubsub, sub: { id: USER.id } } as IWrContext,
-      );
-      const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
-      expect(subscr).toBeTruthy();
-      if (subscr) {
-        const nextResult = subscr.next();
-        nextResult.then(() => {
           throw new Error();
         });
       }
       return await new Promise((res) => setTimeout(res, 500));
     });
+    test(
+      `subscription on room reproduces message posted in room using
+      roomMessageCreate since subscription`,
+      async () => {
+        expect.assertions(5);
+        const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
+        const roomMessageObj = await roomMessageCreate(
+          null,
+          { roomId: ROOM.id, messageContent: NEW_CONTENT },
+          { pubsub, sub: { id: USER.id } } as IWrContext,
+        );
+        expect(roomMessageObj).toBeTruthy();
+        if (roomMessageObj) {
+          expect(subscr).toBeTruthy();
+          if (subscr) {
+            const newMessage = await subscr.next();
+            if (newMessage.value && newMessage.value.roomMessageUpdatesOfRoom) {
+              const payload: any = newMessage.value.roomMessageUpdatesOfRoom;
+              expect(payload.mutation).toBe('CREATED');
+              expect(payload.new).toEqual(roomMessageObj);
+            }
+            expect(newMessage.done).toBe(false);
+          }
+        }
+      });
+    test(
+      `subscription on room does not reproduce message posted in
+      room using roomMessageCreate before subscription`,
+      async () => {
+        expect.assertions(1);
+        await roomMessageCreate(
+          null,
+          { roomId: ROOM.id, messageContent: NEW_CONTENT },
+          { pubsub, sub: { id: USER.id } } as IWrContext,
+        );
+        const subscr = await roomMessageUpdatesOfRoom.subscribe(null, { id: ROOM.id }, { pubsub } as IWrContext);
+        expect(subscr).toBeTruthy();
+        if (subscr) {
+          const nextResult = subscr.next();
+          nextResult.then(() => {
+            throw new Error();
+          });
+        }
+        return await new Promise((res) => setTimeout(res, 500));
+      });
   });
 });

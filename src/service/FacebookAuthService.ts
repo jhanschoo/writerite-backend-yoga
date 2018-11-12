@@ -9,9 +9,9 @@ let FB_ACCESS_TOKEN = 'FB_ACCESS_TOKEN not set!';
 
 const FB_ACCESS_TOKEN_QUERY = `https://graph.facebook.com/oauth/access_token?client_id=${
   AUTH.facebook_app_id
-}&client_secret=${
+  }&client_secret=${
   AUTH.facebook_app_secret
-}&grant_type=client_credentials`;
+  }&grant_type=client_credentials`;
 
 fetch(FB_ACCESS_TOKEN_QUERY).then((response) => {
   response.json().then((json) => {
@@ -41,9 +41,9 @@ export class FacebookAuthService extends AbstractAuthService {
 
   protected async verify(token: string) {
     const VERIFY_URL = `https://graph.facebook.com/debug_token?input_token=${token
-    }&access_token=${FB_ACCESS_TOKEN}`;
+      }&access_token=${FB_ACCESS_TOKEN}`;
 
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       fetch(VERIFY_URL).then((response) => {
         return response.json().then((json) => {
           if (json.data && json.data.app_id === AUTH.facebook_app_id && json.data.is_valid) {

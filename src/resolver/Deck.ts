@@ -51,7 +51,7 @@ function deckTopicFromUser(id: string) {
 async function userDecks(
   parent: any,
   args: any,
-  { sub }: IWrContext): Promise<IDeck[]|null> {
+  { sub }: IWrContext): Promise<IDeck[] | null> {
   if (!sub) {
     return null;
   }
@@ -144,7 +144,8 @@ async function deckDelete(
   return null;
 }
 
-function deckUpdatesOfUser(parent: any, args: any, { sub, pubsub }: IWrContext): AsyncIterator<IDeckUserPayload>|null {
+function deckUpdatesOfUser(parent: any, args: any, { sub, pubsub }: IWrContext):
+  AsyncIterator<IDeckUserPayload> | null {
   if (!sub) {
     return null;
   }

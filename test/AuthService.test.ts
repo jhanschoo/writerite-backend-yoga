@@ -19,7 +19,7 @@ const GOOD_PASSWORD = 'goodPassword';
 // tslint:disable-next-line max-classes-per-file
 class GoogleAuthServiceTrueVerify extends GoogleAuthService {
   protected async verify(idToken: string) {
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       if (idToken === GOOD_TOKEN) {
         res(GOOD_GOOGLE_ID);
       } else {
@@ -32,7 +32,7 @@ class GoogleAuthServiceTrueVerify extends GoogleAuthService {
 // tslint:disable-next-line max-classes-per-file
 class FacebookAuthServiceTrueVerify extends FacebookAuthService {
   protected async verify(idToken: string) {
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       if (idToken === GOOD_TOKEN) {
         res(GOOD_FACEBOOK_ID);
       } else {
@@ -45,7 +45,7 @@ class FacebookAuthServiceTrueVerify extends FacebookAuthService {
 // tslint:disable-next-line max-classes-per-file
 class LocalAuthServiceTrueVerify extends LocalAuthService {
   protected async verify(idToken: string) {
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       if (idToken === GOOD_TOKEN) {
         res('true');
       } else {

@@ -23,10 +23,10 @@ export async function resolveField<T>(f: ResolvesTo<T>, parent = null): Promise<
 
 export function isCurrentUser(o: any): o is ICurrentUser {
   return o && o.id && typeof o.id === 'string'
-  && o.email && o.email === 'string'
-  && o.roles && o.roles instanceof Array && o.roles.every((r: any) => {
-    return r === Roles.admin || r === Roles.user;
-  });
+    && o.email && o.email === 'string'
+    && o.roles && o.roles instanceof Array && o.roles.every((r: any) => {
+      return r === Roles.admin || r === Roles.user;
+    });
 }
 
 const EC_KEYPAIR = (
@@ -77,7 +77,7 @@ export function generateJWT(sub: any, persist = false) {
   return jwt;
 }
 
-export function getClaims(ctx: Context): { sub: ICurrentUser }|null {
+export function getClaims(ctx: Context): { sub: ICurrentUser } | null {
   if (ctx.sub) {
     return { sub: ctx.sub };
   }

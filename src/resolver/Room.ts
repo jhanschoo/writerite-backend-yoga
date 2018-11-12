@@ -57,7 +57,7 @@ async function activeRooms(
   parent: any,
   args: any,
   { sub }: IWrContext,
-): Promise<IRoom[]|null> {
+): Promise<IRoom[] | null> {
   if (!sub) {
     return null;
   }
@@ -91,9 +91,11 @@ async function roomAddOccupant(
     const occupantNodes = await prisma.room({ id }).occupants();
     if (!occupantNodes.map((user) => user.id).includes(occupantId)) {
       const roomNode = await prisma.updateRoom({
-        data: { occupants: {
-          connect: { id: occupantId },
-        } },
+        data: {
+          occupants: {
+            connect: { id: occupantId },
+          },
+        },
         where: { id },
       });
       if (roomNode) {
@@ -111,7 +113,7 @@ async function activeRoomUpdates(
   parent: any,
   args: any,
   { pubsub }: IWrContext,
-): Promise<AsyncIterator<IRoomPayload>|null> {
+): Promise<AsyncIterator<IRoomPayload> | null> {
   return pubsub.asyncIterator<IRoomPayload>(activeRoomTopic());
 }
 

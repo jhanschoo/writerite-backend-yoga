@@ -29,7 +29,7 @@ export class GoogleAuthService extends AbstractAuthService {
   }
 
   protected async verify(idToken: string) {
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       googleClient.verifyIdToken({
         audience: AUTH.google_client_id,
         idToken,

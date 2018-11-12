@@ -1,7 +1,7 @@
 import { cardQuery, cardMutation } from '../src/resolver/Card';
 import { prisma, DeckNode, UserNode, SimpleCardNode } from '../src/generated/prisma-client';
 import { IWrContext } from '../src/types';
-import { resolveField } from '../src/util'
+import { resolveField } from '../src/util';
 
 const { card, cardsFromDeck } = cardQuery;
 const { cardSave, cardDelete } = cardMutation;
@@ -40,11 +40,13 @@ describe('Card resolvers', async () => {
     DECK = await prisma.createDeck({ name: NAME, owner: { connect: { id: USER.id } } });
     NEXT_DECK = await prisma.createDeck({ name: NEXT_NAME, owner: { connect: { id: USER.id } } });
     OTHER_DECK = await prisma.createDeck({ name: OTHER_NAME, owner: { connect: { id: OTHER_USER.id } } });
-    CARD = await prisma.createSimpleCard({ front: FRONT, back: BACK, deck: { connect: { id: DECK.id }}});
+    CARD = await prisma.createSimpleCard({ front: FRONT, back: BACK, deck: { connect: { id: DECK.id } } });
     NEXT_CARD = await prisma.createSimpleCard({
-      front: NEXT_FRONT, back: NEXT_BACK, deck: { connect: { id: NEXT_DECK.id }}});
+      front: NEXT_FRONT, back: NEXT_BACK, deck: { connect: { id: NEXT_DECK.id } },
+    });
     OTHER_CARD = await prisma.createSimpleCard({
-      front: OTHER_FRONT, back: OTHER_BACK, deck: { connect: { id: OTHER_DECK.id }}});
+      front: OTHER_FRONT, back: OTHER_BACK, deck: { connect: { id: OTHER_DECK.id } },
+    });
   };
   const commonAfterEach = async () => {
     await prisma.deleteManySimpleCards({});
@@ -86,7 +88,7 @@ describe('Card resolvers', async () => {
       const cardObjs = await cardsFromDeck(null, { id: DECK.id });
       expect(cardObjs).toContainEqual(
         expect.objectContaining({ front: FRONT, back: BACK }),
-       );
+      );
     });
     test('it should return null if no deck with said id exists', async () => {
       expect.assertions(1);
@@ -129,9 +131,11 @@ describe('Card resolvers', async () => {
           id: USER.id,
         },
       } as IWrContext)).resolves.toBeNull();
-      const otherCards = await prisma.simpleCards({ where: {
-        deck: { id: OTHER_DECK.id },
-      }});
+      const otherCards = await prisma.simpleCards({
+        where: {
+          deck: { id: OTHER_DECK.id },
+        },
+      });
       expect(otherCards).not.toContainEqual(
         expect.objectContaining({ front: NEW_FRONT, back: NEW_BACK }));
     });

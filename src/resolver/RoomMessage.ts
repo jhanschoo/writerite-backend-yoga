@@ -37,28 +37,28 @@ export function simpleUserRoomMessageNodeToIRoomMessage(
     content: simpleUserRoomMessageNode.content,
     sender: async () => {
       return userNodeToIUser(
-      await prisma.simpleUserRoomMessage({ id: simpleUserRoomMessageNode.id }).sender());
+        await prisma.simpleUserRoomMessage({ id: simpleUserRoomMessageNode.id }).sender());
     },
   };
 }
 
 async function roomMessageCreate(
   parent: any,
-  { roomId, messageContent }: { roomId: string , messageContent: string },
+  { roomId, messageContent }: { roomId: string, messageContent: string },
   { sub, pubsub }: IWrContext,
-  ) {
+) {
   if (!sub) {
     return null;
   }
   if (!(await prisma.$exists.room({ id: roomId }))
-  || (!(await prisma.room({ id: roomId }).occupants())
-  .map((user) => user.id).includes(sub.id))) {
+    || (!(await prisma.room({ id: roomId }).occupants())
+      .map((user) => user.id).includes(sub.id))) {
     return null;
   }
   const roomMessageNode = await prisma.createSimpleUserRoomMessage({
     content: messageContent,
     room: { connect: { id: roomId } },
-    sender: { connect: { id: sub.id }},
+    sender: { connect: { id: sub.id } },
   });
   if (roomMessageNode) {
     const roomMessageObj = simpleUserRoomMessageNodeToIRoomMessage(roomMessageNode);
@@ -79,7 +79,7 @@ async function roomMessageUpdatesOfRoom(
   parent: any,
   { id }: { id: string },
   { pubsub }: IWrContext,
-): Promise<AsyncIterator<IRoomMessagePayload>|null> {
+): Promise<AsyncIterator<IRoomMessagePayload> | null> {
   if (!(await prisma.$exists.room({ id }))) {
     return null;
   }

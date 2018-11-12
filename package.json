@@ -36,8 +36,9 @@
     "typescript": "^3.0.3"
   },
   "scripts": {
-    "start": "tsc && node dist/index.js",
-    "start:dev": "tsc && NODE_ENV=development node dist/index.js",
+    "build": "tsc",
+    "start": "node dist/index.js",
+    "start:dev": "NODE_ENV=development node dist/index.js",
     "test": "jest --forceExit"
   }
 }

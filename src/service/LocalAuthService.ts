@@ -36,13 +36,13 @@ export class LocalAuthService extends AbstractAuthService {
     form.append('secret', AUTH.recaptcha_secret);
     form.append('response', token);
 
-    return new Promise<string|undefined>((res, rej) => {
+    return new Promise<string | undefined>((res, rej) => {
       fetch('https://www.google.com/recaptcha/api/siteverify', {
         method: 'post',
         body: form,
       }).then((response) => {
         // TODO: assert that hostname is correct
-       return response.json().then((json) => json.success ? res('true' as string) : res(undefined));
+        return response.json().then((json) => json.success ? res('true' as string) : res(undefined));
       }).catch((e) => res(undefined));
     });
   }

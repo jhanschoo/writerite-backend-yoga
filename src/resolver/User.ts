@@ -36,7 +36,8 @@ export function userNodeToIUser(userNode: UserNode): IBakedUser {
   };
 }
 
-async function users(parent: any, args: any, { sub }: IWrContext): Promise<IUser[]|null> {
+async function users(parent: any, args: any, { sub }: IWrContext):
+  Promise<IUser[] | null> {
   if (!sub) {
     return null;
   }
@@ -49,7 +50,7 @@ async function users(parent: any, args: any, { sub }: IWrContext): Promise<IUser
   return null;
 }
 
-async function user(parent: any, { id }: { id: string }): Promise<IUser|null> {
+async function user(parent: any, { id }: { id: string }): Promise<IUser | null> {
   const userNode = await prisma.user({ id });
   if (userNode) {
     return userNodeToIUser(userNode);
