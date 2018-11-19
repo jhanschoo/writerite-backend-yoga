@@ -11,7 +11,9 @@ export function fieldGetter<T>(field: string): ResolvesTo<T> {
   };
 }
 
-export async function resolveField<T>(f: ResolvesTo<T>, parent = null): Promise<T> {
+export async function resolveField<T>(
+  f: ResolvesTo<T>, parent = null
+): Promise<T> {
   return new Promise<T>((res, rej) => {
     if (f instanceof Function) {
       res(f(parent));
@@ -98,7 +100,8 @@ export function getClaims(ctx: Context): { sub: ICurrentUser } | null {
   if (jwt) {
     try {
       if (KJUR.jws.JWS.verify(jwt, PUBLIC_KEY, ['ES256'])) {
-        const sub = KJUR.jws.JWS.parse(jwt).payloadObj.sub as ICurrentUser;
+        const sub = KJUR.jws.JWS.parse(jwt)
+          .payloadObj.sub as ICurrentUser;
         ctx.sub = sub;
         return { sub };
       }

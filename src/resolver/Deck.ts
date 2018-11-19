@@ -1,5 +1,6 @@
+import { IFieldResolver, IResolverObject } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
-import { prisma, DeckNode } from '../generated/prisma-client';
+import { prisma, Deck as prismaDeck } from '../generated/prisma-client';
 import { ICurrentUser, IUpdate, MutationType, ResolvesTo, IWrContext } from '../types';
 
 import { IUser, IBakedUser, userNodeToIUser } from './User';
@@ -31,7 +32,7 @@ interface IDeckUserPayload {
   deckUpdatesOfUser: IUpdate<IDeck>;
 }
 
-export function deckNodeToIDeck(deckNode: DeckNode): IBakedDeck {
+export function deckNodeToIDeck(deckNode: prismaDeck): IBakedDeck {
   return {
     id: deckNode.id,
     name: deckNode.name,
@@ -47,35 +48,36 @@ function deckTopicFromUser(id: string) {
   return `user-deck:${id}`;
 }
 
-// TODO
-async function userDecks(
+const userDecks: IFieldResolver<any, IWrContext, any> = async (
   parent: any,
   args: any,
-  { sub }: IWrContext): Promise<IDeck[] | null> {
+  { sub }: IWrContext): Promise<IDeck[] | null> => {
   if (!sub) {
     return null;
   }
-  const deckNodes = await prisma.decks({ where: { owner: { id: sub.id } } });
+  const deckNodes = await prisma.decks({
+    where: { owner: { id: sub.id } }
+  });
   if (deckNodes) {
     return deckNodes.map(deckNodeToIDeck);
   }
   return null;
-}
+};
 
-export async function deck(
-  parent: any,
-  { id }: { id: string }) {
+const deck: IFieldResolver<any, any, { id: string }> = async (
+  parent,
+  { id }) => {
   const deckNode = await prisma.deck({ id });
   if (deckNode) {
     return deckNodeToIDeck(deckNode);
   }
   return null;
-}
+};
 
-async function deckSave(
-  parent: any,
-  { id, name }: { id?: string, name: string },
-  { sub, pubsub }: IWrContext) {
+const deckSave: IFieldResolver<any, IWrContext, {
+  id?: string,
+  name: string,
+}> = async (parent: any, { id, name }, { sub, pubsub }) => {
   if (!sub) {
     return null;
   }
@@ -100,7 +102,9 @@ async function deckSave(
     }
     return null;
   } else {
-    const deckNode = await prisma.createDeck({ name, owner: { connect: { id: sub.id } } });
+    const deckNode = await prisma.createDeck({
+      name, owner: { connect: { id: sub.id } }
+    });
     if (deckNode) {
       const deckObj = deckNodeToIDeck(deckNode);
       const deckUpdate: IDeckUserPayload = {
@@ -115,41 +119,47 @@ async function deckSave(
     }
     return null;
   }
-}
+};
 
-async function deckDelete(
+const deckDelete: IFieldResolver<any, IWrContext, {
+  id: string
+}> = async (
   parent: any,
-  { id }: { id: string },
-  { sub, pubsub }: IWrContext) {
-  if (!sub) {
-    return null;
-  }
-  if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
-    const deckNode = await prisma.deleteDeck({ id });
-    if (deckNode) {
-      const deckObj = deckNodeToIDeck(deckNode);
-      const deckUpdate: IDeckUserPayload = {
-        deckUpdatesOfUser: {
-          mutation: MutationType.DELETED,
-          new: null,
-          // TODO: querying through relations on a deleted node
-          //   may fail.
-          old: deckNodeToIDeck(deckNode),
-        },
-      };
-      pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
-      return deckObj;
+  { id },
+  { sub, pubsub },
+  ) => {
+    if (!sub) {
+      return null;
     }
+    if (await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
+      const deckNode = await prisma.deleteDeck({ id });
+      if (deckNode) {
+        const deckObj = deckNodeToIDeck(deckNode);
+        const deckUpdate: IDeckUserPayload = {
+          deckUpdatesOfUser: {
+            mutation: MutationType.DELETED,
+            new: null,
+            // TODO: querying through relations on a deleted node
+            //   may fail.
+            old: deckNodeToIDeck(deckNode),
+          },
+        };
+        pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+        return deckObj;
+      }
+    }
+    return null;
   }
-  return null;
-}
 
-function deckUpdatesOfUser(parent: any, args: any, { sub, pubsub }: IWrContext):
-  AsyncIterator<IDeckUserPayload> | null {
+const deckUpdatesOfUser: IFieldResolver<any, IWrContext, any> = (
+  parent, args, { sub, pubsub },
+): AsyncIterator<IDeckUserPayload> | null => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IDeckUserPayload>(deckTopicFromUser(sub.id));
+  return pubsub.asyncIterator<IDeckUserPayload>(
+    deckTopicFromUser(sub.id),
+  );
 }
 
 export const deckQuery = {

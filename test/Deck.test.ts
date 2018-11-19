@@ -1,7 +1,9 @@
+import { GraphQLResolveInfo } from 'graphql';
+import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
 import { deckQuery, deckMutation } from '../src/resolver/Deck';
-import { prisma, DeckNode, UserNode } from '../src/generated/prisma-client';
+import { prisma, Deck, User } from '../src/generated/prisma-client';
 import { IWrContext } from '../src/types';
 
 const { deck, userDecks } = deckQuery;
@@ -15,12 +17,13 @@ const NEW_EMAIL = 'ghi@xyz';
 const NAME = 'oldDeck';
 const OTHER_NAME = 'otherDeck';
 const NEW_NAME = 'newDeck';
+const dummyInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 describe('Deck resolvers', async () => {
-  let USER: UserNode;
-  let OTHER_USER: UserNode;
-  let DECK: DeckNode;
-  let OTHER_DECK: DeckNode;
+  let USER: User;
+  let OTHER_USER: User;
+  let DECK: Deck;
+  let OTHER_DECK: Deck;
   const commonBeforeEach = async () => {
     await prisma.deleteManyDecks({});
     await prisma.deleteManyUsers({});
@@ -48,15 +51,14 @@ describe('Deck resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(userDecks(null, null, {} as IWrContext)).resolves.toBeNull();
+      expect(userDecks(null, null, {} as IWrContext, dummyInfo))
+        .resolves.toBeNull();
     });
     test('it should return user\'s decks if they exist', async () => {
       expect.assertions(1);
       const retrievedDecks = await userDecks(null, null, {
-        sub: {
-          id: USER.id,
-        },
-      } as IWrContext);
+        sub: { id: USER.id },
+      } as IWrContext, dummyInfo);
       expect(retrievedDecks).toContainEqual(expect.objectContaining({
         id: DECK.id,
       }));
@@ -64,10 +66,8 @@ describe('Deck resolvers', async () => {
     test('it should not return other users\' decks if they exist', async () => {
       expect.assertions(1);
       const retrievedDecks = await userDecks(null, null, {
-        sub: {
-          id: USER.id,
-        },
-      } as IWrContext);
+        sub: { id: USER.id },
+      } as IWrContext, dummyInfo);
       expect(retrievedDecks).not.toContainEqual(expect.objectContaining({
         id: OTHER_DECK.id,
       }));
@@ -80,11 +80,14 @@ describe('Deck resolvers', async () => {
 
     test('it should return null on no deck present', () => {
       expect.assertions(1);
-      expect(deck(null, { id: '1234567' })).resolves.toBeNull();
+      expect(deck(null, { id: '1234567' }, null, dummyInfo))
+        .resolves.toBeNull();
     });
     test('it should return deck if it exists', async () => {
       expect.assertions(1);
-      const retrievedDeck = await deck(null, { id: DECK.id });
+      const retrievedDeck = await deck(
+        null, { id: DECK.id }, null, dummyInfo,
+      );
       if (retrievedDeck) {
         expect(retrievedDeck.id).toBe(DECK.id);
       }
@@ -97,14 +100,15 @@ describe('Deck resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(deckSave(null, { name: NAME }, {} as IWrContext)).resolves.toBeNull();
+      expect(deckSave(null, { name: NAME }, {} as IWrContext, dummyInfo))
+        .resolves.toBeNull();
     });
     test('it saves a deck when no deck id is specified', async () => {
       expect.assertions(4);
       const deckObj = await deckSave(null, { name: NEW_NAME }, {
         pubsub,
         sub: { id: USER.id },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(deckObj).toHaveProperty('id');
       expect(deckObj).toHaveProperty('name', NEW_NAME);
       // work around typescript thinking deckNode may be null
@@ -116,7 +120,11 @@ describe('Deck resolvers', async () => {
     test('it should return null and not save/update if specifies a deck not owned by sub.id', async () => {
       expect.assertions(2);
       const otherDeckObj = await deckSave(
-        null, { id: OTHER_DECK.id, name: NEW_NAME }, { sub: { id: USER.id } } as IWrContext);
+        null,
+        { id: OTHER_DECK.id, name: NEW_NAME },
+        { sub: { id: USER.id } } as IWrContext,
+        dummyInfo
+      );
       expect(otherDeckObj).toBeNull();
       expect(prisma.deck({ id: OTHER_DECK.id })).resolves.toHaveProperty('name', OTHER_NAME);
     });
@@ -125,7 +133,7 @@ describe('Deck resolvers', async () => {
       const deckObj = await deckSave(null, { id: DECK.id, name: NEW_NAME }, {
         pubsub,
         sub: { id: USER.id },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(deckObj).toHaveProperty('id');
       expect(deckObj).toHaveProperty('name', NEW_NAME);
       expect(prisma.deck({ id: DECK.id }).owner().id()).resolves.toBe(USER.id);
@@ -139,17 +147,16 @@ describe('Deck resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(2);
-      expect(deckDelete(null, { id: DECK.id }, {} as IWrContext)).resolves.toBeNull();
+      expect(deckDelete(null, { id: DECK.id }, {} as IWrContext, dummyInfo))
+        .resolves.toBeNull();
       const savedDeck = await prisma.deck({ id: DECK.id });
       expect(savedDeck).toHaveProperty('name', NAME);
     });
     test('it should return null if deck has differnet owner than sub.id', async () => {
       expect.assertions(2);
       expect(await deckDelete(null, { id: OTHER_DECK.id }, {
-        sub: {
-          id: USER.id,
-        },
-      } as IWrContext)).toBeNull();
+        sub: { id: USER.id },
+      } as IWrContext, dummyInfo)).toBeNull();
       const savedDeck = await prisma.deck({ id: OTHER_DECK.id });
       expect(savedDeck).toHaveProperty('name', OTHER_NAME);
     });
@@ -157,10 +164,8 @@ describe('Deck resolvers', async () => {
       expect.assertions(3);
       const deletedDeck = await deckDelete(null, { id: DECK.id }, {
         pubsub,
-        sub: {
-          id: USER.id,
-        },
-      } as IWrContext);
+        sub: { id: USER.id, },
+      } as IWrContext, dummyInfo);
       expect(deletedDeck).toHaveProperty('id');
       expect(deletedDeck).toHaveProperty('name', NAME);
       expect(prisma.deck({ id: DECK.id })).resolves.toBeNull();

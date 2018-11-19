@@ -1,13 +1,13 @@
 import config from 'config';
 
-import { UserNode } from '../generated/prisma-client';
+import { User as prismaUser } from '../generated/prisma-client';
 import { generateJWT } from '../util';
 import { userNodeToIUser } from '../resolver/User';
 import { IAuthResponse } from '../resolver/Authorization';
 
 export abstract class AbstractAuthService {
   protected static async authResponseFromUser(
-    userNode: UserNode,
+    userNode: prismaUser,
     persist: boolean = false,
   ): Promise<IAuthResponse> {
     const user = userNodeToIUser(userNode);

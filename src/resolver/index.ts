@@ -1,3 +1,5 @@
+import { IResolvers } from 'graphql-tools';
+
 import Query from './Query';
 import Mutation from './Mutation';
 import Subscription from './Subscription';
@@ -7,7 +9,7 @@ import { Room } from './Room';
 import { RoomMessage } from './RoomMessage';
 import { User } from './User';
 
-const resolvers: any = {
+const resolvers: IResolvers = {
   Query,
   Mutation,
   Subscription,
@@ -16,6 +18,6 @@ const resolvers: any = {
   Room,
   RoomMessage,
   User,
-};
+} as IResolvers;
 
 export default resolvers;

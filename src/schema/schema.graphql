@@ -29,7 +29,7 @@ type Mutation {
   deckSave(id: ID, name: String!): Deck
   deckDelete(id: ID!): Deck
   # Card
-  cardSave(id: ID front: String! back:String! deckId: ID!): Card
+  cardSave(id: ID, front: String!, back: String!, deckId: ID!): Card
   cardDelete(id: ID!): Card
   # Room
   roomCreate: Room

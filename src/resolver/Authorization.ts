@@ -6,6 +6,7 @@ import { LocalAuthService } from '../service/LocalAuthService';
 import { DevelopmentAuthService } from '../service/DevelopmentAuthService';
 import { AuthorizerType, ResolvesTo } from '../types';
 import { IUser } from './User';
+import { IFieldResolver } from 'graphql-tools';
 
 const googleAuth = new GoogleAuthService();
 const facebookAuth = new FacebookAuthService();
@@ -17,10 +18,16 @@ export interface IAuthResponse {
   token: ResolvesTo<string>;
 }
 
-async function signin(
-  parent: any,
-  { email, token, authorizer, identifier, persist }: any,
-): Promise<IAuthResponse | null> {
+const signin: IFieldResolver<any, any, {
+  email: string,
+  token: string,
+  authorizer: string,
+  identifier: string,
+  persist?: boolean,
+}> = async (
+  parent,
+  { email, token, authorizer, identifier, persist },
+): Promise<IAuthResponse | null> => {
   if (authorizer === AuthorizerType.LOCAL) {
     return localAuth.signin(email, token, identifier, persist);
   }

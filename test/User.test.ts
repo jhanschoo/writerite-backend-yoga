@@ -1,5 +1,8 @@
+import { GraphQLResolveInfo } from 'graphql';
+import { MergeInfo } from 'graphql-tools';
+
 import { userQuery } from '../src/resolver/User';
-import { prisma, UserNode } from '../src/generated/prisma-client';
+import { prisma, User } from '../src/generated/prisma-client';
 
 import { ICurrentUser, Roles, IWrContext } from '../src/types';
 
@@ -8,10 +11,11 @@ const { user, users } = userQuery;
 const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
 const NEW_EMAIL = 'ghi@xyz';
+const dummyInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 describe('User resolvers', async () => {
-  let USER: UserNode;
-  let OTHER_USER: UserNode;
+  let USER: User;
+  let OTHER_USER: User;
   const commonBeforeEach = async () => {
     await prisma.deleteManyUsers({});
     USER = await prisma.createUser({ email: EMAIL });
@@ -35,12 +39,12 @@ describe('User resolvers', async () => {
 
     test('it should return null on no user present', async () => {
       expect.assertions(1);
-      const userNode = await user(null, { id: '1234567' });
+      const userNode = await user(null, { id: '1234567' }, null, dummyInfo);
       expect(userNode).toBeNull();
     });
     test('it should return user if it exists', async () => {
       expect.assertions(1);
-      const retrievedUser = await user(null, { id: USER.id });
+      const retrievedUser = await user(null, { id: USER.id }, null, dummyInfo);
       if (retrievedUser) {
         expect(retrievedUser.id).toBe(USER.id);
       }
@@ -53,7 +57,7 @@ describe('User resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const userObj1 = await users(null, null, {} as IWrContext);
+      const userObj1 = await users(null, null, {} as IWrContext, dummyInfo);
       expect(userObj1).toBeNull();
     });
     test('it should return null if not authorized as admin', async () => {
@@ -62,7 +66,7 @@ describe('User resolvers', async () => {
         sub: {
           roles: [Roles.user],
         },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(userObj).toBeNull();
     });
 
@@ -73,7 +77,7 @@ describe('User resolvers', async () => {
           id: USER.id,
           roles: [Roles.user, Roles.admin],
         },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(userObjs).toContainEqual(expect.objectContaining({
         id: USER.id,
       }));

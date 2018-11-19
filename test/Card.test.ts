@@ -1,5 +1,8 @@
+import { GraphQLResolveInfo } from 'graphql';
+import { MergeInfo } from 'graphql-tools';
+
 import { cardQuery, cardMutation } from '../src/resolver/Card';
-import { prisma, DeckNode, UserNode, SimpleCardNode } from '../src/generated/prisma-client';
+import { prisma, Deck, User, SimpleCard } from '../src/generated/prisma-client';
 import { IWrContext } from '../src/types';
 import { resolveField } from '../src/util';
 
@@ -21,16 +24,17 @@ const OTHER_FRONT = 'otherFront';
 const OTHER_BACK = 'otherBack';
 const NEW_FRONT = 'newFront';
 const NEW_BACK = 'newBack';
+const dummyInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 describe('Card resolvers', async () => {
-  let USER: UserNode;
-  let OTHER_USER: UserNode;
-  let DECK: DeckNode;
-  let NEXT_DECK: DeckNode;
-  let OTHER_DECK: DeckNode;
-  let CARD: SimpleCardNode;
-  let NEXT_CARD: SimpleCardNode;
-  let OTHER_CARD: SimpleCardNode;
+  let USER: User;
+  let OTHER_USER: User;
+  let DECK: Deck;
+  let NEXT_DECK: Deck;
+  let OTHER_DECK: Deck;
+  let CARD: SimpleCard;
+  let NEXT_CARD: SimpleCard;
+  let OTHER_CARD: SimpleCard;
   const commonBeforeEach = async () => {
     await prisma.deleteManySimpleCards({});
     await prisma.deleteManyDecks({});
@@ -68,13 +72,13 @@ describe('Card resolvers', async () => {
 
     test('it should return cards having specified id if deck exists', async () => {
       expect.assertions(2);
-      const cardObj = await card(null, { id: CARD.id });
+      const cardObj = await card(null, { id: CARD.id }, null, dummyInfo);
       expect(cardObj).toHaveProperty('front', FRONT);
       expect(cardObj).toHaveProperty('back', BACK);
     });
     test('it should return null if no card with said id exists', async () => {
       expect.assertions(1);
-      const cardObjs = await card(null, { id: '1234567' });
+      const cardObjs = await card(null, { id: '1234567' }, null, dummyInfo);
       expect(cardObjs).toBeNull();
     });
   });
@@ -85,14 +89,14 @@ describe('Card resolvers', async () => {
 
     test('it should return cards from deck containing specified id if deck exists', async () => {
       expect.assertions(1);
-      const cardObjs = await cardsFromDeck(null, { id: DECK.id });
+      const cardObjs = await cardsFromDeck(null, { id: DECK.id }, null, dummyInfo);
       expect(cardObjs).toContainEqual(
         expect.objectContaining({ front: FRONT, back: BACK }),
       );
     });
     test('it should return null if no deck with said id exists', async () => {
       expect.assertions(1);
-      const cardNodes = await cardsFromDeck(null, { id: '1234567' });
+      const cardNodes = await cardsFromDeck(null, { id: '1234567' }, null, dummyInfo);
       expect(cardNodes).toBeNull();
     });
   });
@@ -104,7 +108,7 @@ describe('Card resolvers', async () => {
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
       expect(cardSave(null, { front: NEW_FRONT, back: NEW_BACK, deckId: DECK.id }, {
-      } as IWrContext)).resolves.toBeNull();
+      } as IWrContext, dummyInfo)).resolves.toBeNull();
     });
     test('it should save card if id not supplied and deck\'s owner is sub.id', async () => {
       expect.assertions(7);
@@ -112,7 +116,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(cardObj).toBeTruthy();
       if (cardObj) {
         expect(cardObj).toHaveProperty('id');
@@ -130,7 +134,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext)).resolves.toBeNull();
+      } as IWrContext, dummyInfo)).resolves.toBeNull();
       const otherCards = await prisma.simpleCards({
         where: {
           deck: { id: OTHER_DECK.id },
@@ -145,7 +149,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(cardObj).toHaveProperty('id', CARD.id);
       expect(cardObj).toHaveProperty('front', NEW_FRONT);
       expect(cardObj).toHaveProperty('back', NEW_BACK);
@@ -160,7 +164,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext)).resolves.toBeNull();
+      } as IWrContext, dummyInfo)).resolves.toBeNull();
       const cardObj = await prisma.simpleCard({ id: CARD.id });
       expect(cardObj).toHaveProperty('id', CARD.id);
       expect(cardObj).toHaveProperty('front', FRONT);
@@ -172,7 +176,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext)).resolves.toBeNull();
+      } as IWrContext, dummyInfo)).resolves.toBeNull();
       const cardObj = await prisma.simpleCard({ id: OTHER_CARD.id });
       expect(cardObj).toHaveProperty('id', OTHER_CARD.id);
       expect(cardObj).toHaveProperty('front', OTHER_FRONT);
@@ -186,7 +190,7 @@ describe('Card resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(cardDelete(null, { id: CARD.id }, {} as IWrContext)).resolves.toBeNull();
+      expect(cardDelete(null, { id: CARD.id }, {} as IWrContext, dummyInfo)).resolves.toBeNull();
     });
     test('it should delete if deck\'s owner is sub.id', async () => {
       expect.assertions(5);
@@ -194,7 +198,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext);
+      } as IWrContext, dummyInfo);
       expect(cardObj).toBeTruthy();
       if (cardObj) {
         expect(cardObj).toHaveProperty('id', CARD.id);
@@ -209,7 +213,7 @@ describe('Card resolvers', async () => {
         sub: {
           id: USER.id,
         },
-      } as IWrContext)).resolves.toBeNull();
+      } as IWrContext, dummyInfo)).resolves.toBeNull();
     });
   });
 });

@@ -1,5 +1,6 @@
-import { prisma, UserNode } from '../generated/prisma-client';
+import { IFieldResolver } from 'graphql-tools';
 
+import { prisma, User as prismaUser } from '../generated/prisma-client';
 import { ICurrentUser, Roles, ResolvesTo, IWrContext } from '../types';
 import { IDeck, IBakedDeck, deckNodeToIDeck } from './Deck';
 import { fieldGetter } from '../util';
@@ -25,7 +26,7 @@ export const User: ResolvesTo<IUser> = {
   decks: fieldGetter('decks'),
 };
 
-export function userNodeToIUser(userNode: UserNode): IBakedUser {
+export function userNodeToIUser(userNode: prismaUser): IBakedUser {
   return {
     id: userNode.id,
     email: userNode.email,
@@ -36,8 +37,9 @@ export function userNodeToIUser(userNode: UserNode): IBakedUser {
   };
 }
 
-async function users(parent: any, args: any, { sub }: IWrContext):
-  Promise<IUser[] | null> {
+const users: IFieldResolver<any, IWrContext, any> = async (
+  parent: any, args: any, { sub }: IWrContext
+): Promise<IUser[] | null> => {
   if (!sub) {
     return null;
   }
@@ -50,7 +52,9 @@ async function users(parent: any, args: any, { sub }: IWrContext):
   return null;
 }
 
-async function user(parent: any, { id }: { id: string }): Promise<IUser | null> {
+const user: IFieldResolver<any, any, { id: string }> = async (
+  parent, { id }
+): Promise<IUser | null> => {
   const userNode = await prisma.user({ id });
   if (userNode) {
     return userNodeToIUser(userNode);

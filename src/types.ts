@@ -2,7 +2,10 @@ import { ContextParameters } from 'graphql-yoga/dist/types';
 import { Prisma } from './generated/prisma-client';
 import { PubSub } from 'graphql-yoga';
 
-export type ResolvesTo<T> = ((parent: any) => Promise<T>) | ((parent: any) => T) | T;
+export type ResolvesTo<T> =
+  | ((parent: any) => Promise<T>)
+  | ((parent: any) => T)
+  | T;
 
 export interface IWrContext {
   req: ContextParameters;
