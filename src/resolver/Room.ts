@@ -1,3 +1,8 @@
+import { PubSub } from 'graphql-yoga';
+import { IFieldResolver } from 'graphql-tools';
+import { printIntrospectionSchema } from 'graphql';
+import randomWords from 'random-words';
+
 import { prisma, Room as prismaRoom } from '../generated/prisma-client';
 import { ICurrentUser, ResolvesTo, IUpdate, IWrContext } from '../types';
 import { IUser, IBakedUser, userNodeToIUser } from './User';
@@ -7,8 +12,6 @@ import {
   simpleUserRoomMessageNodeToIRoomMessage,
 } from './RoomMessage';
 import { fieldGetter } from '../util';
-import { PubSub } from 'graphql-yoga';
-import { IFieldResolver } from 'graphql-tools';
 
 export interface IRoom {
   id: ResolvesTo<string>;
@@ -26,6 +29,8 @@ export const Room = {
 
 export interface IBakedRoom extends IRoom {
   id: string;
+  name: string;
+  active: boolean;
   owner: ResolvesTo<IBakedUser>;
   occupants: ResolvesTo<IBakedUser[]>;
   messages: ResolvesTo<IBakedRoomMessage[]>;
@@ -35,16 +40,18 @@ interface IRoomPayload {
   [field: string]: IUpdate<IRoom>;
 }
 
-export function roomNodeToIRoom(roomNode: prismaRoom): IBakedRoom {
+export function pRoomToIRoom(pRoom: prismaRoom): IBakedRoom {
   return {
-    id: roomNode.id,
+    id: pRoom.id,
+    name: pRoom.name,
+    active: pRoom.active,
     owner: async () => userNodeToIUser(
-      await prisma.room({ id: roomNode.id }).owner()),
+      await prisma.room({ id: pRoom.id }).owner()),
     occupants: async () => (
-      await prisma.room({ id: roomNode.id }).occupants()
+      await prisma.room({ id: pRoom.id }).occupants()
     ).map(userNodeToIUser),
     messages: async () => (
-      await prisma.room({ id: roomNode.id }).messages()
+      await prisma.room({ id: pRoom.id }).messages()
     ).map(simpleUserRoomMessageNodeToIRoomMessage),
   };
 }
@@ -56,9 +63,9 @@ function activeRoomTopic() {
 const room: IFieldResolver<any, any, { id: string }> = async (
   parent, { id },
 ): Promise<IBakedRoom | null> => {
-  const roomNode = await prisma.room({ id });
-  if (roomNode) {
-    return roomNodeToIRoom(roomNode);
+  const pRoom = await prisma.room({ id });
+  if (pRoom) {
+    return pRoomToIRoom(pRoom);
   }
   return null;
 };
@@ -69,24 +76,42 @@ const activeRooms: IFieldResolver<any, IWrContext, any> = async (
   if (!sub) {
     return null;
   }
-  const roomNodes = await prisma.rooms({ where: { active: true } });
-  if (roomNodes) {
-    return roomNodes.map(roomNodeToIRoom);
+  const pRooms = await prisma.rooms({ where: { active: true } });
+  if (pRooms) {
+    return pRooms.map(pRoomToIRoom);
   }
   return null;
 };
 
-const roomCreate: IFieldResolver<any, IWrContext, any> = async (
-  parent, args, { sub },
-): Promise<IBakedRoom | null> => {
+const roomsWithCurrentUser: IFieldResolver<any, IWrContext, any> =  async (
+  parent, args, { sub }
+): Promise<IRoom[] | null> => {
   if (!sub) {
     return null;
   }
-  const roomNode = await prisma.createRoom({
-    active: true, owner: { connect: { id: sub.id } }
+  const pRooms = await prisma.rooms({ where: { occupants_some: { id: sub.id } } });
+  if (pRooms) {
+    return pRooms.map(pRoomToIRoom);
+  }
+  return null;
+}
+
+const roomCreate: IFieldResolver<any, IWrContext, {
+  name?: string,
+}> = async (parent, { name }, { sub }): Promise<IBakedRoom | null> => {
+  if (!sub) {
+    return null;
+  }
+  const pRoom = await prisma.createRoom({
+    active: true,
+    name: (name && name.trim()) || (randomWords({
+      exactly: 1, wordsPerString: 3, separator: '-',
+    })[0] as string),
+    owner: { connect: { id: sub.id } },
+    occupants: { connect: { id: sub.id } },
   });
-  if (roomNode) {
-    return roomNodeToIRoom(roomNode);
+  if (pRoom) {
+    return pRoomToIRoom(pRoom);
   }
   return null;
 };
@@ -102,20 +127,20 @@ const roomAddOccupant: IFieldResolver<any, any, {
   } else if (!await prisma.$exists.user({ id: occupantId })) {
     return null;
   } else {
-    const occupantNodes = await prisma.room({ id }).occupants();
-    if (!occupantNodes.map((user) => user.id).includes(occupantId)) {
-      const roomNode = await prisma.updateRoom({
+    const pOccupants = await prisma.room({ id }).occupants();
+    if (!pOccupants.map((user) => user.id).includes(occupantId)) {
+      const pRoom = await prisma.updateRoom({
         data: {
           occupants: { connect: { id: occupantId } },
         },
         where: { id },
       });
-      if (roomNode) {
-        return roomNodeToIRoom(roomNode);
+      if (pRoom) {
+        return pRoomToIRoom(pRoom);
       }
     } else {
-      const roomNode = await prisma.room({ id });
-      return roomNodeToIRoom(roomNode);
+      const pRoom = await prisma.room({ id });
+      return pRoomToIRoom(pRoom);
     }
   }
   return null;
@@ -128,7 +153,7 @@ const activeRoomUpdates: IFieldResolver<any, IWrContext, any> = async (
 };
 
 export const roomQuery = {
-  room, activeRooms,
+  room, activeRooms, roomsWithCurrentUser
 };
 
 export const roomMutation = {

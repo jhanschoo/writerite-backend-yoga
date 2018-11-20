@@ -39,6 +39,7 @@ type Deck {
 
 type Room {
   id: ID! @unique
+  name: String!
   owner: User! @relation(name: "UserOwningRooms")
   occupants: [User!]! @relation(name: "UsersOccupyingRooms")
   # messages: [RoomMessage!]!

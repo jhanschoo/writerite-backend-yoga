@@ -18,6 +18,7 @@ const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
 const NEW_EMAIL = 'ghi@xyz';
 const NEW_CONTENT = 'baz';
+const ROOM_NAME = 'r1';
 const dummyInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 describe('Room resolvers', async () => {
@@ -33,12 +34,13 @@ describe('Room resolvers', async () => {
     OTHER_USER = await prisma.createUser({ email: OTHER_EMAIL });
     ROOM = await prisma.createRoom({
       active: true,
+      name: ROOM_NAME,
       owner: { connect: { id: USER.id } },
       occupants: {
         connect: { id: USER.id },
       },
     });
-    OTHER_ROOM = await prisma.createRoom({ active: true, owner: { connect: { id: OTHER_USER.id } } });
+    OTHER_ROOM = await prisma.createRoom({ active: true, name: ROOM_NAME, owner: { connect: { id: OTHER_USER.id } } });
   };
   const commonAfterEach = async () => {
     await prisma.deleteManySimpleUserRoomMessages({});
@@ -78,13 +80,24 @@ describe('Room resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const roomObj = await roomCreate(null, null, {} as IWrContext, dummyInfo);
+      const roomObj = await roomCreate(null, {}, {} as IWrContext, dummyInfo);
       expect(roomObj).toBeNull();
     });
     test('it creates a room once sub.id is present', async () => {
-      expect.assertions(2);
-      const roomObj = await roomCreate(null, null, { sub: { id: USER.id } } as IWrContext, dummyInfo);
+      expect.assertions(3);
+      const roomObj = await roomCreate(null, {}, { sub: { id: USER.id } } as IWrContext, dummyInfo);
       expect(roomObj).toHaveProperty('id');
+      expect(roomObj).toHaveProperty('name');
+      if (roomObj) {
+        const ownerId = await prisma.room({ id: roomObj.id }).owner().id();
+        expect(ownerId).toBe(USER.id);
+      }
+    });
+    test('it creates a room with given name', async () => {
+      expect.assertions(3);
+      const roomObj = await roomCreate(null, { name: ROOM_NAME }, { sub: { id: USER.id } } as IWrContext, dummyInfo);
+      expect(roomObj).toHaveProperty('id');
+      expect(roomObj).toHaveProperty('name', ROOM_NAME);
       if (roomObj) {
         const ownerId = await prisma.room({ id: roomObj.id }).owner().id();
         expect(ownerId).toBe(USER.id);

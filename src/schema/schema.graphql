@@ -13,6 +13,7 @@ type Query {
   # Room
   room(id: ID!): Room
   activeRooms: [Room!]
+  roomsWithCurrentUser: [Room!]
 }
 
 type Mutation {
@@ -32,7 +33,7 @@ type Mutation {
   cardSave(id: ID, front: String!, back: String!, deckId: ID!): Card
   cardDelete(id: ID!): Card
   # Room
-  roomCreate: Room
+  roomCreate(name: String): Room
   roomAddOccupant(id: ID! occupantId: ID!): Room
   roomMessageCreate(roomId: ID! messageContent: String!): RoomMessage
 }
@@ -93,6 +94,7 @@ type Card {
 
 type Room {
   id: ID!
+  name: String
   owner: User!
   occupants: [User!]!
   messages: [RoomMessage!]!
