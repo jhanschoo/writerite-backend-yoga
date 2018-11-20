@@ -20,7 +20,8 @@
     "node-fetch": "^2.2.0",
     "prisma": "^1.17.1",
     "prisma-binding": "^2.1.5",
-    "prisma-client-lib": "^1.17.1"
+    "prisma-client-lib": "^1.17.1",
+    "random-words": "^1.1.0"
   },
   "devDependencies": {
     "@types/bcrypt": "^3.0.0",
