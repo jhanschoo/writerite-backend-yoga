@@ -57,19 +57,19 @@ enum MutationType {
 type DeckUpdate {
   mutation: MutationType!
   new: Deck
-  oldId: string
+  oldId: String
 }
 
 type RoomMessageUpdate {
   mutation: MutationType!
   new: RoomMessage
-  oldId: string
+  oldId: String
 }
 
 type RoomUpdate {
   mutation: MutationType!
   new: Room
-  oldId: string
+  oldId: String
 }
 
 # Deck
