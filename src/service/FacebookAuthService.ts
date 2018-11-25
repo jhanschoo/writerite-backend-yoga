@@ -1,8 +1,7 @@
 import config from 'config';
 import fetch from 'node-fetch';
 
-import { prisma } from '../generated/prisma-client';
-import { AbstractAuthService } from './AbstractAuthService';
+import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 
 const AUTH: any = config.get('auth');
 let FB_ACCESS_TOKEN = 'FB_ACCESS_TOKEN not set!';
@@ -21,14 +20,16 @@ fetch(FB_ACCESS_TOKEN_QUERY).then((response) => {
 
 export class FacebookAuthService extends AbstractAuthService {
 
-  public async signin(email: string, token: string, identifier: string, persist?: boolean) {
+  public async signin({ prisma, email, token, identifier, persist }: ISigninOptions) {
     const facebookId = await this.verify(token);
     if (!facebookId || facebookId !== identifier) {
       return null;
     }
     if (await prisma.$exists.user({ email })) {
       if (await prisma.$exists.user({ email, facebookId })) {
-        return FacebookAuthService.authResponseFromUser(await prisma.user({ email }), persist);
+        return FacebookAuthService.authResponseFromUser(
+          await prisma.user({ email }), { persist, prisma },
+        );
       } else {
         return null;
       }
@@ -36,11 +37,12 @@ export class FacebookAuthService extends AbstractAuthService {
     const user = await prisma.createUser(
       { email, facebookId, defaultRoles: { set: ['user'] } },
     );
-    return FacebookAuthService.authResponseFromUser(user, persist);
+    return FacebookAuthService.authResponseFromUser(user, { persist, prisma });
   }
 
   protected async verify(token: string) {
-    const VERIFY_URL = `https://graph.facebook.com/debug_token?input_token=${token
+    const VERIFY_URL = `https://graph.facebook.com/debug_token?input_token=${
+      token
       }&access_token=${FB_ACCESS_TOKEN}`;
 
     return new Promise<string | undefined>((res, rej) => {

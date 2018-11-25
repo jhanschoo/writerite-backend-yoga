@@ -4,6 +4,7 @@ import { deckMutation } from './Deck';
 import { roomMutation } from './Room';
 import { roomMessageMutation } from './RoomMessage';
 
+// tslint:disable-next-line: variable-name
 const Mutation = {
   ...authorizationMutation,
   ...cardMutation,

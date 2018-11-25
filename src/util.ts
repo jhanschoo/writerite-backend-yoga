@@ -1,18 +1,19 @@
 import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
-import { ResolvesTo, ICurrentUser, Roles } from './types';
+
+import { ResTo, ICurrentUser, Roles } from './types';
 
 const SALT_ROUNDS = 10;
 
-export function fieldGetter<T>(field: string): ResolvesTo<T> {
+export function fieldGetter<T>(field: string): ResTo<T> {
   return (parent: any) => {
     return parent[field] instanceof Function ? parent[field]() : parent[field];
   };
 }
 
 export async function resolveField<T>(
-  f: ResolvesTo<T>, parent = null
+  f: ResTo<T>, parent = null,
 ): Promise<T> {
   return new Promise<T>((res, rej) => {
     if (f instanceof Function) {

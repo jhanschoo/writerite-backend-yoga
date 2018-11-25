@@ -27,11 +27,11 @@ type Mutation {
     persist: Boolean
   ): AuthResponse
   # Deck
-  deckSave(id: ID, name: String!): Deck
-  deckDelete(id: ID!): Deck
+  deckSave(id: ID, name: String): Deck
+  deckDelete(id: ID!): ID
   # Card
   cardSave(id: ID, front: String!, back: String!, deckId: ID!): Card
-  cardDelete(id: ID!): Card
+  cardDelete(id: ID!): ID
   # Room
   roomCreate(name: String): Room
   roomAddOccupant(id: ID! occupantId: ID!): Room
@@ -57,19 +57,19 @@ enum MutationType {
 type DeckUpdate {
   mutation: MutationType!
   new: Deck
-  old: Deck
+  oldId: string
 }
 
 type RoomMessageUpdate {
   mutation: MutationType!
   new: RoomMessage
-  old: RoomMessage
+  oldId: string
 }
 
 type RoomUpdate {
   mutation: MutationType!
   new: Room
-  old: Room
+  oldId: string
 }
 
 # Deck

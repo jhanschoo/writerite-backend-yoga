@@ -1,8 +1,7 @@
 import config from 'config';
 import { OAuth2Client } from 'google-auth-library';
 
-import { prisma } from '../generated/prisma-client';
-import { AbstractAuthService } from './AbstractAuthService';
+import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 
 const AUTH: any = config.get('auth');
 
@@ -10,22 +9,23 @@ const googleClient = new OAuth2Client(AUTH.google_client_id);
 
 export class GoogleAuthService extends AbstractAuthService {
 
-  public async signin(email: string, token: string, identifier: string, persist?: boolean) {
+  public async signin({ prisma, email, token, identifier, persist }: ISigninOptions) {
     const googleId = await this.verify(token);
     if (!googleId || googleId !== identifier) {
       return null;
     }
     if (await prisma.$exists.user({ email })) {
-      if (await prisma.$exists.user({ email, googleId })) {
-        return GoogleAuthService.authResponseFromUser(await prisma.user({ email }), persist);
-      } else {
+      if (!await prisma.$exists.user({ email, googleId })) {
         return null;
       }
+      return GoogleAuthService.authResponseFromUser(
+        await prisma.user({ email }), { persist, prisma },
+      );
     }
-    const user = prisma.createUser(
+    const pUser = await prisma.createUser(
       { email, googleId, defaultRoles: { set: ['user'] } },
     );
-    return GoogleAuthService.authResponseFromUser(await user, persist);
+    return GoogleAuthService.authResponseFromUser(pUser, { persist, prisma });
   }
 
   protected async verify(idToken: string) {

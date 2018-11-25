@@ -1,17 +1,21 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
+import { PubSub } from 'graphql-yoga';
 
-import { userQuery } from '../src/resolver/User';
 import { prisma, User } from '../src/generated/prisma-client';
+import { Roles, IWrContext } from '../src/types';
 
-import { ICurrentUser, Roles, IWrContext } from '../src/types';
+import { userQuery } from '../src/resolver/Query/User';
 
 const { user, users } = userQuery;
+
+const pubsub = new PubSub();
+const baseCtx = { prisma, pubsub } as IWrContext;
+const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
 const NEW_EMAIL = 'ghi@xyz';
-const dummyInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 describe('User resolvers', async () => {
   let USER: User;
@@ -39,15 +43,16 @@ describe('User resolvers', async () => {
 
     test('it should return null on no user present', async () => {
       expect.assertions(1);
-      const userNode = await user(null, { id: '1234567' }, null, dummyInfo);
-      expect(userNode).toBeNull();
+      const userObj = await user(null, { id: '1234567' }, baseCtx, baseInfo);
+      expect(userObj).toBeNull();
     });
     test('it should return user if it exists', async () => {
       expect.assertions(1);
-      const retrievedUser = await user(null, { id: USER.id }, null, dummyInfo);
-      if (retrievedUser) {
-        expect(retrievedUser.id).toBe(USER.id);
+      const userObj = await user(null, { id: USER.id }, baseCtx, baseInfo);
+      if (!userObj) {
+        throw new Error('`user` could not be retrieved');
       }
+      expect(userObj.id).toBe(USER.id);
     });
   });
 
@@ -57,27 +62,29 @@ describe('User resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const userObj1 = await users(null, null, {} as IWrContext, dummyInfo);
+      const userObj1 = await users(null, null, baseCtx, baseInfo);
       expect(userObj1).toBeNull();
     });
     test('it should return null if not authorized as admin', async () => {
       expect.assertions(1);
       const userObj = await users(null, null, {
+        ...baseCtx,
         sub: {
           roles: [Roles.user],
         },
-      } as IWrContext, dummyInfo);
+      } as IWrContext, baseInfo);
       expect(userObj).toBeNull();
     });
 
     test('it should return users if they exist', async () => {
       expect.assertions(1);
       const userObjs = await users(null, null, {
+        ...baseCtx,
         sub: {
           id: USER.id,
           roles: [Roles.user, Roles.admin],
         },
-      } as IWrContext, dummyInfo);
+      } as IWrContext, baseInfo);
       expect(userObjs).toContainEqual(expect.objectContaining({
         id: USER.id,
       }));

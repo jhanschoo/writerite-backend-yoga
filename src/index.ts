@@ -1,7 +1,7 @@
 import { GraphQLServer, PubSub } from 'graphql-yoga';
-import { prisma } from './generated/prisma-client';
 import helmet from 'helmet';
 
+import { prisma } from '../generated/prisma-client';
 import resolvers from './resolver';
 import { getClaims } from './util';
 

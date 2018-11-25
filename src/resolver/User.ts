@@ -1,67 +1,38 @@
-import { IFieldResolver } from 'graphql-tools';
-
-import { prisma, User as prismaUser } from '../generated/prisma-client';
-import { ICurrentUser, Roles, ResolvesTo, IWrContext } from '../types';
-import { IDeck, IBakedDeck, deckNodeToIDeck } from './Deck';
+import { Prisma, User as PUser } from '../../generated/prisma-client';
+import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
+import { IDeck, IBakedDeck, pDeckToIDeck } from './Deck';
+
 export interface IUser {
-  id: ResolvesTo<string>;
-  email: ResolvesTo<string>;
-  roles: ResolvesTo<string[]>;
-  decks: ResolvesTo<IDeck[]>;
+  id: ResTo<string>;
+  email: ResTo<string>;
+  roles: ResTo<string[]>;
+  decks: ResTo<IDeck[]>;
 }
 
 export interface IBakedUser extends IUser {
   id: string;
   email: string;
   roles: string[];
-  decks: ResolvesTo<IBakedDeck[]>;
+  decks: AFunResTo<IBakedDeck[]>;
 }
 
-export const User: ResolvesTo<IUser> = {
+// tslint:disable-next-line: variable-name
+export const User: ResTo<IUser> = {
   id: fieldGetter('id'),
   email: fieldGetter('email'),
   roles: fieldGetter('roles'),
   decks: fieldGetter('decks'),
 };
 
-export function userNodeToIUser(userNode: prismaUser): IBakedUser {
+export function pUserToIUser(pUser: PUser, prisma: Prisma): IBakedUser {
   return {
-    id: userNode.id,
-    email: userNode.email,
-    roles: userNode.defaultRoles,
+    id: pUser.id,
+    email: pUser.email,
+    roles: pUser.defaultRoles,
     decks: async () => (
-      await prisma.user({ id: userNode.id }).decks()
-    ).map(deckNodeToIDeck),
+      await prisma.user({ id: pUser.id }).decks()
+    ).map((pDeck) => pDeckToIDeck(pDeck, prisma)),
   };
 }
-
-const users: IFieldResolver<any, IWrContext, any> = async (
-  parent: any, args: any, { sub }: IWrContext
-): Promise<IUser[] | null> => {
-  if (!sub) {
-    return null;
-  }
-  if (sub.roles.includes(Roles.admin)) {
-    const userNodes = await prisma.users();
-    if (userNodes) {
-      return userNodes.map(userNodeToIUser);
-    }
-  }
-  return null;
-}
-
-const user: IFieldResolver<any, any, { id: string }> = async (
-  parent, { id }
-): Promise<IUser | null> => {
-  const userNode = await prisma.user({ id });
-  if (userNode) {
-    return userNodeToIUser(userNode);
-  }
-  return null;
-}
-
-export const userQuery = {
-  user, users,
-};

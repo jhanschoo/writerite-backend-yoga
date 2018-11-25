@@ -1,10 +1,13 @@
 import { ContextParameters } from 'graphql-yoga/dist/types';
-import { Prisma } from './generated/prisma-client';
+import { Prisma } from '../generated/prisma-client';
 import { PubSub } from 'graphql-yoga';
 
-export type ResolvesTo<T> =
-  | ((parent: any) => Promise<T>)
-  | ((parent: any) => T)
+export type AFunResTo<T> = ((parent: any) => Promise<T>);
+export type FunResTo<T> = ((parent: any) => T);
+
+export type ResTo<T> =
+  | AFunResTo<T>
+  | FunResTo<T>
   | T;
 
 export interface IWrContext {
@@ -38,8 +41,8 @@ export interface ICurrentUser {
   roles: Roles[];
 }
 
-export interface IUpdate<T> {
-  mutation: MutationType;
+export interface IUpdate<T, M = MutationType> {
+  mutation: M;
   new: T | null;
-  old: T | null;
+  oldId: string | null;
 }

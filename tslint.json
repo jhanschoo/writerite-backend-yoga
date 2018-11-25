@@ -6,14 +6,15 @@
     "jsRules": {},
     "linterOptions": {
         "exclude": [
-            "src/generated/**/*.ts"
+            "generated/**/*.ts"
         ]
     },
     "rules": {
       "quotemark": [true, "single"],
       "indent": [true, "spaces", 2],
       "ordered-imports": false,
-      "object-literal-sort-keys": false
+      "object-literal-sort-keys": false,
+      "variable-name": [true, "ban-keywords", "check-format", "allow-leading-underscore"]
     },
     "rulesDirectory": []
 }

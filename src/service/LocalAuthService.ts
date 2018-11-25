@@ -2,33 +2,31 @@ import config from 'config';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 
-import { prisma } from '../generated/prisma-client';
-import { AbstractAuthService } from './AbstractAuthService';
 import { comparePassword, hashPassword } from '../util';
+import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 
 const AUTH: any = config.get('auth');
 
 export class LocalAuthService extends AbstractAuthService {
 
-  public async signin(email: string, token: string, password: string, persist?: boolean) {
+  public async signin({ prisma, email, token, identifier: password, persist }: ISigninOptions) {
     if (await prisma.$exists.user({ email })) {
       const knownUser = await prisma.user({ email });
-      if (knownUser && knownUser.passwordHash && await comparePassword(password, knownUser.passwordHash)) {
-        return LocalAuthService.authResponseFromUser(knownUser, persist);
-      }
-      return null;
-    } else {
-      const verified = await this.verify(token);
-      if (!verified) {
+      if (!knownUser || !knownUser.passwordHash || !await comparePassword(password, knownUser.passwordHash)) {
         return null;
       }
-      // create
-      const passwordHash = await hashPassword(password);
-      const user = prisma.createUser(
-        { email, passwordHash, defaultRoles: { set: ['user'] } },
-      );
-      return LocalAuthService.authResponseFromUser(await user, persist);
+      return LocalAuthService.authResponseFromUser(knownUser, { persist, prisma });
     }
+    const verified = await this.verify(token);
+    if (!verified) {
+      return null;
+    }
+    // create
+    const passwordHash = await hashPassword(password);
+    const user = prisma.createUser(
+      { email, passwordHash, defaultRoles: { set: ['user'] } },
+    );
+    return LocalAuthService.authResponseFromUser(await user, { persist, prisma });
   }
 
   protected async verify(token: string) {
