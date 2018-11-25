@@ -2,13 +2,13 @@ import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
-import { prisma, Deck, User } from '../src/generated/prisma-client';
+import { prisma, Deck, User } from '../generated/prisma-client';
 import { IWrContext } from '../src/types';
 
 import { deckQuery } from '../src/resolver/Query/Deck';
 import { deckMutation } from '../src/resolver/Mutation/Deck';
 
-const { deck, userDecks } = deckQuery;
+const { deck, decks } = deckQuery;
 const { deckSave, deckDelete } = deckMutation;
 
 const pubsub = new PubSub();
@@ -48,18 +48,18 @@ describe('Deck resolvers', async () => {
     await prisma.deleteManyUsers({});
   });
 
-  describe('userDecks', async () => {
+  describe('decks', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(userDecks(null, null, baseCtx, baseInfo))
+      expect(decks(null, null, baseCtx, baseInfo))
         .resolves.toBeNull();
     });
     test('it should return user\'s decks if they exist', async () => {
       expect.assertions(1);
-      const retrievedDecks = await userDecks(null, null, {
+      const retrievedDecks = await decks(null, null, {
         ...baseCtx, sub: { id: USER.id },
       } as IWrContext, baseInfo);
       expect(retrievedDecks).toContainEqual(expect.objectContaining({
@@ -68,7 +68,7 @@ describe('Deck resolvers', async () => {
     });
     test('it should not return other users\' decks if they exist', async () => {
       expect.assertions(1);
-      const retrievedDecks = await userDecks(null, null, {
+      const retrievedDecks = await decks(null, null, {
         ...baseCtx, sub: { id: USER.id },
       } as IWrContext, baseInfo);
       expect(retrievedDecks).not.toContainEqual(expect.objectContaining({

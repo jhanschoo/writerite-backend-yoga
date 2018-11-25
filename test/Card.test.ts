@@ -4,7 +4,7 @@ import { PubSub } from 'graphql-yoga';
 
 import { cardQuery } from '../src/resolver/Query/Card';
 import { cardMutation } from '../src/resolver/Mutation/Card';
-import { prisma, Deck, User, SimpleCard } from '../src/generated/prisma-client';
+import { prisma, Deck, User, SimpleCard } from '../generated/prisma-client';
 import { IWrContext } from '../src/types';
 import { resolveField } from '../src/util';
 

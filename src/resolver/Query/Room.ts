@@ -27,7 +27,7 @@ const activeRooms: IFieldResolver<any, IWrContext, any> = async (
   return pRooms.map((pRoom) => pRoomToIRoom(pRoom, prisma));
 };
 
-const roomsWithCurrentUser: IFieldResolver<any, IWrContext, any> = async (
+const rooms: IFieldResolver<any, IWrContext, any> = async (
   _parent, _args, { prisma, sub },
 ): Promise<IRoom[] | null> => {
   if (!sub) {
@@ -35,10 +35,10 @@ const roomsWithCurrentUser: IFieldResolver<any, IWrContext, any> = async (
   }
   const pRooms = await prisma.rooms({
     where: {
-      OR: {
-        owner: { id: sub.id },
-        occupants_some: { id: sub.id },
-      },
+      OR: [
+        { owner: { id: sub.id } },
+        { occupants_some: { id: sub.id } },
+      ],
     },
   });
   if (!pRooms) {
@@ -48,5 +48,5 @@ const roomsWithCurrentUser: IFieldResolver<any, IWrContext, any> = async (
 };
 
 export const roomQuery = {
-  room, activeRooms, roomsWithCurrentUser,
+  room, rooms, activeRooms,
 };

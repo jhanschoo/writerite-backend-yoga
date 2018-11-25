@@ -4,7 +4,7 @@ import { IWrContext } from '../../types';
 
 import { IDeck, IBakedDeck, pDeckToIDeck } from '../Deck';
 
-const userDecks: IFieldResolver<any, IWrContext, any> = async (
+const decks: IFieldResolver<any, IWrContext, any> = async (
   _parent: any,
   _args: any,
   { prisma, sub }: IWrContext,
@@ -34,5 +34,5 @@ const deck: IFieldResolver<any, IWrContext, { id: string }> = async (
 };
 
 export const deckQuery = {
-  deck, userDecks,
+  deck, decks,
 };

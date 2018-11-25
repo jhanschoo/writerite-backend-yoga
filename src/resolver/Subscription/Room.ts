@@ -4,33 +4,27 @@ import { IUpdate, IWrContext, MutationType } from '../../types';
 
 import { IRoom } from '../Room';
 
-export const enum RoomOccupantMutationType {
-  JOINED = 'JOINED',
-  LEFT = 'LEFT',
-}
-export type RoomMutationType = MutationType | RoomOccupantMutationType;
-
 interface IActiveRoomUpdatesPayload {
-  activeRoomUpdates: IUpdate<IRoom, RoomMutationType>;
+  activeRoomUpdates: IUpdate<IRoom, MutationType>;
 }
 
-interface IRoomOccupantUpdatesPayload {
-  roomOccupantUpdates: IUpdate<IRoom, RoomMutationType>;
+interface IRoomUpdatesPayload {
+  roomUpdates: IUpdate<IRoom, MutationType>;
 }
 
 export type IRoomPayload =
   | IActiveRoomUpdatesPayload
-  | IRoomOccupantUpdatesPayload;
+  | IRoomUpdatesPayload;
 
 export function activeRoomTopic() {
-  return 'active-room';
+  return 'room:active';
 }
 
 export function roomTopicFromUser(id: string) {
-  return `user-room:${id}`;
+  return `room:user:${id}`;
 }
 
-const roomOccupantUpdates: IFieldResolver<any, IWrContext, any> = async (
+const roomUpdates: IFieldResolver<any, IWrContext, any> = async (
   _parent, _args, { pubsub, sub },
 ): Promise<AsyncIterator<IRoomPayload> | null> => {
   if (!sub) {
@@ -49,7 +43,7 @@ export const roomSubscription = {
   activeRoomUpdates: {
     subscribe: activeRoomUpdates,
   },
-  roomOccupantUpdates: {
-    subscribe: roomOccupantUpdates,
+  roomUpdates: {
+    subscribe: roomUpdates,
   },
 };

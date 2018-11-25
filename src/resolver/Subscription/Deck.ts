@@ -4,27 +4,27 @@ import { IWrContext, IUpdate } from '../../types';
 
 import { IDeck } from '../Deck';
 
-export interface IDeckUserPayload {
-  deckUpdatesOfUser: IUpdate<IDeck>;
+export interface IDeckPayload {
+  deckUpdates: IUpdate<IDeck>;
 }
 
 export function deckTopicFromUser(id: string) {
-  return `user-deck:${id}`;
+  return `deck:owner:${id}`;
 }
 
-const deckUpdatesOfUser: IFieldResolver<any, IWrContext, any> = (
+const deckUpdates: IFieldResolver<any, IWrContext, any> = (
   _parent, _args, { sub, pubsub },
-): AsyncIterator<IDeckUserPayload> | null => {
+): AsyncIterator<IDeckPayload> | null => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IDeckUserPayload>(
+  return pubsub.asyncIterator<IDeckPayload>(
     deckTopicFromUser(sub.id),
   );
 };
 
 export const deckSubscription = {
-  deckUpdatesOfUser: {
-    subscribe: deckUpdatesOfUser,
+  deckUpdates: {
+    subscribe: deckUpdates,
   },
 };

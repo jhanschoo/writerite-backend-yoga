@@ -1,11 +1,11 @@
 
 projects:
   writerite-backend-yoga:
-    schemaPath: schema.graphql
+    schemaPath: src/schema/schema.graphql
     extensions:
       endpoints:
         dev: http://localhost:4000
   prisma:
-    schemaPath: src/generated/prisma.graphql
+    schemaPath: prisma.graphql
     extensions:
-      prisma: prisma/prisma.yml
+      prisma: prisma.yml

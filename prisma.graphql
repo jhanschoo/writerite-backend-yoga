@@ -1,0 +1,1727 @@
+# source: http://localhost:4466/writerite/dev
+# timestamp: Sun Nov 25 2018 22:17:37 GMT+0800 (Singapore Standard Time)
+
+type AggregateDeck {
+  count: Int!
+}
+
+type AggregateRoom {
+  count: Int!
+}
+
+type AggregateSimpleCard {
+  count: Int!
+}
+
+type AggregateSimpleUserRoomMessage {
+  count: Int!
+}
+
+type AggregateUser {
+  count: Int!
+}
+
+type BatchPayload {
+  """The number of nodes that have been affected by the Batch operation."""
+  count: Long!
+}
+
+type Deck implements Node {
+  id: ID!
+  name: String!
+  owner: User!
+  cards(where: SimpleCardWhereInput, orderBy: SimpleCardOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [SimpleCard!]
+  published: Boolean!
+}
+
+"""A connection to a list of items."""
+type DeckConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [DeckEdge]!
+  aggregate: AggregateDeck!
+}
+
+input DeckCreateInput {
+  name: String!
+  published: Boolean
+  owner: UserCreateOneWithoutDecksInput!
+  cards: SimpleCardCreateManyWithoutDeckInput
+}
+
+input DeckCreateManyWithoutOwnerInput {
+  create: [DeckCreateWithoutOwnerInput!]
+  connect: [DeckWhereUniqueInput!]
+}
+
+input DeckCreateOneWithoutCardsInput {
+  create: DeckCreateWithoutCardsInput
+  connect: DeckWhereUniqueInput
+}
+
+input DeckCreateWithoutCardsInput {
+  name: String!
+  published: Boolean
+  owner: UserCreateOneWithoutDecksInput!
+}
+
+input DeckCreateWithoutOwnerInput {
+  name: String!
+  published: Boolean
+  cards: SimpleCardCreateManyWithoutDeckInput
+}
+
+"""An edge in a connection."""
+type DeckEdge {
+  """The item at the end of the edge."""
+  node: Deck!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum DeckOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  published_ASC
+  published_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type DeckPreviousValues {
+  id: ID!
+  name: String!
+  published: Boolean!
+}
+
+type DeckSubscriptionPayload {
+  mutation: MutationType!
+  node: Deck
+  updatedFields: [String!]
+  previousValues: DeckPreviousValues
+}
+
+input DeckSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [DeckSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [DeckSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [DeckSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: DeckWhereInput
+}
+
+input DeckUpdateInput {
+  name: String
+  published: Boolean
+  owner: UserUpdateOneRequiredWithoutDecksInput
+  cards: SimpleCardUpdateManyWithoutDeckInput
+}
+
+input DeckUpdateManyMutationInput {
+  name: String
+  published: Boolean
+}
+
+input DeckUpdateManyWithoutOwnerInput {
+  create: [DeckCreateWithoutOwnerInput!]
+  connect: [DeckWhereUniqueInput!]
+  disconnect: [DeckWhereUniqueInput!]
+  delete: [DeckWhereUniqueInput!]
+  update: [DeckUpdateWithWhereUniqueWithoutOwnerInput!]
+  upsert: [DeckUpsertWithWhereUniqueWithoutOwnerInput!]
+}
+
+input DeckUpdateOneRequiredWithoutCardsInput {
+  create: DeckCreateWithoutCardsInput
+  connect: DeckWhereUniqueInput
+  update: DeckUpdateWithoutCardsDataInput
+  upsert: DeckUpsertWithoutCardsInput
+}
+
+input DeckUpdateWithoutCardsDataInput {
+  name: String
+  published: Boolean
+  owner: UserUpdateOneRequiredWithoutDecksInput
+}
+
+input DeckUpdateWithoutOwnerDataInput {
+  name: String
+  published: Boolean
+  cards: SimpleCardUpdateManyWithoutDeckInput
+}
+
+input DeckUpdateWithWhereUniqueWithoutOwnerInput {
+  where: DeckWhereUniqueInput!
+  data: DeckUpdateWithoutOwnerDataInput!
+}
+
+input DeckUpsertWithoutCardsInput {
+  update: DeckUpdateWithoutCardsDataInput!
+  create: DeckCreateWithoutCardsInput!
+}
+
+input DeckUpsertWithWhereUniqueWithoutOwnerInput {
+  where: DeckWhereUniqueInput!
+  update: DeckUpdateWithoutOwnerDataInput!
+  create: DeckCreateWithoutOwnerInput!
+}
+
+input DeckWhereInput {
+  """Logical AND on all given filters."""
+  AND: [DeckWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [DeckWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [DeckWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  name: String
+
+  """All values that are not equal to given value."""
+  name_not: String
+
+  """All values that are contained in given list."""
+  name_in: [String!]
+
+  """All values that are not contained in given list."""
+  name_not_in: [String!]
+
+  """All values less than the given value."""
+  name_lt: String
+
+  """All values less than or equal the given value."""
+  name_lte: String
+
+  """All values greater than the given value."""
+  name_gt: String
+
+  """All values greater than or equal the given value."""
+  name_gte: String
+
+  """All values containing the given string."""
+  name_contains: String
+
+  """All values not containing the given string."""
+  name_not_contains: String
+
+  """All values starting with the given string."""
+  name_starts_with: String
+
+  """All values not starting with the given string."""
+  name_not_starts_with: String
+
+  """All values ending with the given string."""
+  name_ends_with: String
+
+  """All values not ending with the given string."""
+  name_not_ends_with: String
+  published: Boolean
+
+  """All values that are not equal to given value."""
+  published_not: Boolean
+  owner: UserWhereInput
+  cards_every: SimpleCardWhereInput
+  cards_some: SimpleCardWhereInput
+  cards_none: SimpleCardWhereInput
+}
+
+input DeckWhereUniqueInput {
+  id: ID
+}
+
+"""
+The `Long` scalar type represents non-fractional signed whole numeric values.
+Long can represent values between -(2^63) and 2^63 - 1.
+"""
+scalar Long
+
+type Mutation {
+  createSimpleCard(data: SimpleCardCreateInput!): SimpleCard!
+  createDeck(data: DeckCreateInput!): Deck!
+  createRoom(data: RoomCreateInput!): Room!
+  createSimpleUserRoomMessage(data: SimpleUserRoomMessageCreateInput!): SimpleUserRoomMessage!
+  createUser(data: UserCreateInput!): User!
+  updateSimpleCard(data: SimpleCardUpdateInput!, where: SimpleCardWhereUniqueInput!): SimpleCard
+  updateDeck(data: DeckUpdateInput!, where: DeckWhereUniqueInput!): Deck
+  updateRoom(data: RoomUpdateInput!, where: RoomWhereUniqueInput!): Room
+  updateSimpleUserRoomMessage(data: SimpleUserRoomMessageUpdateInput!, where: SimpleUserRoomMessageWhereUniqueInput!): SimpleUserRoomMessage
+  updateUser(data: UserUpdateInput!, where: UserWhereUniqueInput!): User
+  deleteSimpleCard(where: SimpleCardWhereUniqueInput!): SimpleCard
+  deleteDeck(where: DeckWhereUniqueInput!): Deck
+  deleteRoom(where: RoomWhereUniqueInput!): Room
+  deleteSimpleUserRoomMessage(where: SimpleUserRoomMessageWhereUniqueInput!): SimpleUserRoomMessage
+  deleteUser(where: UserWhereUniqueInput!): User
+  upsertSimpleCard(where: SimpleCardWhereUniqueInput!, create: SimpleCardCreateInput!, update: SimpleCardUpdateInput!): SimpleCard!
+  upsertDeck(where: DeckWhereUniqueInput!, create: DeckCreateInput!, update: DeckUpdateInput!): Deck!
+  upsertRoom(where: RoomWhereUniqueInput!, create: RoomCreateInput!, update: RoomUpdateInput!): Room!
+  upsertSimpleUserRoomMessage(where: SimpleUserRoomMessageWhereUniqueInput!, create: SimpleUserRoomMessageCreateInput!, update: SimpleUserRoomMessageUpdateInput!): SimpleUserRoomMessage!
+  upsertUser(where: UserWhereUniqueInput!, create: UserCreateInput!, update: UserUpdateInput!): User!
+  updateManySimpleCards(data: SimpleCardUpdateManyMutationInput!, where: SimpleCardWhereInput): BatchPayload!
+  updateManyDecks(data: DeckUpdateManyMutationInput!, where: DeckWhereInput): BatchPayload!
+  updateManyRooms(data: RoomUpdateManyMutationInput!, where: RoomWhereInput): BatchPayload!
+  updateManySimpleUserRoomMessages(data: SimpleUserRoomMessageUpdateManyMutationInput!, where: SimpleUserRoomMessageWhereInput): BatchPayload!
+  updateManyUsers(data: UserUpdateManyMutationInput!, where: UserWhereInput): BatchPayload!
+  deleteManySimpleCards(where: SimpleCardWhereInput): BatchPayload!
+  deleteManyDecks(where: DeckWhereInput): BatchPayload!
+  deleteManyRooms(where: RoomWhereInput): BatchPayload!
+  deleteManySimpleUserRoomMessages(where: SimpleUserRoomMessageWhereInput): BatchPayload!
+  deleteManyUsers(where: UserWhereInput): BatchPayload!
+}
+
+enum MutationType {
+  CREATED
+  UPDATED
+  DELETED
+}
+
+"""An object with an ID"""
+interface Node {
+  """The id of the object."""
+  id: ID!
+}
+
+"""Information about pagination in a connection."""
+type PageInfo {
+  """When paginating forwards, are there more items?"""
+  hasNextPage: Boolean!
+
+  """When paginating backwards, are there more items?"""
+  hasPreviousPage: Boolean!
+
+  """When paginating backwards, the cursor to continue."""
+  startCursor: String
+
+  """When paginating forwards, the cursor to continue."""
+  endCursor: String
+}
+
+type Query {
+  simpleCards(where: SimpleCardWhereInput, orderBy: SimpleCardOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [SimpleCard]!
+  decks(where: DeckWhereInput, orderBy: DeckOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Deck]!
+  rooms(where: RoomWhereInput, orderBy: RoomOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Room]!
+  simpleUserRoomMessages(where: SimpleUserRoomMessageWhereInput, orderBy: SimpleUserRoomMessageOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [SimpleUserRoomMessage]!
+  users(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User]!
+  simpleCard(where: SimpleCardWhereUniqueInput!): SimpleCard
+  deck(where: DeckWhereUniqueInput!): Deck
+  room(where: RoomWhereUniqueInput!): Room
+  simpleUserRoomMessage(where: SimpleUserRoomMessageWhereUniqueInput!): SimpleUserRoomMessage
+  user(where: UserWhereUniqueInput!): User
+  simpleCardsConnection(where: SimpleCardWhereInput, orderBy: SimpleCardOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): SimpleCardConnection!
+  decksConnection(where: DeckWhereInput, orderBy: DeckOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): DeckConnection!
+  roomsConnection(where: RoomWhereInput, orderBy: RoomOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): RoomConnection!
+  simpleUserRoomMessagesConnection(where: SimpleUserRoomMessageWhereInput, orderBy: SimpleUserRoomMessageOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): SimpleUserRoomMessageConnection!
+  usersConnection(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): UserConnection!
+
+  """Fetches an object given its ID"""
+  node(
+    """The ID of an object"""
+    id: ID!
+  ): Node
+}
+
+type Room implements Node {
+  id: ID!
+  name: String!
+  owner: User!
+  occupants(where: UserWhereInput, orderBy: UserOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [User!]
+  messages(where: SimpleUserRoomMessageWhereInput, orderBy: SimpleUserRoomMessageOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [SimpleUserRoomMessage!]
+  active: Boolean!
+}
+
+"""A connection to a list of items."""
+type RoomConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [RoomEdge]!
+  aggregate: AggregateRoom!
+}
+
+input RoomCreateInput {
+  name: String!
+  active: Boolean!
+  owner: UserCreateOneWithoutOwnerOfRoomInput!
+  occupants: UserCreateManyWithoutOccupyingRoomInput
+  messages: SimpleUserRoomMessageCreateManyWithoutRoomInput
+}
+
+input RoomCreateManyWithoutOccupantsInput {
+  create: [RoomCreateWithoutOccupantsInput!]
+  connect: [RoomWhereUniqueInput!]
+}
+
+input RoomCreateManyWithoutOwnerInput {
+  create: [RoomCreateWithoutOwnerInput!]
+  connect: [RoomWhereUniqueInput!]
+}
+
+input RoomCreateOneWithoutMessagesInput {
+  create: RoomCreateWithoutMessagesInput
+  connect: RoomWhereUniqueInput
+}
+
+input RoomCreateWithoutMessagesInput {
+  name: String!
+  active: Boolean!
+  owner: UserCreateOneWithoutOwnerOfRoomInput!
+  occupants: UserCreateManyWithoutOccupyingRoomInput
+}
+
+input RoomCreateWithoutOccupantsInput {
+  name: String!
+  active: Boolean!
+  owner: UserCreateOneWithoutOwnerOfRoomInput!
+  messages: SimpleUserRoomMessageCreateManyWithoutRoomInput
+}
+
+input RoomCreateWithoutOwnerInput {
+  name: String!
+  active: Boolean!
+  occupants: UserCreateManyWithoutOccupyingRoomInput
+  messages: SimpleUserRoomMessageCreateManyWithoutRoomInput
+}
+
+"""An edge in a connection."""
+type RoomEdge {
+  """The item at the end of the edge."""
+  node: Room!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum RoomOrderByInput {
+  id_ASC
+  id_DESC
+  name_ASC
+  name_DESC
+  active_ASC
+  active_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type RoomPreviousValues {
+  id: ID!
+  name: String!
+  active: Boolean!
+}
+
+type RoomSubscriptionPayload {
+  mutation: MutationType!
+  node: Room
+  updatedFields: [String!]
+  previousValues: RoomPreviousValues
+}
+
+input RoomSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [RoomSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [RoomSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [RoomSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: RoomWhereInput
+}
+
+input RoomUpdateInput {
+  name: String
+  active: Boolean
+  owner: UserUpdateOneRequiredWithoutOwnerOfRoomInput
+  occupants: UserUpdateManyWithoutOccupyingRoomInput
+  messages: SimpleUserRoomMessageUpdateManyWithoutRoomInput
+}
+
+input RoomUpdateManyMutationInput {
+  name: String
+  active: Boolean
+}
+
+input RoomUpdateManyWithoutOccupantsInput {
+  create: [RoomCreateWithoutOccupantsInput!]
+  connect: [RoomWhereUniqueInput!]
+  disconnect: [RoomWhereUniqueInput!]
+  delete: [RoomWhereUniqueInput!]
+  update: [RoomUpdateWithWhereUniqueWithoutOccupantsInput!]
+  upsert: [RoomUpsertWithWhereUniqueWithoutOccupantsInput!]
+}
+
+input RoomUpdateManyWithoutOwnerInput {
+  create: [RoomCreateWithoutOwnerInput!]
+  connect: [RoomWhereUniqueInput!]
+  disconnect: [RoomWhereUniqueInput!]
+  delete: [RoomWhereUniqueInput!]
+  update: [RoomUpdateWithWhereUniqueWithoutOwnerInput!]
+  upsert: [RoomUpsertWithWhereUniqueWithoutOwnerInput!]
+}
+
+input RoomUpdateOneRequiredWithoutMessagesInput {
+  create: RoomCreateWithoutMessagesInput
+  connect: RoomWhereUniqueInput
+  update: RoomUpdateWithoutMessagesDataInput
+  upsert: RoomUpsertWithoutMessagesInput
+}
+
+input RoomUpdateWithoutMessagesDataInput {
+  name: String
+  active: Boolean
+  owner: UserUpdateOneRequiredWithoutOwnerOfRoomInput
+  occupants: UserUpdateManyWithoutOccupyingRoomInput
+}
+
+input RoomUpdateWithoutOccupantsDataInput {
+  name: String
+  active: Boolean
+  owner: UserUpdateOneRequiredWithoutOwnerOfRoomInput
+  messages: SimpleUserRoomMessageUpdateManyWithoutRoomInput
+}
+
+input RoomUpdateWithoutOwnerDataInput {
+  name: String
+  active: Boolean
+  occupants: UserUpdateManyWithoutOccupyingRoomInput
+  messages: SimpleUserRoomMessageUpdateManyWithoutRoomInput
+}
+
+input RoomUpdateWithWhereUniqueWithoutOccupantsInput {
+  where: RoomWhereUniqueInput!
+  data: RoomUpdateWithoutOccupantsDataInput!
+}
+
+input RoomUpdateWithWhereUniqueWithoutOwnerInput {
+  where: RoomWhereUniqueInput!
+  data: RoomUpdateWithoutOwnerDataInput!
+}
+
+input RoomUpsertWithoutMessagesInput {
+  update: RoomUpdateWithoutMessagesDataInput!
+  create: RoomCreateWithoutMessagesInput!
+}
+
+input RoomUpsertWithWhereUniqueWithoutOccupantsInput {
+  where: RoomWhereUniqueInput!
+  update: RoomUpdateWithoutOccupantsDataInput!
+  create: RoomCreateWithoutOccupantsInput!
+}
+
+input RoomUpsertWithWhereUniqueWithoutOwnerInput {
+  where: RoomWhereUniqueInput!
+  update: RoomUpdateWithoutOwnerDataInput!
+  create: RoomCreateWithoutOwnerInput!
+}
+
+input RoomWhereInput {
+  """Logical AND on all given filters."""
+  AND: [RoomWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [RoomWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [RoomWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  name: String
+
+  """All values that are not equal to given value."""
+  name_not: String
+
+  """All values that are contained in given list."""
+  name_in: [String!]
+
+  """All values that are not contained in given list."""
+  name_not_in: [String!]
+
+  """All values less than the given value."""
+  name_lt: String
+
+  """All values less than or equal the given value."""
+  name_lte: String
+
+  """All values greater than the given value."""
+  name_gt: String
+
+  """All values greater than or equal the given value."""
+  name_gte: String
+
+  """All values containing the given string."""
+  name_contains: String
+
+  """All values not containing the given string."""
+  name_not_contains: String
+
+  """All values starting with the given string."""
+  name_starts_with: String
+
+  """All values not starting with the given string."""
+  name_not_starts_with: String
+
+  """All values ending with the given string."""
+  name_ends_with: String
+
+  """All values not ending with the given string."""
+  name_not_ends_with: String
+  active: Boolean
+
+  """All values that are not equal to given value."""
+  active_not: Boolean
+  owner: UserWhereInput
+  occupants_every: UserWhereInput
+  occupants_some: UserWhereInput
+  occupants_none: UserWhereInput
+  messages_every: SimpleUserRoomMessageWhereInput
+  messages_some: SimpleUserRoomMessageWhereInput
+  messages_none: SimpleUserRoomMessageWhereInput
+}
+
+input RoomWhereUniqueInput {
+  id: ID
+}
+
+type SimpleCard implements Node {
+  id: ID!
+  deck: Deck!
+  front: String!
+  back: String!
+}
+
+"""A connection to a list of items."""
+type SimpleCardConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [SimpleCardEdge]!
+  aggregate: AggregateSimpleCard!
+}
+
+input SimpleCardCreateInput {
+  front: String!
+  back: String!
+  deck: DeckCreateOneWithoutCardsInput!
+}
+
+input SimpleCardCreateManyWithoutDeckInput {
+  create: [SimpleCardCreateWithoutDeckInput!]
+  connect: [SimpleCardWhereUniqueInput!]
+}
+
+input SimpleCardCreateWithoutDeckInput {
+  front: String!
+  back: String!
+}
+
+"""An edge in a connection."""
+type SimpleCardEdge {
+  """The item at the end of the edge."""
+  node: SimpleCard!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum SimpleCardOrderByInput {
+  id_ASC
+  id_DESC
+  front_ASC
+  front_DESC
+  back_ASC
+  back_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type SimpleCardPreviousValues {
+  id: ID!
+  front: String!
+  back: String!
+}
+
+type SimpleCardSubscriptionPayload {
+  mutation: MutationType!
+  node: SimpleCard
+  updatedFields: [String!]
+  previousValues: SimpleCardPreviousValues
+}
+
+input SimpleCardSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [SimpleCardSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [SimpleCardSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [SimpleCardSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: SimpleCardWhereInput
+}
+
+input SimpleCardUpdateInput {
+  front: String
+  back: String
+  deck: DeckUpdateOneRequiredWithoutCardsInput
+}
+
+input SimpleCardUpdateManyMutationInput {
+  front: String
+  back: String
+}
+
+input SimpleCardUpdateManyWithoutDeckInput {
+  create: [SimpleCardCreateWithoutDeckInput!]
+  connect: [SimpleCardWhereUniqueInput!]
+  disconnect: [SimpleCardWhereUniqueInput!]
+  delete: [SimpleCardWhereUniqueInput!]
+  update: [SimpleCardUpdateWithWhereUniqueWithoutDeckInput!]
+  upsert: [SimpleCardUpsertWithWhereUniqueWithoutDeckInput!]
+}
+
+input SimpleCardUpdateWithoutDeckDataInput {
+  front: String
+  back: String
+}
+
+input SimpleCardUpdateWithWhereUniqueWithoutDeckInput {
+  where: SimpleCardWhereUniqueInput!
+  data: SimpleCardUpdateWithoutDeckDataInput!
+}
+
+input SimpleCardUpsertWithWhereUniqueWithoutDeckInput {
+  where: SimpleCardWhereUniqueInput!
+  update: SimpleCardUpdateWithoutDeckDataInput!
+  create: SimpleCardCreateWithoutDeckInput!
+}
+
+input SimpleCardWhereInput {
+  """Logical AND on all given filters."""
+  AND: [SimpleCardWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [SimpleCardWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [SimpleCardWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  front: String
+
+  """All values that are not equal to given value."""
+  front_not: String
+
+  """All values that are contained in given list."""
+  front_in: [String!]
+
+  """All values that are not contained in given list."""
+  front_not_in: [String!]
+
+  """All values less than the given value."""
+  front_lt: String
+
+  """All values less than or equal the given value."""
+  front_lte: String
+
+  """All values greater than the given value."""
+  front_gt: String
+
+  """All values greater than or equal the given value."""
+  front_gte: String
+
+  """All values containing the given string."""
+  front_contains: String
+
+  """All values not containing the given string."""
+  front_not_contains: String
+
+  """All values starting with the given string."""
+  front_starts_with: String
+
+  """All values not starting with the given string."""
+  front_not_starts_with: String
+
+  """All values ending with the given string."""
+  front_ends_with: String
+
+  """All values not ending with the given string."""
+  front_not_ends_with: String
+  back: String
+
+  """All values that are not equal to given value."""
+  back_not: String
+
+  """All values that are contained in given list."""
+  back_in: [String!]
+
+  """All values that are not contained in given list."""
+  back_not_in: [String!]
+
+  """All values less than the given value."""
+  back_lt: String
+
+  """All values less than or equal the given value."""
+  back_lte: String
+
+  """All values greater than the given value."""
+  back_gt: String
+
+  """All values greater than or equal the given value."""
+  back_gte: String
+
+  """All values containing the given string."""
+  back_contains: String
+
+  """All values not containing the given string."""
+  back_not_contains: String
+
+  """All values starting with the given string."""
+  back_starts_with: String
+
+  """All values not starting with the given string."""
+  back_not_starts_with: String
+
+  """All values ending with the given string."""
+  back_ends_with: String
+
+  """All values not ending with the given string."""
+  back_not_ends_with: String
+  deck: DeckWhereInput
+}
+
+input SimpleCardWhereUniqueInput {
+  id: ID
+}
+
+type SimpleUserRoomMessage implements Node {
+  id: ID!
+  room: Room!
+  sender: User!
+  content: String!
+}
+
+"""A connection to a list of items."""
+type SimpleUserRoomMessageConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [SimpleUserRoomMessageEdge]!
+  aggregate: AggregateSimpleUserRoomMessage!
+}
+
+input SimpleUserRoomMessageCreateInput {
+  content: String!
+  room: RoomCreateOneWithoutMessagesInput!
+  sender: UserCreateOneInput!
+}
+
+input SimpleUserRoomMessageCreateManyWithoutRoomInput {
+  create: [SimpleUserRoomMessageCreateWithoutRoomInput!]
+  connect: [SimpleUserRoomMessageWhereUniqueInput!]
+}
+
+input SimpleUserRoomMessageCreateWithoutRoomInput {
+  content: String!
+  sender: UserCreateOneInput!
+}
+
+"""An edge in a connection."""
+type SimpleUserRoomMessageEdge {
+  """The item at the end of the edge."""
+  node: SimpleUserRoomMessage!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum SimpleUserRoomMessageOrderByInput {
+  id_ASC
+  id_DESC
+  content_ASC
+  content_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type SimpleUserRoomMessagePreviousValues {
+  id: ID!
+  content: String!
+}
+
+type SimpleUserRoomMessageSubscriptionPayload {
+  mutation: MutationType!
+  node: SimpleUserRoomMessage
+  updatedFields: [String!]
+  previousValues: SimpleUserRoomMessagePreviousValues
+}
+
+input SimpleUserRoomMessageSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [SimpleUserRoomMessageSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [SimpleUserRoomMessageSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [SimpleUserRoomMessageSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: SimpleUserRoomMessageWhereInput
+}
+
+input SimpleUserRoomMessageUpdateInput {
+  content: String
+  room: RoomUpdateOneRequiredWithoutMessagesInput
+  sender: UserUpdateOneRequiredInput
+}
+
+input SimpleUserRoomMessageUpdateManyMutationInput {
+  content: String
+}
+
+input SimpleUserRoomMessageUpdateManyWithoutRoomInput {
+  create: [SimpleUserRoomMessageCreateWithoutRoomInput!]
+  connect: [SimpleUserRoomMessageWhereUniqueInput!]
+  disconnect: [SimpleUserRoomMessageWhereUniqueInput!]
+  delete: [SimpleUserRoomMessageWhereUniqueInput!]
+  update: [SimpleUserRoomMessageUpdateWithWhereUniqueWithoutRoomInput!]
+  upsert: [SimpleUserRoomMessageUpsertWithWhereUniqueWithoutRoomInput!]
+}
+
+input SimpleUserRoomMessageUpdateWithoutRoomDataInput {
+  content: String
+  sender: UserUpdateOneRequiredInput
+}
+
+input SimpleUserRoomMessageUpdateWithWhereUniqueWithoutRoomInput {
+  where: SimpleUserRoomMessageWhereUniqueInput!
+  data: SimpleUserRoomMessageUpdateWithoutRoomDataInput!
+}
+
+input SimpleUserRoomMessageUpsertWithWhereUniqueWithoutRoomInput {
+  where: SimpleUserRoomMessageWhereUniqueInput!
+  update: SimpleUserRoomMessageUpdateWithoutRoomDataInput!
+  create: SimpleUserRoomMessageCreateWithoutRoomInput!
+}
+
+input SimpleUserRoomMessageWhereInput {
+  """Logical AND on all given filters."""
+  AND: [SimpleUserRoomMessageWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [SimpleUserRoomMessageWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [SimpleUserRoomMessageWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  content: String
+
+  """All values that are not equal to given value."""
+  content_not: String
+
+  """All values that are contained in given list."""
+  content_in: [String!]
+
+  """All values that are not contained in given list."""
+  content_not_in: [String!]
+
+  """All values less than the given value."""
+  content_lt: String
+
+  """All values less than or equal the given value."""
+  content_lte: String
+
+  """All values greater than the given value."""
+  content_gt: String
+
+  """All values greater than or equal the given value."""
+  content_gte: String
+
+  """All values containing the given string."""
+  content_contains: String
+
+  """All values not containing the given string."""
+  content_not_contains: String
+
+  """All values starting with the given string."""
+  content_starts_with: String
+
+  """All values not starting with the given string."""
+  content_not_starts_with: String
+
+  """All values ending with the given string."""
+  content_ends_with: String
+
+  """All values not ending with the given string."""
+  content_not_ends_with: String
+  room: RoomWhereInput
+  sender: UserWhereInput
+}
+
+input SimpleUserRoomMessageWhereUniqueInput {
+  id: ID
+}
+
+type Subscription {
+  simpleCard(where: SimpleCardSubscriptionWhereInput): SimpleCardSubscriptionPayload
+  deck(where: DeckSubscriptionWhereInput): DeckSubscriptionPayload
+  room(where: RoomSubscriptionWhereInput): RoomSubscriptionPayload
+  simpleUserRoomMessage(where: SimpleUserRoomMessageSubscriptionWhereInput): SimpleUserRoomMessageSubscriptionPayload
+  user(where: UserSubscriptionWhereInput): UserSubscriptionPayload
+}
+
+type User implements Node {
+  id: ID!
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  decks(where: DeckWhereInput, orderBy: DeckOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Deck!]
+  defaultRoles: [String!]!
+  ownerOfRoom(where: RoomWhereInput, orderBy: RoomOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Room!]
+  occupyingRoom(where: RoomWhereInput, orderBy: RoomOrderByInput, skip: Int, after: String, before: String, first: Int, last: Int): [Room!]
+}
+
+"""A connection to a list of items."""
+type UserConnection {
+  """Information to aid in pagination."""
+  pageInfo: PageInfo!
+
+  """A list of edges."""
+  edges: [UserEdge]!
+  aggregate: AggregateUser!
+}
+
+input UserCreatedefaultRolesInput {
+  set: [String!]
+}
+
+input UserCreateInput {
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserCreatedefaultRolesInput
+  decks: DeckCreateManyWithoutOwnerInput
+  ownerOfRoom: RoomCreateManyWithoutOwnerInput
+  occupyingRoom: RoomCreateManyWithoutOccupantsInput
+}
+
+input UserCreateManyWithoutOccupyingRoomInput {
+  create: [UserCreateWithoutOccupyingRoomInput!]
+  connect: [UserWhereUniqueInput!]
+}
+
+input UserCreateOneInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+}
+
+input UserCreateOneWithoutDecksInput {
+  create: UserCreateWithoutDecksInput
+  connect: UserWhereUniqueInput
+}
+
+input UserCreateOneWithoutOwnerOfRoomInput {
+  create: UserCreateWithoutOwnerOfRoomInput
+  connect: UserWhereUniqueInput
+}
+
+input UserCreateWithoutDecksInput {
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserCreatedefaultRolesInput
+  ownerOfRoom: RoomCreateManyWithoutOwnerInput
+  occupyingRoom: RoomCreateManyWithoutOccupantsInput
+}
+
+input UserCreateWithoutOccupyingRoomInput {
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserCreatedefaultRolesInput
+  decks: DeckCreateManyWithoutOwnerInput
+  ownerOfRoom: RoomCreateManyWithoutOwnerInput
+}
+
+input UserCreateWithoutOwnerOfRoomInput {
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserCreatedefaultRolesInput
+  decks: DeckCreateManyWithoutOwnerInput
+  occupyingRoom: RoomCreateManyWithoutOccupantsInput
+}
+
+"""An edge in a connection."""
+type UserEdge {
+  """The item at the end of the edge."""
+  node: User!
+
+  """A cursor for use in pagination."""
+  cursor: String!
+}
+
+enum UserOrderByInput {
+  id_ASC
+  id_DESC
+  email_ASC
+  email_DESC
+  passwordHash_ASC
+  passwordHash_DESC
+  googleId_ASC
+  googleId_DESC
+  facebookId_ASC
+  facebookId_DESC
+  updatedAt_ASC
+  updatedAt_DESC
+  createdAt_ASC
+  createdAt_DESC
+}
+
+type UserPreviousValues {
+  id: ID!
+  email: String!
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: [String!]!
+}
+
+type UserSubscriptionPayload {
+  mutation: MutationType!
+  node: User
+  updatedFields: [String!]
+  previousValues: UserPreviousValues
+}
+
+input UserSubscriptionWhereInput {
+  """Logical AND on all given filters."""
+  AND: [UserSubscriptionWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [UserSubscriptionWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [UserSubscriptionWhereInput!]
+
+  """
+  The subscription event gets dispatched when it's listed in mutation_in
+  """
+  mutation_in: [MutationType!]
+
+  """
+  The subscription event gets only dispatched when one of the updated fields names is included in this list
+  """
+  updatedFields_contains: String
+
+  """
+  The subscription event gets only dispatched when all of the field names included in this list have been updated
+  """
+  updatedFields_contains_every: [String!]
+
+  """
+  The subscription event gets only dispatched when some of the field names included in this list have been updated
+  """
+  updatedFields_contains_some: [String!]
+  node: UserWhereInput
+}
+
+input UserUpdateDataInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+  decks: DeckUpdateManyWithoutOwnerInput
+  ownerOfRoom: RoomUpdateManyWithoutOwnerInput
+  occupyingRoom: RoomUpdateManyWithoutOccupantsInput
+}
+
+input UserUpdatedefaultRolesInput {
+  set: [String!]
+}
+
+input UserUpdateInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+  decks: DeckUpdateManyWithoutOwnerInput
+  ownerOfRoom: RoomUpdateManyWithoutOwnerInput
+  occupyingRoom: RoomUpdateManyWithoutOccupantsInput
+}
+
+input UserUpdateManyMutationInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+}
+
+input UserUpdateManyWithoutOccupyingRoomInput {
+  create: [UserCreateWithoutOccupyingRoomInput!]
+  connect: [UserWhereUniqueInput!]
+  disconnect: [UserWhereUniqueInput!]
+  delete: [UserWhereUniqueInput!]
+  update: [UserUpdateWithWhereUniqueWithoutOccupyingRoomInput!]
+  upsert: [UserUpsertWithWhereUniqueWithoutOccupyingRoomInput!]
+}
+
+input UserUpdateOneRequiredInput {
+  create: UserCreateInput
+  connect: UserWhereUniqueInput
+  update: UserUpdateDataInput
+  upsert: UserUpsertNestedInput
+}
+
+input UserUpdateOneRequiredWithoutDecksInput {
+  create: UserCreateWithoutDecksInput
+  connect: UserWhereUniqueInput
+  update: UserUpdateWithoutDecksDataInput
+  upsert: UserUpsertWithoutDecksInput
+}
+
+input UserUpdateOneRequiredWithoutOwnerOfRoomInput {
+  create: UserCreateWithoutOwnerOfRoomInput
+  connect: UserWhereUniqueInput
+  update: UserUpdateWithoutOwnerOfRoomDataInput
+  upsert: UserUpsertWithoutOwnerOfRoomInput
+}
+
+input UserUpdateWithoutDecksDataInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+  ownerOfRoom: RoomUpdateManyWithoutOwnerInput
+  occupyingRoom: RoomUpdateManyWithoutOccupantsInput
+}
+
+input UserUpdateWithoutOccupyingRoomDataInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+  decks: DeckUpdateManyWithoutOwnerInput
+  ownerOfRoom: RoomUpdateManyWithoutOwnerInput
+}
+
+input UserUpdateWithoutOwnerOfRoomDataInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+  decks: DeckUpdateManyWithoutOwnerInput
+  occupyingRoom: RoomUpdateManyWithoutOccupantsInput
+}
+
+input UserUpdateWithWhereUniqueWithoutOccupyingRoomInput {
+  where: UserWhereUniqueInput!
+  data: UserUpdateWithoutOccupyingRoomDataInput!
+}
+
+input UserUpsertNestedInput {
+  update: UserUpdateDataInput!
+  create: UserCreateInput!
+}
+
+input UserUpsertWithoutDecksInput {
+  update: UserUpdateWithoutDecksDataInput!
+  create: UserCreateWithoutDecksInput!
+}
+
+input UserUpsertWithoutOwnerOfRoomInput {
+  update: UserUpdateWithoutOwnerOfRoomDataInput!
+  create: UserCreateWithoutOwnerOfRoomInput!
+}
+
+input UserUpsertWithWhereUniqueWithoutOccupyingRoomInput {
+  where: UserWhereUniqueInput!
+  update: UserUpdateWithoutOccupyingRoomDataInput!
+  create: UserCreateWithoutOccupyingRoomInput!
+}
+
+input UserWhereInput {
+  """Logical AND on all given filters."""
+  AND: [UserWhereInput!]
+
+  """Logical OR on all given filters."""
+  OR: [UserWhereInput!]
+
+  """Logical NOT on all given filters combined by AND."""
+  NOT: [UserWhereInput!]
+  id: ID
+
+  """All values that are not equal to given value."""
+  id_not: ID
+
+  """All values that are contained in given list."""
+  id_in: [ID!]
+
+  """All values that are not contained in given list."""
+  id_not_in: [ID!]
+
+  """All values less than the given value."""
+  id_lt: ID
+
+  """All values less than or equal the given value."""
+  id_lte: ID
+
+  """All values greater than the given value."""
+  id_gt: ID
+
+  """All values greater than or equal the given value."""
+  id_gte: ID
+
+  """All values containing the given string."""
+  id_contains: ID
+
+  """All values not containing the given string."""
+  id_not_contains: ID
+
+  """All values starting with the given string."""
+  id_starts_with: ID
+
+  """All values not starting with the given string."""
+  id_not_starts_with: ID
+
+  """All values ending with the given string."""
+  id_ends_with: ID
+
+  """All values not ending with the given string."""
+  id_not_ends_with: ID
+  email: String
+
+  """All values that are not equal to given value."""
+  email_not: String
+
+  """All values that are contained in given list."""
+  email_in: [String!]
+
+  """All values that are not contained in given list."""
+  email_not_in: [String!]
+
+  """All values less than the given value."""
+  email_lt: String
+
+  """All values less than or equal the given value."""
+  email_lte: String
+
+  """All values greater than the given value."""
+  email_gt: String
+
+  """All values greater than or equal the given value."""
+  email_gte: String
+
+  """All values containing the given string."""
+  email_contains: String
+
+  """All values not containing the given string."""
+  email_not_contains: String
+
+  """All values starting with the given string."""
+  email_starts_with: String
+
+  """All values not starting with the given string."""
+  email_not_starts_with: String
+
+  """All values ending with the given string."""
+  email_ends_with: String
+
+  """All values not ending with the given string."""
+  email_not_ends_with: String
+  passwordHash: String
+
+  """All values that are not equal to given value."""
+  passwordHash_not: String
+
+  """All values that are contained in given list."""
+  passwordHash_in: [String!]
+
+  """All values that are not contained in given list."""
+  passwordHash_not_in: [String!]
+
+  """All values less than the given value."""
+  passwordHash_lt: String
+
+  """All values less than or equal the given value."""
+  passwordHash_lte: String
+
+  """All values greater than the given value."""
+  passwordHash_gt: String
+
+  """All values greater than or equal the given value."""
+  passwordHash_gte: String
+
+  """All values containing the given string."""
+  passwordHash_contains: String
+
+  """All values not containing the given string."""
+  passwordHash_not_contains: String
+
+  """All values starting with the given string."""
+  passwordHash_starts_with: String
+
+  """All values not starting with the given string."""
+  passwordHash_not_starts_with: String
+
+  """All values ending with the given string."""
+  passwordHash_ends_with: String
+
+  """All values not ending with the given string."""
+  passwordHash_not_ends_with: String
+  googleId: String
+
+  """All values that are not equal to given value."""
+  googleId_not: String
+
+  """All values that are contained in given list."""
+  googleId_in: [String!]
+
+  """All values that are not contained in given list."""
+  googleId_not_in: [String!]
+
+  """All values less than the given value."""
+  googleId_lt: String
+
+  """All values less than or equal the given value."""
+  googleId_lte: String
+
+  """All values greater than the given value."""
+  googleId_gt: String
+
+  """All values greater than or equal the given value."""
+  googleId_gte: String
+
+  """All values containing the given string."""
+  googleId_contains: String
+
+  """All values not containing the given string."""
+  googleId_not_contains: String
+
+  """All values starting with the given string."""
+  googleId_starts_with: String
+
+  """All values not starting with the given string."""
+  googleId_not_starts_with: String
+
+  """All values ending with the given string."""
+  googleId_ends_with: String
+
+  """All values not ending with the given string."""
+  googleId_not_ends_with: String
+  facebookId: String
+
+  """All values that are not equal to given value."""
+  facebookId_not: String
+
+  """All values that are contained in given list."""
+  facebookId_in: [String!]
+
+  """All values that are not contained in given list."""
+  facebookId_not_in: [String!]
+
+  """All values less than the given value."""
+  facebookId_lt: String
+
+  """All values less than or equal the given value."""
+  facebookId_lte: String
+
+  """All values greater than the given value."""
+  facebookId_gt: String
+
+  """All values greater than or equal the given value."""
+  facebookId_gte: String
+
+  """All values containing the given string."""
+  facebookId_contains: String
+
+  """All values not containing the given string."""
+  facebookId_not_contains: String
+
+  """All values starting with the given string."""
+  facebookId_starts_with: String
+
+  """All values not starting with the given string."""
+  facebookId_not_starts_with: String
+
+  """All values ending with the given string."""
+  facebookId_ends_with: String
+
+  """All values not ending with the given string."""
+  facebookId_not_ends_with: String
+  decks_every: DeckWhereInput
+  decks_some: DeckWhereInput
+  decks_none: DeckWhereInput
+  ownerOfRoom_every: RoomWhereInput
+  ownerOfRoom_some: RoomWhereInput
+  ownerOfRoom_none: RoomWhereInput
+  occupyingRoom_every: RoomWhereInput
+  occupyingRoom_some: RoomWhereInput
+  occupyingRoom_none: RoomWhereInput
+}
+
+input UserWhereUniqueInput {
+  id: ID
+  email: String
+}

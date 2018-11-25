@@ -1,9 +1,10 @@
-endpoint: http://localhost:4466
-datamodel: datamodel.graphql
+endpoint: http://localhost:4466/writerite/dev
+datamodel: datamodel.prisma
 
 generate:
   - generator: typescript-client
-    output: ./generated/prisma-client
+    output: generated/prisma-client/
+  - generator: graphql-schema
 hooks:
   post-deploy:
     - prisma reset --force

@@ -1,13 +1,14 @@
 import { IFieldResolver } from 'graphql-tools';
 import randomWords from 'random-words';
 
-import { IWrContext } from '../../types';
+import { IWrContext, MutationType } from '../../types';
 
 import { IBakedRoom, pRoomToIRoom } from '../Room';
+import { IRoomPayload, roomTopicFromUser } from '../Subscription/Room';
 
 const roomCreate: IFieldResolver<any, IWrContext, {
   name?: string,
-}> = async (_parent, { name }, { prisma, sub }): Promise<IBakedRoom | null> => {
+}> = async (_parent, { name }, { prisma, pubsub, sub }): Promise<IBakedRoom | null> => {
   if (!sub) {
     return null;
   }
@@ -21,7 +22,16 @@ const roomCreate: IFieldResolver<any, IWrContext, {
   if (!pRoom) {
     return null;
   }
-  return pRoomToIRoom(pRoom, prisma);
+  const roomObj = pRoomToIRoom(pRoom, prisma);
+  const roomUpdate: IRoomPayload = {
+    roomUpdates: {
+      mutation: MutationType.CREATED,
+      new: roomObj,
+      oldId: null,
+    },
+  };
+  pubsub.publish(roomTopicFromUser(sub.id), roomUpdate);
+  return roomObj;
 };
 
 // TODO: access control: owner or self only

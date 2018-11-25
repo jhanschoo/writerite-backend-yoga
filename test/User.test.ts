@@ -2,7 +2,7 @@ import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
-import { prisma, User } from '../src/generated/prisma-client';
+import { prisma, User } from '../generated/prisma-client';
 import { Roles, IWrContext } from '../src/types';
 
 import { userQuery } from '../src/resolver/Query/User';

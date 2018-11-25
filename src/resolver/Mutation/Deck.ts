@@ -3,7 +3,7 @@ import { IFieldResolver } from 'graphql-tools';
 import { MutationType, IWrContext } from '../../types';
 
 import { pDeckToIDeck, IBakedDeck } from '../Deck';
-import { deckTopicFromUser, IDeckUserPayload } from '../Subscription/Deck';
+import { deckTopicFromUser, IDeckPayload } from '../Subscription/Deck';
 
 const deckSave: IFieldResolver<any, IWrContext, {
   id?: string,
@@ -26,8 +26,8 @@ const deckSave: IFieldResolver<any, IWrContext, {
       return null;
     }
     const deckObj = pDeckToIDeck(pDeck, prisma);
-    const deckUpdate: IDeckUserPayload = {
-      deckUpdatesOfUser: {
+    const deckUpdate: IDeckPayload = {
+      deckUpdates: {
         mutation: MutationType.UPDATED,
         new: deckObj,
         oldId: null,
@@ -44,8 +44,8 @@ const deckSave: IFieldResolver<any, IWrContext, {
       return null;
     }
     const deckObj = pDeckToIDeck(pDeck, prisma);
-    const deckUpdate: IDeckUserPayload = {
-      deckUpdatesOfUser: {
+    const deckUpdate: IDeckPayload = {
+      deckUpdates: {
         mutation: MutationType.CREATED,
         new: deckObj,
         oldId: null,
@@ -73,8 +73,8 @@ const deckDelete: IFieldResolver<any, IWrContext, {
   if (!pDeck) {
     return null;
   }
-  const deckUpdate: IDeckUserPayload = {
-    deckUpdatesOfUser: {
+  const deckUpdate: IDeckPayload = {
+    deckUpdates: {
       mutation: MutationType.DELETED,
       new: null,
       oldId: pDeck.id,
