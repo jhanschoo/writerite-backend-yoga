@@ -89,6 +89,42 @@ type DeckPreviousValues {
   published: Boolean!
 }
 
+input DeckScalarWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  name: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  published: Boolean
+  published_not: Boolean
+  AND: [DeckScalarWhereInput!]
+  OR: [DeckScalarWhereInput!]
+  NOT: [DeckScalarWhereInput!]
+}
+
 type DeckSubscriptionPayload {
   mutation: MutationType!
   node: Deck
@@ -114,6 +150,11 @@ input DeckUpdateInput {
   published: Boolean
 }
 
+input DeckUpdateManyDataInput {
+  name: String
+  published: Boolean
+}
+
 input DeckUpdateManyMutationInput {
   name: String
   published: Boolean
@@ -126,6 +167,13 @@ input DeckUpdateManyWithoutOwnerInput {
   disconnect: [DeckWhereUniqueInput!]
   update: [DeckUpdateWithWhereUniqueWithoutOwnerInput!]
   upsert: [DeckUpsertWithWhereUniqueWithoutOwnerInput!]
+  deleteMany: [DeckScalarWhereInput!]
+  updateMany: [DeckUpdateManyWithWhereNestedInput!]
+}
+
+input DeckUpdateManyWithWhereNestedInput {
+  where: DeckScalarWhereInput!
+  data: DeckUpdateManyDataInput!
 }
 
 input DeckUpdateOneRequiredWithoutCardsInput {
@@ -361,6 +409,42 @@ type RoomPreviousValues {
   active: Boolean!
 }
 
+input RoomScalarWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  name: String
+  name_not: String
+  name_in: [String!]
+  name_not_in: [String!]
+  name_lt: String
+  name_lte: String
+  name_gt: String
+  name_gte: String
+  name_contains: String
+  name_not_contains: String
+  name_starts_with: String
+  name_not_starts_with: String
+  name_ends_with: String
+  name_not_ends_with: String
+  active: Boolean
+  active_not: Boolean
+  AND: [RoomScalarWhereInput!]
+  OR: [RoomScalarWhereInput!]
+  NOT: [RoomScalarWhereInput!]
+}
+
 type RoomSubscriptionPayload {
   mutation: MutationType!
   node: Room
@@ -387,6 +471,11 @@ input RoomUpdateInput {
   active: Boolean
 }
 
+input RoomUpdateManyDataInput {
+  name: String
+  active: Boolean
+}
+
 input RoomUpdateManyMutationInput {
   name: String
   active: Boolean
@@ -399,6 +488,8 @@ input RoomUpdateManyWithoutOccupantsInput {
   disconnect: [RoomWhereUniqueInput!]
   update: [RoomUpdateWithWhereUniqueWithoutOccupantsInput!]
   upsert: [RoomUpsertWithWhereUniqueWithoutOccupantsInput!]
+  deleteMany: [RoomScalarWhereInput!]
+  updateMany: [RoomUpdateManyWithWhereNestedInput!]
 }
 
 input RoomUpdateManyWithoutOwnerInput {
@@ -408,6 +499,13 @@ input RoomUpdateManyWithoutOwnerInput {
   disconnect: [RoomWhereUniqueInput!]
   update: [RoomUpdateWithWhereUniqueWithoutOwnerInput!]
   upsert: [RoomUpsertWithWhereUniqueWithoutOwnerInput!]
+  deleteMany: [RoomScalarWhereInput!]
+  updateMany: [RoomUpdateManyWithWhereNestedInput!]
+}
+
+input RoomUpdateManyWithWhereNestedInput {
+  where: RoomScalarWhereInput!
+  data: RoomUpdateManyDataInput!
 }
 
 input RoomUpdateOneRequiredWithoutMessagesInput {
@@ -565,6 +663,54 @@ type SimpleCardPreviousValues {
   back: String!
 }
 
+input SimpleCardScalarWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  front: String
+  front_not: String
+  front_in: [String!]
+  front_not_in: [String!]
+  front_lt: String
+  front_lte: String
+  front_gt: String
+  front_gte: String
+  front_contains: String
+  front_not_contains: String
+  front_starts_with: String
+  front_not_starts_with: String
+  front_ends_with: String
+  front_not_ends_with: String
+  back: String
+  back_not: String
+  back_in: [String!]
+  back_not_in: [String!]
+  back_lt: String
+  back_lte: String
+  back_gt: String
+  back_gte: String
+  back_contains: String
+  back_not_contains: String
+  back_starts_with: String
+  back_not_starts_with: String
+  back_ends_with: String
+  back_not_ends_with: String
+  AND: [SimpleCardScalarWhereInput!]
+  OR: [SimpleCardScalarWhereInput!]
+  NOT: [SimpleCardScalarWhereInput!]
+}
+
 type SimpleCardSubscriptionPayload {
   mutation: MutationType!
   node: SimpleCard
@@ -589,6 +735,11 @@ input SimpleCardUpdateInput {
   back: String
 }
 
+input SimpleCardUpdateManyDataInput {
+  front: String
+  back: String
+}
+
 input SimpleCardUpdateManyMutationInput {
   front: String
   back: String
@@ -601,6 +752,13 @@ input SimpleCardUpdateManyWithoutDeckInput {
   disconnect: [SimpleCardWhereUniqueInput!]
   update: [SimpleCardUpdateWithWhereUniqueWithoutDeckInput!]
   upsert: [SimpleCardUpsertWithWhereUniqueWithoutDeckInput!]
+  deleteMany: [SimpleCardScalarWhereInput!]
+  updateMany: [SimpleCardUpdateManyWithWhereNestedInput!]
+}
+
+input SimpleCardUpdateManyWithWhereNestedInput {
+  where: SimpleCardScalarWhereInput!
+  data: SimpleCardUpdateManyDataInput!
 }
 
 input SimpleCardUpdateWithoutDeckDataInput {
@@ -722,6 +880,40 @@ type SimpleUserRoomMessagePreviousValues {
   content: String!
 }
 
+input SimpleUserRoomMessageScalarWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  content: String
+  content_not: String
+  content_in: [String!]
+  content_not_in: [String!]
+  content_lt: String
+  content_lte: String
+  content_gt: String
+  content_gte: String
+  content_contains: String
+  content_not_contains: String
+  content_starts_with: String
+  content_not_starts_with: String
+  content_ends_with: String
+  content_not_ends_with: String
+  AND: [SimpleUserRoomMessageScalarWhereInput!]
+  OR: [SimpleUserRoomMessageScalarWhereInput!]
+  NOT: [SimpleUserRoomMessageScalarWhereInput!]
+}
+
 type SimpleUserRoomMessageSubscriptionPayload {
   mutation: MutationType!
   node: SimpleUserRoomMessage
@@ -746,6 +938,10 @@ input SimpleUserRoomMessageUpdateInput {
   content: String
 }
 
+input SimpleUserRoomMessageUpdateManyDataInput {
+  content: String
+}
+
 input SimpleUserRoomMessageUpdateManyMutationInput {
   content: String
 }
@@ -757,6 +953,13 @@ input SimpleUserRoomMessageUpdateManyWithoutRoomInput {
   disconnect: [SimpleUserRoomMessageWhereUniqueInput!]
   update: [SimpleUserRoomMessageUpdateWithWhereUniqueWithoutRoomInput!]
   upsert: [SimpleUserRoomMessageUpsertWithWhereUniqueWithoutRoomInput!]
+  deleteMany: [SimpleUserRoomMessageScalarWhereInput!]
+  updateMany: [SimpleUserRoomMessageUpdateManyWithWhereNestedInput!]
+}
+
+input SimpleUserRoomMessageUpdateManyWithWhereNestedInput {
+  where: SimpleUserRoomMessageScalarWhereInput!
+  data: SimpleUserRoomMessageUpdateManyDataInput!
 }
 
 input SimpleUserRoomMessageUpdateWithoutRoomDataInput {
@@ -937,6 +1140,82 @@ type UserPreviousValues {
   defaultRoles: [String!]!
 }
 
+input UserScalarWhereInput {
+  id: ID
+  id_not: ID
+  id_in: [ID!]
+  id_not_in: [ID!]
+  id_lt: ID
+  id_lte: ID
+  id_gt: ID
+  id_gte: ID
+  id_contains: ID
+  id_not_contains: ID
+  id_starts_with: ID
+  id_not_starts_with: ID
+  id_ends_with: ID
+  id_not_ends_with: ID
+  email: String
+  email_not: String
+  email_in: [String!]
+  email_not_in: [String!]
+  email_lt: String
+  email_lte: String
+  email_gt: String
+  email_gte: String
+  email_contains: String
+  email_not_contains: String
+  email_starts_with: String
+  email_not_starts_with: String
+  email_ends_with: String
+  email_not_ends_with: String
+  passwordHash: String
+  passwordHash_not: String
+  passwordHash_in: [String!]
+  passwordHash_not_in: [String!]
+  passwordHash_lt: String
+  passwordHash_lte: String
+  passwordHash_gt: String
+  passwordHash_gte: String
+  passwordHash_contains: String
+  passwordHash_not_contains: String
+  passwordHash_starts_with: String
+  passwordHash_not_starts_with: String
+  passwordHash_ends_with: String
+  passwordHash_not_ends_with: String
+  googleId: String
+  googleId_not: String
+  googleId_in: [String!]
+  googleId_not_in: [String!]
+  googleId_lt: String
+  googleId_lte: String
+  googleId_gt: String
+  googleId_gte: String
+  googleId_contains: String
+  googleId_not_contains: String
+  googleId_starts_with: String
+  googleId_not_starts_with: String
+  googleId_ends_with: String
+  googleId_not_ends_with: String
+  facebookId: String
+  facebookId_not: String
+  facebookId_in: [String!]
+  facebookId_not_in: [String!]
+  facebookId_lt: String
+  facebookId_lte: String
+  facebookId_gt: String
+  facebookId_gte: String
+  facebookId_contains: String
+  facebookId_not_contains: String
+  facebookId_starts_with: String
+  facebookId_not_starts_with: String
+  facebookId_ends_with: String
+  facebookId_not_ends_with: String
+  AND: [UserScalarWhereInput!]
+  OR: [UserScalarWhereInput!]
+  NOT: [UserScalarWhereInput!]
+}
+
 type UserSubscriptionPayload {
   mutation: MutationType!
   node: User
@@ -981,6 +1260,14 @@ input UserUpdateInput {
   occupyingRoom: RoomUpdateManyWithoutOccupantsInput
 }
 
+input UserUpdateManyDataInput {
+  email: String
+  passwordHash: String
+  googleId: String
+  facebookId: String
+  defaultRoles: UserUpdatedefaultRolesInput
+}
+
 input UserUpdateManyMutationInput {
   email: String
   passwordHash: String
@@ -996,6 +1283,13 @@ input UserUpdateManyWithoutOccupyingRoomInput {
   disconnect: [UserWhereUniqueInput!]
   update: [UserUpdateWithWhereUniqueWithoutOccupyingRoomInput!]
   upsert: [UserUpsertWithWhereUniqueWithoutOccupyingRoomInput!]
+  deleteMany: [UserScalarWhereInput!]
+  updateMany: [UserUpdateManyWithWhereNestedInput!]
+}
+
+input UserUpdateManyWithWhereNestedInput {
+  where: UserScalarWhereInput!
+  data: UserUpdateManyDataInput!
 }
 
 input UserUpdateOneRequiredInput {

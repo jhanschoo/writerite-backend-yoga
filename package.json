@@ -25,17 +25,17 @@
     "@types/config": "^0.0.34",
     "@types/form-data": "^2.2.1",
     "@types/helmet": "^0.0.42",
-    "@types/jest": "^23.3.9",
+    "@types/jest": "^23.3.10",
     "@types/node-fetch": "^2.1.2",
     "@types/ws": "^6.0.1",
     "jest": "^23.6.0",
-    "prisma": "^1.21.0",
-    "prisma-binding": "^2.2.8",
-    "prisma-client-lib": "^1.21.0",
+    "prisma": "^1.22.2",
+    "prisma-binding": "^2.2.11",
+    "prisma-client-lib": "^1.22.2",
     "ts-jest": "^23.10.5",
     "tslint": "^5.11.0",
-    "typescript": "^3.0.3",
-    "typescript-tslint-plugin": "^0.1.0"
+    "typescript": "^3.2.2",
+    "typescript-tslint-plugin": "^0.2.1"
   },
   "scripts": {
     "build": "tsc",
