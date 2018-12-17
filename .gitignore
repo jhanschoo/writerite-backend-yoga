@@ -2,7 +2,7 @@
 node_modules/
 
 # generated files
-src/generated/
+generated/
 
 # Editor Config
 .vscode/

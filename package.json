@@ -39,7 +39,6 @@
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/src/index.js",
     "start:dev": "tsc && NODE_ENV=development node dist/src/index.js",
     "test": "jest --runInBand"
   }
