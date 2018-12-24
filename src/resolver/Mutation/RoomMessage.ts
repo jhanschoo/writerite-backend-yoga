@@ -13,10 +13,17 @@ const roomMessageCreate: IFieldResolver<any, IWrContext, {
   if (!sub) {
     return null;
   }
-  if (!(await prisma.$exists.room({ id: roomId }))
-    || (!(await prisma.room({ id: roomId }).occupants())
-      .map((user) => user.id).includes(sub.id))) {
+  const pRoom = await prisma.room({ id: roomId });
+  if (!pRoom) {
     return null;
+  }
+  if (await prisma.room({id: roomId}).owner().id() !== sub.id) {
+    // workaround for OR not working properly in prisma client
+    // c.f. https://github.com/prisma/prisma/issues/3763
+    if (!(await prisma.room({ id: roomId }).occupants())
+      .map((user) => user.id).includes(sub.id)) {
+      return null;
+    }
   }
   const pRoomMessage = await prisma.createSimpleUserRoomMessage({
     content: messageContent,
