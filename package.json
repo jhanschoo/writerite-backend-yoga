@@ -40,6 +40,7 @@
   "scripts": {
     "build": "tsc",
     "start:dev": "tsc && NODE_ENV=development node dist/src/index.js",
+    "start:test": "tsc && NODE_ENV=testing node dist/src/index.js",
     "test": "jest --runInBand"
   }
 }

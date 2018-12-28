@@ -5,6 +5,8 @@ import { prisma } from '../generated/prisma-client';
 import resolvers from './resolver';
 import { getClaims } from './util';
 
+const { NODE_ENV } = process.env;
+
 // TODO: use redis instead when needed
 const pubsub = new PubSub();
 
@@ -15,6 +17,7 @@ const server = new GraphQLServer({
     prisma,
     pubsub,
   }),
+  mocks: NODE_ENV === 'testing',
   resolvers,
   typeDefs: 'src/schema/schema.graphql',
 });
