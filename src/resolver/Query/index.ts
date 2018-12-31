@@ -1,14 +1,14 @@
-import { cardQuery } from './Card';
-import { deckQuery } from './Deck';
-import { roomQuery } from './Room';
-import { userQuery } from './User';
+import { rwCardQuery } from './RwCard';
+import { rwDeckQuery } from './RwDeck';
+import { rwRoomQuery } from './RwRoom';
+import { rwUserQuery } from './RwUser';
 
 // tslint:disable-next-line: variable-name
 const Query = {
-  ...cardQuery,
-  ...deckQuery,
-  ...roomQuery,
-  ...userQuery,
+  ...rwCardQuery,
+  ...rwDeckQuery,
+  ...rwRoomQuery,
+  ...rwUserQuery,
 };
 
 export default Query;

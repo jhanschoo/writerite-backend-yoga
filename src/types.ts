@@ -46,3 +46,15 @@ export interface IUpdate<T, M = MutationType> {
   new: T | null;
   oldId: string | null;
 }
+
+export interface IAuthConfig {
+  GOOGLE_CLIENT_ID: string;
+  FACEBOOK_APP_ID: string;
+  FACEBOOK_APP_SECRET: string;
+  RECAPTCHA_SECRET: string;
+}
+
+export interface IHttpsConfig {
+  CERT_FILE: string;
+  KEY_FILE: string;
+}

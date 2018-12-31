@@ -2,41 +2,41 @@ import { Deck as PDeck, Prisma } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
-import { IUser, IBakedUser, pUserToIUser } from './User';
-import { ICard, IBakedCard, pCardToICard } from './Card';
+import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
+import { IRwCard, IBakedRwCard, pCardToRwCard } from './RwCard';
 
-export interface IDeck {
+export interface IRwDeck {
   id: ResTo<string>;
   name: ResTo<string>;
-  owner: ResTo<IUser>;
-  cards: ResTo<ICard[]>;
+  owner: ResTo<IRwUser>;
+  cards: ResTo<IRwCard[]>;
 }
 
 // tslint:disable-next-line: variable-name
-export const Deck: ResTo<IDeck> = {
+export const RwDeck: ResTo<IRwDeck> = {
   id: fieldGetter('id'),
   name: fieldGetter('name'),
   owner: fieldGetter('owner'),
   cards: fieldGetter('cards'),
 };
 
-export interface IBakedDeck extends IDeck {
+export interface IBakedRwDeck extends IRwDeck {
   id: string;
   name: string;
-  owner: AFunResTo<IBakedUser>;
-  cards: AFunResTo<IBakedCard[]>;
+  owner: AFunResTo<IBakedRwUser>;
+  cards: AFunResTo<IBakedRwCard[]>;
 }
 
-export function pDeckToIDeck(pDeck: PDeck, prisma: Prisma): IBakedDeck {
+export function pDeckToRwDeck(pDeck: PDeck, prisma: Prisma): IBakedRwDeck {
   return {
     id: pDeck.id,
     name: pDeck.name,
-    owner: async () => pUserToIUser(
+    owner: async () => pUserToRwUser(
       await prisma.deck({ id: pDeck.id }).owner(),
       prisma,
     ),
     cards: async () => (
       await prisma.deck({ id: pDeck.id }).cards()
-    ).map((pCard) => pCardToICard(pCard, prisma)),
+    ).map((pCard) => pCardToRwCard(pCard, prisma)),
   };
 }

@@ -2,7 +2,7 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { AuthorizerType, ResTo, IWrContext } from '../../types';
 
-import { IAuthResponse } from '../Authorization';
+import { IRwAuthResponse } from '../Authorization';
 
 import { GoogleAuthService } from '../../service/GoogleAuthService';
 import { FacebookAuthService } from '../../service/FacebookAuthService';
@@ -24,7 +24,7 @@ const signin: IFieldResolver<any, IWrContext, {
   _parent,
   { email, token, authorizer, identifier, persist },
   { prisma },
-): Promise<IAuthResponse | null> => {
+): Promise<IRwAuthResponse | null> => {
   if (authorizer === AuthorizerType.LOCAL) {
     return localAuth.signin({
       prisma, email, token, identifier, persist,

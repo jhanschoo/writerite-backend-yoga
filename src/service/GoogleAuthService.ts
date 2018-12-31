@@ -2,10 +2,11 @@ import config from 'config';
 import { OAuth2Client } from 'google-auth-library';
 
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
+import { IAuthConfig } from '../types';
 
-const AUTH: any = config.get('auth');
+const { GOOGLE_CLIENT_ID } = config.get<IAuthConfig>('AUTH');
 
-const googleClient = new OAuth2Client(AUTH.google_client_id);
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
 export class GoogleAuthService extends AbstractAuthService {
 
@@ -31,7 +32,7 @@ export class GoogleAuthService extends AbstractAuthService {
   protected async verify(idToken: string) {
     return new Promise<string | undefined>((res, rej) => {
       googleClient.verifyIdToken({
-        audience: AUTH.google_client_id,
+        audience: GOOGLE_CLIENT_ID,
         idToken,
       }).then((ticket) => {
         if (!ticket || ticket === null) {

@@ -2,14 +2,14 @@ import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
-import { cardQuery } from '../src/resolver/Query/Card';
-import { cardMutation } from '../src/resolver/Mutation/Card';
+import { rwCardQuery } from '../src/resolver/Query/RwCard';
+import { rwCardMutation } from '../src/resolver/Mutation/RwCard';
 import { prisma, Deck, User, SimpleCard } from '../generated/prisma-client';
 import { IWrContext } from '../src/types';
 import { resolveField } from '../src/util';
 
-const { card, cardsFromDeck } = cardQuery;
-const { cardSave, cardDelete } = cardMutation;
+const { rwCard, rwCardsOfDeck } = rwCardQuery;
+const { rwCardSave, rwCardDelete } = rwCardMutation;
 
 const pubsub = new PubSub();
 const baseCtx = { prisma, pubsub } as IWrContext;
@@ -77,7 +77,7 @@ describe('Card resolvers', async () => {
 
     test('it should return cards having specified id if deck exists', async () => {
       expect.assertions(2);
-      const cardObj = await card(
+      const cardObj = await rwCard(
         null, { id: CARD.id }, baseCtx, baseInfo,
       );
       expect(cardObj).toHaveProperty('front', FRONT);
@@ -85,7 +85,7 @@ describe('Card resolvers', async () => {
     });
     test('it should return null if no card with said id exists', async () => {
       expect.assertions(1);
-      const cardObjs = await card(
+      const cardObjs = await rwCard(
         null, { id: '1234567' }, baseCtx, baseInfo,
       );
       expect(cardObjs).toBeNull();
@@ -98,8 +98,8 @@ describe('Card resolvers', async () => {
 
     test('it should return cards from deck containing specified id if deck exists', async () => {
       expect.assertions(1);
-      const cardObjs = await cardsFromDeck(
-        null, { id: DECK.id }, baseCtx, baseInfo,
+      const cardObjs = await rwCardsOfDeck(
+        null, { deckId: DECK.id }, baseCtx, baseInfo,
       );
       expect(cardObjs).toContainEqual(
         expect.objectContaining({ front: FRONT, back: BACK }),
@@ -107,7 +107,7 @@ describe('Card resolvers', async () => {
     });
     test('it should return null if no deck with said id exists', async () => {
       expect.assertions(1);
-      const cardObjs = await cardsFromDeck(null, { id: '1234567' }, baseCtx, baseInfo);
+      const cardObjs = await rwCardsOfDeck(null, { deckId: '1234567' }, baseCtx, baseInfo);
       expect(cardObjs).toBeNull();
     });
   });
@@ -118,13 +118,13 @@ describe('Card resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(cardSave(
+      expect(rwCardSave(
         null, { front: NEW_FRONT, back: NEW_BACK, deckId: DECK.id }, baseCtx, baseInfo,
       )).resolves.toBeNull();
     });
     test('it should save card if id not supplied and deck\'s owner is sub.id', async () => {
       expect.assertions(7);
-      const cardObj = await cardSave(
+      const cardObj = await rwCardSave(
         null,
         { front: NEW_FRONT, back: NEW_BACK, deckId: DECK.id },
         {
@@ -147,7 +147,7 @@ describe('Card resolvers', async () => {
     });
     test('it should return null if id not supplied and deck\'s owner is not sub.id', async () => {
       expect.assertions(2);
-      expect(cardSave(
+      expect(rwCardSave(
         null,
         { front: NEW_FRONT, back: NEW_BACK, deckId: OTHER_DECK.id },
         {
@@ -169,7 +169,7 @@ describe('Card resolvers', async () => {
     });
     test('it should update if id is supplied and deck\'s owner is sub.id', async () => {
       expect.assertions(6);
-      const cardObj = await cardSave(
+      const cardObj = await rwCardSave(
         null,
         { id: CARD.id, front: NEW_FRONT, back: NEW_BACK, deckId: DECK.id },
         {
@@ -190,7 +190,7 @@ describe('Card resolvers', async () => {
     });
     test('it should return null if id is supplied but deck is not correct', async () => {
       expect.assertions(4);
-      expect(cardSave(
+      expect(rwCardSave(
         null,
         { id: CARD.id, front: NEW_FRONT, back: NEW_BACK, deckId: NEXT_DECK.id },
         {
@@ -208,7 +208,7 @@ describe('Card resolvers', async () => {
     });
     test('it should return null if deck\'s owner is not sub.id', async () => {
       expect.assertions(4);
-      expect(cardSave(
+      expect(rwCardSave(
         null,
         { id: OTHER_CARD.id, front: NEW_FRONT, back: NEW_BACK, deckId: OTHER_DECK.id },
         {
@@ -232,11 +232,11 @@ describe('Card resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      expect(cardDelete(null, { id: CARD.id }, baseCtx, baseInfo)).resolves.toBeNull();
+      expect(rwCardDelete(null, { id: CARD.id }, baseCtx, baseInfo)).resolves.toBeNull();
     });
     test('it should delete if deck\'s owner is sub.id', async () => {
       expect.assertions(5);
-      const cardObj = await cardDelete(
+      const cardObj = await rwCardDelete(
         null,
         { id: CARD.id },
         {
@@ -257,7 +257,7 @@ describe('Card resolvers', async () => {
     });
     test('it should not delete if deck\'s owner is not sub.id', async () => {
       expect.assertions(1);
-      expect(cardDelete(
+      expect(rwCardDelete(
         null,
         { id: OTHER_CARD.id },
         {

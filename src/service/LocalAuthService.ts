@@ -4,8 +4,9 @@ import FormData from 'form-data';
 
 import { comparePassword, hashPassword } from '../util';
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
+import { IAuthConfig } from '../types';
 
-const AUTH: any = config.get('auth');
+const { RECAPTCHA_SECRET } = config.get<IAuthConfig>('AUTH');
 
 export class LocalAuthService extends AbstractAuthService {
 
@@ -31,7 +32,7 @@ export class LocalAuthService extends AbstractAuthService {
 
   protected async verify(token: string) {
     const form = new FormData();
-    form.append('secret', AUTH.recaptcha_secret);
+    form.append('secret', RECAPTCHA_SECRET);
     form.append('response', token);
 
     return new Promise<string | undefined>((res, rej) => {

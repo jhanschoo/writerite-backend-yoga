@@ -2,37 +2,37 @@ import { Prisma, User as PUser } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
-import { IDeck, IBakedDeck, pDeckToIDeck } from './Deck';
+import { IRwDeck, IBakedRwDeck, pDeckToRwDeck } from './RwDeck';
 
-export interface IUser {
+export interface IRwUser {
   id: ResTo<string>;
   email: ResTo<string>;
   roles: ResTo<string[]>;
-  decks: ResTo<IDeck[]>;
+  decks: ResTo<IRwDeck[]>;
 }
 
-export interface IBakedUser extends IUser {
+export interface IBakedRwUser extends IRwUser {
   id: string;
   email: string;
   roles: string[];
-  decks: AFunResTo<IBakedDeck[]>;
+  decks: AFunResTo<IBakedRwDeck[]>;
 }
 
 // tslint:disable-next-line: variable-name
-export const User: ResTo<IUser> = {
+export const RwUser: ResTo<IRwUser> = {
   id: fieldGetter('id'),
   email: fieldGetter('email'),
   roles: fieldGetter('roles'),
   decks: fieldGetter('decks'),
 };
 
-export function pUserToIUser(pUser: PUser, prisma: Prisma): IBakedUser {
+export function pUserToRwUser(pUser: PUser, prisma: Prisma): IBakedRwUser {
   return {
     id: pUser.id,
     email: pUser.email,
     roles: pUser.defaultRoles,
     decks: async () => (
       await prisma.user({ id: pUser.id }).decks()
-    ).map((pDeck) => pDeckToIDeck(pDeck, prisma)),
+    ).map((pDeck) => pDeckToRwDeck(pDeck, prisma)),
   };
 }

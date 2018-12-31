@@ -5,9 +5,9 @@ import { PubSub } from 'graphql-yoga';
 import { prisma, User } from '../generated/prisma-client';
 import { Roles, IWrContext } from '../src/types';
 
-import { userQuery } from '../src/resolver/Query/User';
+import { rwUserQuery } from '../src/resolver/Query/RwUser';
 
-const { user, users } = userQuery;
+const { rwUser, rwUsers } = rwUserQuery;
 
 const pubsub = new PubSub();
 const baseCtx = { prisma, pubsub } as IWrContext;
@@ -43,12 +43,12 @@ describe('User resolvers', async () => {
 
     test('it should return null on no user present', async () => {
       expect.assertions(1);
-      const userObj = await user(null, { id: '1234567' }, baseCtx, baseInfo);
+      const userObj = await rwUser(null, { id: '1234567' }, baseCtx, baseInfo);
       expect(userObj).toBeNull();
     });
     test('it should return user if it exists', async () => {
       expect.assertions(1);
-      const userObj = await user(null, { id: USER.id }, baseCtx, baseInfo);
+      const userObj = await rwUser(null, { id: USER.id }, baseCtx, baseInfo);
       if (!userObj) {
         throw new Error('`user` could not be retrieved');
       }
@@ -62,12 +62,12 @@ describe('User resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const userObj1 = await users(null, null, baseCtx, baseInfo);
+      const userObj1 = await rwUsers(null, null, baseCtx, baseInfo);
       expect(userObj1).toBeNull();
     });
     test('it should return null if not authorized as admin', async () => {
       expect.assertions(1);
-      const userObj = await users(null, null, {
+      const userObj = await rwUsers(null, null, {
         ...baseCtx,
         sub: {
           roles: [Roles.user],
@@ -78,7 +78,7 @@ describe('User resolvers', async () => {
 
     test('it should return users if they exist', async () => {
       expect.assertions(1);
-      const userObjs = await users(null, null, {
+      const userObjs = await rwUsers(null, null, {
         ...baseCtx,
         sub: {
           id: USER.id,

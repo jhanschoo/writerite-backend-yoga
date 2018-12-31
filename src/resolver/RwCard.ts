@@ -2,38 +2,38 @@ import { Prisma, SimpleCard as PSimpleCard } from '../../generated/prisma-client
 import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
-import { IDeck, IBakedDeck, pDeckToIDeck } from './Deck';
+import { IRwDeck, IBakedRwDeck, pDeckToRwDeck } from './RwDeck';
 
-export interface ICard {
+export interface IRwCard {
   id: ResTo<string>;
   front: ResTo<string>;
   back: ResTo<string>;
-  deck: ResTo<IDeck>;
+  deck: ResTo<IRwDeck>;
 }
 
 // tslint:disable-next-line: variable-name
-export const Card: ICard = {
+export const RwCard: IRwCard = {
   id: fieldGetter<string>('id'),
   front: fieldGetter<string>('front'),
   back: fieldGetter<string>('back'),
-  deck: fieldGetter<IDeck>('deck'),
+  deck: fieldGetter<IRwDeck>('deck'),
 };
 
-export interface IBakedCard extends ICard {
+export interface IBakedRwCard extends IRwCard {
   id: string;
   front: string;
   back: string;
-  deck: AFunResTo<IBakedDeck>;
+  deck: AFunResTo<IBakedRwDeck>;
 }
 
 // Relation resolver
-export function pCardToICard(pSimpleCard: PSimpleCard, prisma: Prisma): IBakedCard {
+export function pCardToRwCard(pSimpleCard: PSimpleCard, prisma: Prisma): IBakedRwCard {
   return {
     id: pSimpleCard.id,
     front: pSimpleCard.front,
     back: pSimpleCard.back,
     deck: async () => {
-      return pDeckToIDeck(
+      return pDeckToRwDeck(
         await prisma.simpleCard({ id: pSimpleCard.id }).deck(),
         prisma,
       );

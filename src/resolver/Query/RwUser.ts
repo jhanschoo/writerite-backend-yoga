@@ -2,11 +2,11 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { Roles, IWrContext } from '../../types';
 
-import { IUser, pUserToIUser } from '../User';
+import { IRwUser, pUserToRwUser } from '../RwUser';
 
-const users: IFieldResolver<any, IWrContext, any> = async (
+const rwUsers: IFieldResolver<any, IWrContext, any> = async (
   _parent, _args, { prisma, sub },
-): Promise<IUser[] | null> => {
+): Promise<IRwUser[] | null> => {
   if (!sub) {
     return null;
   }
@@ -15,21 +15,21 @@ const users: IFieldResolver<any, IWrContext, any> = async (
     if (!pUsers) {
       return null;
     }
-    return pUsers.map((pUser) => pUserToIUser(pUser, prisma));
+    return pUsers.map((pUser) => pUserToRwUser(pUser, prisma));
   }
   return null;
 };
 
-const user: IFieldResolver<any, any, { id: string }> = async (
+const rwUser: IFieldResolver<any, any, { id: string }> = async (
   _parent, { id }, { prisma },
-): Promise<IUser | null> => {
+): Promise<IRwUser | null> => {
   const pUser = await prisma.user({ id });
   if (!pUser) {
     return null;
   }
-  return pUserToIUser(pUser, prisma);
+  return pUserToRwUser(pUser, prisma);
 };
 
-export const userQuery = {
-  user, users,
+export const rwUserQuery = {
+  rwUser, rwUsers,
 };

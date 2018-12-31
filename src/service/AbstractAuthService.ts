@@ -1,7 +1,7 @@
 import { User as PUser, Prisma } from '../../generated/prisma-client';
 import { generateJWT } from '../util';
-import { pUserToIUser } from '../resolver/User';
-import { IAuthResponse } from '../resolver/Authorization';
+import { pUserToRwUser } from '../resolver/RwUser';
+import { IRwAuthResponse } from '../resolver/Authorization';
 
 export interface ISigninOptions {
   prisma: Prisma;
@@ -17,8 +17,8 @@ export abstract class AbstractAuthService {
       persist?: boolean,
       prisma: Prisma,
     },
-  ): Promise<IAuthResponse> {
-    const user = pUserToIUser(pUser, prisma);
+  ): Promise<IRwAuthResponse> {
+    const user = pUserToRwUser(pUser, prisma);
     return {
       token: generateJWT({
         id: pUser.id,

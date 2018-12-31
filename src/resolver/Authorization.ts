@@ -1,8 +1,8 @@
 import { ResTo } from '../types';
 
-import { IUser } from './User';
+import { IRwUser } from './RwUser';
 
-export interface IAuthResponse {
-  user: ResTo<IUser>;
+export interface IRwAuthResponse {
+  user: ResTo<IRwUser>;
   token: ResTo<string>;
 }

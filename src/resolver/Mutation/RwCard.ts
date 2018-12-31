@@ -2,17 +2,17 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IWrContext } from '../../types';
 
-import { ICard, pCardToICard } from '../Card';
+import { IRwCard, pCardToRwCard } from '../RwCard';
 
 // Mutation resolvers
 
-const cardSave: IFieldResolver<any, IWrContext, {
+const rwCardSave: IFieldResolver<any, IWrContext, {
   id?: string, front: string, back: string, deckId: string,
 }> = async (
   _parent,
   { id, front, back, deckId },
   { prisma, sub },
-): Promise<ICard | null> => {
+): Promise<IRwCard | null> => {
   if (!sub) {
     return null;
   }
@@ -20,7 +20,7 @@ const cardSave: IFieldResolver<any, IWrContext, {
     if (await prisma.$exists.simpleCard({ id, deck: { id: (deckId as string), owner: { id: sub.id } } })) {
       const pCard = await prisma.updateSimpleCard({ data: { front, back }, where: { id } });
       if (pCard) {
-        return pCardToICard(pCard, prisma);
+        return pCardToRwCard(pCard, prisma);
       }
     }
     return null;
@@ -32,14 +32,14 @@ const cardSave: IFieldResolver<any, IWrContext, {
     if (!pCard) {
       return null;
     }
-    return pCardToICard(pCard, prisma);
+    return pCardToRwCard(pCard, prisma);
   }
   return null;
 };
 
-const cardDelete: IFieldResolver<any, IWrContext, { id: string }> = async (
+const rwCardDelete: IFieldResolver<any, IWrContext, { id: string }> = async (
   _parent, { id }, { prisma, sub },
-): Promise<ICard | null> => {
+): Promise<IRwCard | null> => {
   if (!sub) {
     return null;
   }
@@ -50,9 +50,9 @@ const cardDelete: IFieldResolver<any, IWrContext, { id: string }> = async (
   if (!pCard) {
     return null;
   }
-  return pCardToICard(pCard, prisma);
+  return pCardToRwCard(pCard, prisma);
 };
 
-export const cardMutation = {
-  cardSave, cardDelete,
+export const rwCardMutation = {
+  rwCardSave, rwCardDelete,
 };

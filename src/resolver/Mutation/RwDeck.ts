@@ -2,15 +2,15 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { MutationType, IWrContext } from '../../types';
 
-import { pDeckToIDeck, IBakedDeck } from '../Deck';
-import { deckTopicFromUser, IDeckPayload } from '../Subscription/Deck';
+import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
+import { rwDeckTopicFromRwUser, IRwDeckPayload } from '../Subscription/RwDeck';
 
-const deckSave: IFieldResolver<any, IWrContext, {
+const rwDeckSave: IFieldResolver<any, IWrContext, {
   id?: string,
   name?: string,
 }> = async (
   _parent, { id, name }, { sub, prisma, pubsub },
-): Promise<IBakedDeck | null> => {
+): Promise<IBakedRwDeck | null> => {
   if (!sub) {
     return null;
   }
@@ -25,15 +25,15 @@ const deckSave: IFieldResolver<any, IWrContext, {
     if (!pDeck) {
       return null;
     }
-    const deckObj = pDeckToIDeck(pDeck, prisma);
-    const deckUpdate: IDeckPayload = {
-      deckUpdates: {
+    const deckObj = pDeckToRwDeck(pDeck, prisma);
+    const deckUpdate: IRwDeckPayload = {
+      rwDeckUpdates: {
         mutation: MutationType.UPDATED,
         new: deckObj,
         oldId: null,
       },
     };
-    pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
     return deckObj;
   } else {
     const pDeck = await prisma.createDeck({
@@ -43,20 +43,20 @@ const deckSave: IFieldResolver<any, IWrContext, {
     if (!pDeck) {
       return null;
     }
-    const deckObj = pDeckToIDeck(pDeck, prisma);
-    const deckUpdate: IDeckPayload = {
-      deckUpdates: {
+    const deckObj = pDeckToRwDeck(pDeck, prisma);
+    const deckUpdate: IRwDeckPayload = {
+      rwDeckUpdates: {
         mutation: MutationType.CREATED,
         new: deckObj,
         oldId: null,
       },
     };
-    pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
     return deckObj;
   }
 };
 
-const deckDelete: IFieldResolver<any, IWrContext, {
+const rwDeckDelete: IFieldResolver<any, IWrContext, {
   id: string,
 }> = async (
   _parent: any,
@@ -73,17 +73,17 @@ const deckDelete: IFieldResolver<any, IWrContext, {
   if (!pDeck) {
     return null;
   }
-  const deckUpdate: IDeckPayload = {
-    deckUpdates: {
+  const deckUpdate: IRwDeckPayload = {
+    rwDeckUpdates: {
       mutation: MutationType.DELETED,
       new: null,
       oldId: pDeck.id,
     },
   };
-  pubsub.publish(deckTopicFromUser(sub.id), deckUpdate);
+  pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
   return pDeck.id;
 };
 
-export const deckMutation = {
-  deckSave, deckDelete,
+export const rwDeckMutation = {
+  rwDeckSave, rwDeckDelete,
 };

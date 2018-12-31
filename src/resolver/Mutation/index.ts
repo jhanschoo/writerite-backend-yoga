@@ -1,16 +1,16 @@
 import { authorizationMutation } from './Authorization';
-import { cardMutation } from './Card';
-import { deckMutation } from './Deck';
-import { roomMutation } from './Room';
-import { roomMessageMutation } from './RoomMessage';
+import { rwCardMutation } from './RwCard';
+import { rwDeckMutation } from './RwDeck';
+import { rwRoomMutation } from './RwRoom';
+import { rwRoomMessageMutation } from './RwRoomMessage';
 
 // tslint:disable-next-line: variable-name
 const Mutation = {
   ...authorizationMutation,
-  ...cardMutation,
-  ...deckMutation,
-  ...roomMutation,
-  ...roomMessageMutation,
+  ...rwCardMutation,
+  ...rwDeckMutation,
+  ...rwRoomMutation,
+  ...rwRoomMessageMutation,
 };
 
 export default Mutation;

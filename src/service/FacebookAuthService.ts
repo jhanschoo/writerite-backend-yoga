@@ -2,14 +2,15 @@ import config from 'config';
 import fetch from 'node-fetch';
 
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
+import { IAuthConfig } from '../types';
 
-const AUTH: any = config.get('auth');
+const { FACEBOOK_APP_ID, FACEBOOK_APP_SECRET } = config.get<IAuthConfig>('AUTH');
 let FB_ACCESS_TOKEN = 'FB_ACCESS_TOKEN not set!';
 
 const FB_ACCESS_TOKEN_QUERY = `https://graph.facebook.com/oauth/access_token?client_id=${
-  AUTH.facebook_app_id
+  FACEBOOK_APP_ID
   }&client_secret=${
-  AUTH.facebook_app_secret
+  FACEBOOK_APP_SECRET
   }&grant_type=client_credentials`;
 
 fetch(FB_ACCESS_TOKEN_QUERY).then((response) => {
@@ -48,7 +49,7 @@ export class FacebookAuthService extends AbstractAuthService {
     return new Promise<string | undefined>((res, rej) => {
       fetch(VERIFY_URL).then((response) => {
         return response.json().then((json) => {
-          if (json.data && json.data.app_id === AUTH.facebook_app_id && json.data.is_valid) {
+          if (json.data && json.data.app_id === FACEBOOK_APP_ID && json.data.is_valid) {
             return res(json.data.user_id as string);
           } else {
             return res(undefined);
