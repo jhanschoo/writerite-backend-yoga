@@ -26,16 +26,16 @@ export class FacebookAuthService extends AbstractAuthService {
     if (!facebookId || facebookId !== identifier) {
       return null;
     }
-    if (await prisma.$exists.user({ email })) {
-      if (await prisma.$exists.user({ email, facebookId })) {
+    if (await prisma.$exists.pUser({ email })) {
+      if (await prisma.$exists.pUser({ email, facebookId })) {
         return FacebookAuthService.authResponseFromUser(
-          await prisma.user({ email }), { persist, prisma },
+          await prisma.pUser({ email }), { persist, prisma },
         );
       } else {
         return null;
       }
     }
-    const user = await prisma.createUser(
+    const user = await prisma.createPUser(
       { email, facebookId, defaultRoles: { set: ['user'] } },
     );
     return FacebookAuthService.authResponseFromUser(user, { persist, prisma });

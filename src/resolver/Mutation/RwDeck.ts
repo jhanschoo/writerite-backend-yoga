@@ -1,11 +1,11 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { MutationType, IWrContext } from '../../types';
+import { MutationType, IRwContext } from '../../types';
 
 import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
 import { rwDeckTopicFromRwUser, IRwDeckPayload } from '../Subscription/RwDeck';
 
-const rwDeckSave: IFieldResolver<any, IWrContext, {
+const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
   name?: string,
 }> = async (
@@ -15,10 +15,10 @@ const rwDeckSave: IFieldResolver<any, IWrContext, {
     return null;
   }
   if (id) {
-    if (!await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
+    if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
       return null;
     }
-    const pDeck = await prisma.updateDeck({
+    const pDeck = await prisma.updatePDeck({
       data: (name && name.trim()) ? { name } : {},
       where: { id },
     });
@@ -36,7 +36,7 @@ const rwDeckSave: IFieldResolver<any, IWrContext, {
     pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
     return deckObj;
   } else {
-    const pDeck = await prisma.createDeck({
+    const pDeck = await prisma.createPDeck({
       name: (name && name.trim()) || 'New Deck',
       owner: { connect: { id: sub.id } },
     });
@@ -56,7 +56,7 @@ const rwDeckSave: IFieldResolver<any, IWrContext, {
   }
 };
 
-const rwDeckDelete: IFieldResolver<any, IWrContext, {
+const rwDeckDelete: IFieldResolver<any, IRwContext, {
   id: string,
 }> = async (
   _parent: any,
@@ -66,10 +66,10 @@ const rwDeckDelete: IFieldResolver<any, IWrContext, {
   if (!sub) {
     return null;
   }
-  if (!await prisma.$exists.deck({ id, owner: { id: sub.id } })) {
+  if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
     return null;
   }
-  const pDeck = await prisma.deleteDeck({ id });
+  const pDeck = await prisma.deletePDeck({ id });
   if (!pDeck) {
     return null;
   }

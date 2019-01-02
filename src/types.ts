@@ -10,7 +10,7 @@ export type ResTo<T> =
   | FunResTo<T>
   | T;
 
-export interface IWrContext {
+export interface IRwContext {
   req: ContextParameters;
   sub?: ICurrentUser;
   prisma: Prisma;

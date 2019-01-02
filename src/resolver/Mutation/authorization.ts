@@ -1,8 +1,8 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { AuthorizerType, ResTo, IWrContext } from '../../types';
+import { AuthorizerType, IRwContext } from '../../types';
 
-import { IRwAuthResponse } from '../Authorization';
+import { IRwAuthResponse } from '../authorization';
 
 import { GoogleAuthService } from '../../service/GoogleAuthService';
 import { FacebookAuthService } from '../../service/FacebookAuthService';
@@ -14,7 +14,7 @@ const facebookAuth = new FacebookAuthService();
 const localAuth = new LocalAuthService();
 const developmentAuth = new DevelopmentAuthService();
 
-const signin: IFieldResolver<any, IWrContext, {
+const signin: IFieldResolver<any, IRwContext, {
   email: string,
   token: string,
   authorizer: string,

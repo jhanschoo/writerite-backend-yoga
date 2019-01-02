@@ -11,8 +11,8 @@ const { RECAPTCHA_SECRET } = config.get<IAuthConfig>('AUTH');
 export class LocalAuthService extends AbstractAuthService {
 
   public async signin({ prisma, email, token, identifier: password, persist }: ISigninOptions) {
-    if (await prisma.$exists.user({ email })) {
-      const knownUser = await prisma.user({ email });
+    if (await prisma.$exists.pUser({ email })) {
+      const knownUser = await prisma.pUser({ email });
       if (!knownUser || !knownUser.passwordHash || !await comparePassword(password, knownUser.passwordHash)) {
         return null;
       }
@@ -24,7 +24,7 @@ export class LocalAuthService extends AbstractAuthService {
     }
     // create
     const passwordHash = await hashPassword(password);
-    const user = prisma.createUser(
+    const user = prisma.createPUser(
       { email, passwordHash, defaultRoles: { set: ['user'] } },
     );
     return LocalAuthService.authResponseFromUser(await user, { persist, prisma });

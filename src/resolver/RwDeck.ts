@@ -1,4 +1,4 @@
-import { Deck as PDeck, Prisma } from '../../generated/prisma-client';
+import { PDeck, Prisma } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
@@ -32,11 +32,11 @@ export function pDeckToRwDeck(pDeck: PDeck, prisma: Prisma): IBakedRwDeck {
     id: pDeck.id,
     name: pDeck.name,
     owner: async () => pUserToRwUser(
-      await prisma.deck({ id: pDeck.id }).owner(),
+      await prisma.pDeck({ id: pDeck.id }).owner(),
       prisma,
     ),
     cards: async () => (
-      await prisma.deck({ id: pDeck.id }).cards()
+      await prisma.pDeck({ id: pDeck.id }).cards()
     ).map((pCard) => pCardToRwCard(pCard, prisma)),
   };
 }

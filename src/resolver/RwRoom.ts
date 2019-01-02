@@ -1,4 +1,4 @@
-import { Room as PRoom, Prisma } from '../../generated/prisma-client';
+import { PRoom, Prisma } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import {
@@ -38,14 +38,14 @@ export function pRoomToRwRoom(pRoom: PRoom, prisma: Prisma): IBakedRwRoom {
     name: pRoom.name,
     active: pRoom.active,
     owner: async () => pUserToRwUser(
-      await prisma.room({ id: pRoom.id }).owner(),
+      await prisma.pRoom({ id: pRoom.id }).owner(),
       prisma,
     ),
     occupants: async () => (
-      await prisma.room({ id: pRoom.id }).occupants()
+      await prisma.pRoom({ id: pRoom.id }).occupants()
     ).map((pUser) => pUserToRwUser(pUser, prisma)),
     messages: async () => (
-      await prisma.room({ id: pRoom.id }).messages()
+      await prisma.pRoom({ id: pRoom.id }).messages()
     ).map((pRoomMessage) => pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma)),
   };
 }

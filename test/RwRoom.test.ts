@@ -2,8 +2,8 @@ import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
-import { prisma, Room, User } from '../generated/prisma-client';
-import { IWrContext } from '../src/types';
+import { prisma, PRoom, PUser } from '../generated/prisma-client';
+import { IRwContext } from '../src/types';
 
 import { rwRoomQuery } from '../src/resolver/Query/RwRoom';
 import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom';
@@ -11,7 +11,7 @@ import { rwRoomMessageMutation } from '../src/resolver/Mutation/RwRoomMessage';
 import { rwRoomMessageSubscription } from '../src/resolver/Subscription/RwRoomMessage';
 
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IWrContext;
+const baseCtx = { prisma, pubsub } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const { rwRoom } = rwRoomQuery;
@@ -25,18 +25,18 @@ const NEW_EMAIL = 'ghi@xyz';
 const NEW_CONTENT = 'baz';
 const ROOM_NAME = 'r1';
 
-describe('Room resolvers', async () => {
-  let USER: User;
-  let OTHER_USER: User;
-  let ROOM: Room;
-  let OTHER_ROOM: Room;
+describe('RwRoom resolvers', async () => {
+  let USER: PUser;
+  let OTHER_USER: PUser;
+  let ROOM: PRoom;
+  let OTHER_ROOM: PRoom;
   const commonBeforeEach = async () => {
-    await prisma.deleteManySimpleUserRoomMessages({});
-    await prisma.deleteManyRooms({});
-    await prisma.deleteManyUsers({});
-    USER = await prisma.createUser({ email: EMAIL });
-    OTHER_USER = await prisma.createUser({ email: OTHER_EMAIL });
-    ROOM = await prisma.createRoom({
+    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPUsers({});
+    USER = await prisma.createPUser({ email: EMAIL });
+    OTHER_USER = await prisma.createPUser({ email: OTHER_EMAIL });
+    ROOM = await prisma.createPRoom({
       active: true,
       name: ROOM_NAME,
       owner: { connect: { id: USER.id } },
@@ -44,27 +44,27 @@ describe('Room resolvers', async () => {
         connect: { id: USER.id },
       },
     });
-    OTHER_ROOM = await prisma.createRoom({
+    OTHER_ROOM = await prisma.createPRoom({
       active: true, name: ROOM_NAME, owner: {
         connect: { id: OTHER_USER.id },
       },
     });
   };
   const commonAfterEach = async () => {
-    await prisma.deleteManySimpleUserRoomMessages({});
-    await prisma.deleteManyRooms({});
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPUsers({});
   };
 
   beforeEach(async () => {
-    await prisma.deleteManySimpleUserRoomMessages({});
-    await prisma.deleteManyRooms({});
-    await prisma.deleteManySimpleCards({});
-    await prisma.deleteManyDecks({});
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPSimpleCards({});
+    await prisma.deleteManyPDecks({});
+    await prisma.deleteManyPUsers({});
   });
 
-  describe('room', () => {
+  describe('rwRoom', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -82,7 +82,7 @@ describe('Room resolvers', async () => {
     });
   });
 
-  describe('roomCreate', () => {
+  describe('rwRoomCreate', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -95,11 +95,11 @@ describe('Room resolvers', async () => {
       expect.assertions(3);
       const roomObj = await rwRoomCreate(null, {}, {
         ...baseCtx, sub: { id: USER.id },
-      } as IWrContext, baseInfo);
+      } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
       expect(roomObj).toHaveProperty('name');
       if (roomObj) {
-        const ownerId = await prisma.room({ id: roomObj.id }).owner().id();
+        const ownerId = await prisma.pRoom({ id: roomObj.id }).owner().id();
         expect(ownerId).toBe(USER.id);
       }
     });
@@ -107,17 +107,17 @@ describe('Room resolvers', async () => {
       expect.assertions(3);
       const roomObj = await rwRoomCreate(null, { name: ROOM_NAME }, {
         ...baseCtx, sub: { id: USER.id },
-      } as IWrContext, baseInfo);
+      } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
       expect(roomObj).toHaveProperty('name', ROOM_NAME);
       if (roomObj) {
-        const ownerId = await prisma.room({ id: roomObj.id }).owner().id();
+        const ownerId = await prisma.pRoom({ id: roomObj.id }).owner().id();
         expect(ownerId).toBe(USER.id);
       }
     });
   });
 
-  describe('roomAddOccupant', () => {
+  describe('rwRoomAddOccupant', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -144,21 +144,21 @@ describe('Room resolvers', async () => {
     });
     test('it makes no noticeable change when occupant is already in room', async () => {
       expect.assertions(3);
-      const priorOccupants = await prisma.room({ id: ROOM.id }).occupants();
+      const priorOccupants = await prisma.pRoom({ id: ROOM.id }).occupants();
       expect(priorOccupants).toContainEqual(expect.objectContaining({ id: USER.id }));
       const roomObj = await rwRoomAddOccupant(
         null, { id: ROOM.id, occupantId: USER.id }, baseCtx, baseInfo,
       );
       expect(roomObj).toBeTruthy();
       if (roomObj) {
-        const actualOccupants = (await prisma.room({ id: roomObj.id }).occupants())
+        const actualOccupants = (await prisma.pRoom({ id: roomObj.id }).occupants())
           .map((user) => user.id).sort();
         expect(actualOccupants).toEqual(priorOccupants.map((user) => user.id).sort());
       }
     });
     test('it adds occupant when occupant is not already in room', async () => {
       expect.assertions(3);
-      const priorOccupants = await prisma.room({ id: ROOM.id }).occupants();
+      const priorOccupants = await prisma.pRoom({ id: ROOM.id }).occupants();
       expect(priorOccupants).not.toContainEqual(
         expect.objectContaining({ id: OTHER_USER.id }),
       );
@@ -167,7 +167,7 @@ describe('Room resolvers', async () => {
       );
       expect(roomObj).toBeTruthy();
       if (roomObj) {
-        const actualIds = (await prisma.room({ id: roomObj.id }).occupants())
+        const actualIds = (await prisma.pRoom({ id: roomObj.id }).occupants())
           .map((user) => user.id).sort();
         const expectedIds = (priorOccupants.map((user) => user.id).concat([OTHER_USER.id])).sort();
         expect(actualIds).toEqual(expectedIds);
@@ -175,7 +175,7 @@ describe('Room resolvers', async () => {
     });
   });
 
-  describe('roomMessageCreate', () => {
+  describe('rwRoomMessageCreate', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -201,7 +201,7 @@ describe('Room resolvers', async () => {
       const roomMessageObj = await rwRoomMessageCreate(
         null,
         { roomId: '1234567', messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: USER.id } } as IWrContext,
+        { ...baseCtx, sub: { id: USER.id } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeNull();
@@ -211,7 +211,7 @@ describe('Room resolvers', async () => {
       const roomMessageObj = await rwRoomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: OTHER_USER.id } } as IWrContext,
+        { ...baseCtx, sub: { id: OTHER_USER.id } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeNull();
@@ -221,23 +221,23 @@ describe('Room resolvers', async () => {
       const roomMessageObj = await rwRoomMessageCreate(
         null,
         { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: USER.id } } as IWrContext,
+        { ...baseCtx, sub: { id: USER.id } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeTruthy();
-      const pRoom = await prisma.room({ id: ROOM.id });
+      const pRoom = await prisma.pRoom({ id: ROOM.id });
       expect(pRoom).toBeTruthy();
       if (!pRoom) {
         return null;
       }
-      const roomMessages = await prisma.room({ id: pRoom.id }).messages();
+      const roomMessages = await prisma.pRoom({ id: pRoom.id }).messages();
       expect(roomMessages).toContainEqual(
         expect.objectContaining({ content: NEW_CONTENT }),
       );
     });
   });
 
-  describe('roomMessageUpdatesOfRoom', () => {
+  describe('rwRoomMessageUpdatesOfRoom', () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -279,7 +279,7 @@ describe('Room resolvers', async () => {
         const roomMessageObj = await rwRoomMessageCreate(
           null,
           { roomId: ROOM.id, messageContent: NEW_CONTENT },
-          { ...baseCtx, sub: { id: USER.id } } as IWrContext,
+          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
           baseInfo,
         );
         expect(roomMessageObj).toBeTruthy();
@@ -308,7 +308,7 @@ describe('Room resolvers', async () => {
         await rwRoomMessageCreate(
           null,
           { roomId: ROOM.id, messageContent: NEW_CONTENT },
-          { ...baseCtx, sub: { id: USER.id } } as IWrContext,
+          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
           baseInfo,
         );
         const subscr = await rwRoomMessageUpdatesOfRoom.subscribe(

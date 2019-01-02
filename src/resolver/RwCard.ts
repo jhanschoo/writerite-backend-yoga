@@ -1,4 +1,4 @@
-import { Prisma, SimpleCard as PSimpleCard } from '../../generated/prisma-client';
+import { Prisma, PSimpleCard } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { fieldGetter } from '../util';
 
@@ -34,7 +34,7 @@ export function pCardToRwCard(pSimpleCard: PSimpleCard, prisma: Prisma): IBakedR
     back: pSimpleCard.back,
     deck: async () => {
       return pDeckToRwDeck(
-        await prisma.simpleCard({ id: pSimpleCard.id }).deck(),
+        await prisma.pSimpleCard({ id: pSimpleCard.id }).deck(),
         prisma,
       );
     },

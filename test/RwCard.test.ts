@@ -4,15 +4,15 @@ import { PubSub } from 'graphql-yoga';
 
 import { rwCardQuery } from '../src/resolver/Query/RwCard';
 import { rwCardMutation } from '../src/resolver/Mutation/RwCard';
-import { prisma, Deck, User, SimpleCard } from '../generated/prisma-client';
-import { IWrContext } from '../src/types';
+import { prisma, PDeck, PUser, PSimpleCard } from '../generated/prisma-client';
+import { IRwContext } from '../src/types';
 import { resolveField } from '../src/util';
 
 const { rwCard, rwCardsOfDeck } = rwCardQuery;
 const { rwCardSave, rwCardDelete } = rwCardMutation;
 
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IWrContext;
+const baseCtx = { prisma, pubsub } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const EMAIL = 'abc@xyz';
@@ -31,47 +31,47 @@ const OTHER_BACK = 'otherBack';
 const NEW_FRONT = 'newFront';
 const NEW_BACK = 'newBack';
 
-describe('Card resolvers', async () => {
-  let USER: User;
-  let OTHER_USER: User;
-  let DECK: Deck;
-  let NEXT_DECK: Deck;
-  let OTHER_DECK: Deck;
-  let CARD: SimpleCard;
-  let NEXT_CARD: SimpleCard;
-  let OTHER_CARD: SimpleCard;
+describe('RwCard resolvers', async () => {
+  let USER: PUser;
+  let OTHER_USER: PUser;
+  let DECK: PDeck;
+  let NEXT_DECK: PDeck;
+  let OTHER_DECK: PDeck;
+  let CARD: PSimpleCard;
+  let NEXT_CARD: PSimpleCard;
+  let OTHER_CARD: PSimpleCard;
   const commonBeforeEach = async () => {
-    await prisma.deleteManySimpleCards({});
-    await prisma.deleteManyDecks({});
-    await prisma.deleteManyUsers({});
-    USER = await prisma.createUser({ email: EMAIL });
-    OTHER_USER = await prisma.createUser({ email: OTHER_EMAIL });
-    DECK = await prisma.createDeck({ name: NAME, owner: { connect: { id: USER.id } } });
-    NEXT_DECK = await prisma.createDeck({ name: NEXT_NAME, owner: { connect: { id: USER.id } } });
-    OTHER_DECK = await prisma.createDeck({ name: OTHER_NAME, owner: { connect: { id: OTHER_USER.id } } });
-    CARD = await prisma.createSimpleCard({ front: FRONT, back: BACK, deck: { connect: { id: DECK.id } } });
-    NEXT_CARD = await prisma.createSimpleCard({
+    await prisma.deleteManyPSimpleCards({});
+    await prisma.deleteManyPDecks({});
+    await prisma.deleteManyPUsers({});
+    USER = await prisma.createPUser({ email: EMAIL });
+    OTHER_USER = await prisma.createPUser({ email: OTHER_EMAIL });
+    DECK = await prisma.createPDeck({ name: NAME, owner: { connect: { id: USER.id } } });
+    NEXT_DECK = await prisma.createPDeck({ name: NEXT_NAME, owner: { connect: { id: USER.id } } });
+    OTHER_DECK = await prisma.createPDeck({ name: OTHER_NAME, owner: { connect: { id: OTHER_USER.id } } });
+    CARD = await prisma.createPSimpleCard({ front: FRONT, back: BACK, deck: { connect: { id: DECK.id } } });
+    NEXT_CARD = await prisma.createPSimpleCard({
       front: NEXT_FRONT, back: NEXT_BACK, deck: { connect: { id: NEXT_DECK.id } },
     });
-    OTHER_CARD = await prisma.createSimpleCard({
+    OTHER_CARD = await prisma.createPSimpleCard({
       front: OTHER_FRONT, back: OTHER_BACK, deck: { connect: { id: OTHER_DECK.id } },
     });
   };
   const commonAfterEach = async () => {
-    await prisma.deleteManySimpleCards({});
-    await prisma.deleteManyDecks({});
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPSimpleCards({});
+    await prisma.deleteManyPDecks({});
+    await prisma.deleteManyPUsers({});
   };
 
   beforeEach(async () => {
-    await prisma.deleteManySimpleUserRoomMessages({});
-    await prisma.deleteManyRooms({});
-    await prisma.deleteManySimpleCards({});
-    await prisma.deleteManyDecks({});
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPSimpleCards({});
+    await prisma.deleteManyPDecks({});
+    await prisma.deleteManyPUsers({});
   });
 
-  describe('card', async () => {
+  describe('rwCard', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -92,7 +92,7 @@ describe('Card resolvers', async () => {
     });
   });
 
-  describe('cardsFromDeck', async () => {
+  describe('rwCardsOfDeck', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -112,7 +112,7 @@ describe('Card resolvers', async () => {
     });
   });
 
-  describe('cardSave', async () => {
+  describe('rwCardSave', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -130,7 +130,7 @@ describe('Card resolvers', async () => {
         {
           ...baseCtx,
           sub: { id: USER.id },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       );
       expect(cardObj).toBeTruthy();
@@ -140,7 +140,7 @@ describe('Card resolvers', async () => {
       expect(cardObj).toHaveProperty('id');
       expect(cardObj).toHaveProperty('front', NEW_FRONT);
       expect(cardObj).toHaveProperty('back', NEW_BACK);
-      const savedCard = await prisma.simpleCard({ id: await resolveField(cardObj.id) });
+      const savedCard = await prisma.pSimpleCard({ id: await resolveField(cardObj.id) });
       expect(savedCard).toHaveProperty('id');
       expect(savedCard).toHaveProperty('front', NEW_FRONT);
       expect(savedCard).toHaveProperty('back', NEW_BACK);
@@ -155,10 +155,10 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       )).resolves.toBeNull();
-      const otherCards = await prisma.simpleCards({
+      const otherCards = await prisma.pSimpleCards({
         where: {
           deck: { id: OTHER_DECK.id },
         },
@@ -177,13 +177,13 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       );
       expect(cardObj).toHaveProperty('id', CARD.id);
       expect(cardObj).toHaveProperty('front', NEW_FRONT);
       expect(cardObj).toHaveProperty('back', NEW_BACK);
-      const savedCard = await prisma.simpleCard({ id: CARD.id });
+      const savedCard = await prisma.pSimpleCard({ id: CARD.id });
       expect(savedCard).toHaveProperty('id', CARD.id);
       expect(savedCard).toHaveProperty('front', NEW_FRONT);
       expect(savedCard).toHaveProperty('back', NEW_BACK);
@@ -198,10 +198,10 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       )).resolves.toBeNull();
-      const cardObj = await prisma.simpleCard({ id: CARD.id });
+      const cardObj = await prisma.pSimpleCard({ id: CARD.id });
       expect(cardObj).toHaveProperty('id', CARD.id);
       expect(cardObj).toHaveProperty('front', FRONT);
       expect(cardObj).toHaveProperty('back', BACK);
@@ -216,17 +216,17 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       )).resolves.toBeNull();
-      const cardObj = await prisma.simpleCard({ id: OTHER_CARD.id });
+      const cardObj = await prisma.pSimpleCard({ id: OTHER_CARD.id });
       expect(cardObj).toHaveProperty('id', OTHER_CARD.id);
       expect(cardObj).toHaveProperty('front', OTHER_FRONT);
       expect(cardObj).toHaveProperty('back', OTHER_BACK);
     });
   });
 
-  describe('cardDelete', async () => {
+  describe('rwCardDelete', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -244,7 +244,7 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       );
       expect(cardObj).toBeTruthy();
@@ -252,7 +252,7 @@ describe('Card resolvers', async () => {
         expect(cardObj).toHaveProperty('id', CARD.id);
         expect(cardObj).toHaveProperty('front', FRONT);
         expect(cardObj).toHaveProperty('back', BACK);
-        expect(prisma.simpleCard({ id: await resolveField(cardObj.id) })).resolves.toBeNull();
+        expect(prisma.pSimpleCard({ id: await resolveField(cardObj.id) })).resolves.toBeNull();
       }
     });
     test('it should not delete if deck\'s owner is not sub.id', async () => {
@@ -265,7 +265,7 @@ describe('Card resolvers', async () => {
           sub: {
             id: USER.id,
           },
-        } as IWrContext,
+        } as IRwContext,
         baseInfo,
       )).resolves.toBeNull();
     });

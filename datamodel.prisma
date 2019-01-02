@@ -1,13 +1,13 @@
-type User {
+type PUser {
   id: ID! @unique
   email: String! @unique
   passwordHash: String
   googleId: String
   facebookId: String
-  decks: [Deck!]!
+  decks: [PDeck!]!
   defaultRoles: [String!]!
-  ownerOfRoom: [Room!]! @relation(name: "UserOwningRooms")
-  occupyingRoom: [Room!]! @relation(name: "UsersOccupyingRooms")
+  ownerOfRoom: [PRoom!]! @relation(name: "PUserOwningPRooms")
+  occupyingRoom: [PRoom!]! @relation(name: "PUsersOccupyingPRooms")
 }
 
 # To refactor message types into inheritance once
@@ -21,29 +21,29 @@ type User {
 #   deck: Deck!
 # }
 
-type SimpleCard { # implements Card {
+type PSimpleCard { # implements Card {
   id: ID! @unique
-  deck: Deck! @relation(name: "DeckContainingCards")
+  deck: PDeck! @relation(name: "PDeckContainingPSimpleCards")
   front: String!
   back: String!
 }
 
-type Deck {
+type PDeck {
   id: ID! @unique
   name: String!
-  owner: User!
-  # cards: [Card!]! @relation(onDelete: CASCADE)
-  cards: [SimpleCard!]! @relation(name: "DeckContainingCards" onDelete: CASCADE)
+  owner: PUser!
+  # cards: [PCard!]! @relation(onDelete: CASCADE)
+  cards: [PSimpleCard!]! @relation(name: "PDeckContainingPSimpleCards" onDelete: CASCADE)
   published: Boolean! @default(value: "false")
 }
 
-type Room {
+type PRoom {
   id: ID! @unique
   name: String!
-  owner: User! @relation(name: "UserOwningRooms")
-  occupants: [User!]! @relation(name: "UsersOccupyingRooms")
-  # messages: [RoomMessage!]!
-  messages: [SimpleUserRoomMessage!]!
+  owner: PUser! @relation(name: "PUserOwningPRooms")
+  occupants: [PUser!]! @relation(name: "PUsersOccupyingPRooms")
+  # messages: [PRoomMessage!]!
+  messages: [PSimpleUserRoomMessage!]!
   active: Boolean!
 }
 
@@ -66,9 +66,9 @@ type Room {
 #   content: String!
 # }
 
-type SimpleUserRoomMessage { # implements RoomMessage & UserMessage & SimpleMessage {
+type PSimpleUserRoomMessage { # implements RoomMessage & UserMessage & SimpleMessage {
   id: ID! @unique
-  room: Room!
-  sender: User!
+  room: PRoom!
+  sender: PUser!
   content: String!
 }

@@ -2,31 +2,31 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwCard, pCardToRwCard } from '../RwCard';
 
-import { IWrContext } from '../../types';
+import { IRwContext } from '../../types';
 
 // Query resolvers
 
-const rwCard: IFieldResolver<any, IWrContext, { id: string }> = async (
+const rwCard: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent,
   { id },
   { prisma },
 ): Promise<IRwCard | null> => {
-  const pSimpleCard = await prisma.simpleCard({ id });
+  const pSimpleCard = await prisma.pSimpleCard({ id });
   if (!pSimpleCard) {
     return null;
   }
   return pCardToRwCard(pSimpleCard, prisma);
 };
 
-const rwCardsOfDeck: IFieldResolver<any, IWrContext, { deckId: string }> = async (
+const rwCardsOfDeck: IFieldResolver<any, IRwContext, { deckId: string }> = async (
   _parent,
   { deckId },
   { prisma },
 ): Promise<IRwCard[] | null> => {
-  if (!await prisma.$exists.deck({ id: deckId })) {
+  if (!await prisma.$exists.pDeck({ id: deckId })) {
     return null;
   }
-  const pCards = await prisma.deck({ id: deckId }).cards();
+  const pCards = await prisma.pDeck({ id: deckId }).cards();
   if (!pCards) {
     return null;
   }

@@ -1,4 +1,4 @@
-import { authorizationMutation } from './Authorization';
+import { authorizationMutation } from './authorization';
 import { rwCardMutation } from './RwCard';
 import { rwDeckMutation } from './RwDeck';
 import { rwRoomMutation } from './RwRoom';

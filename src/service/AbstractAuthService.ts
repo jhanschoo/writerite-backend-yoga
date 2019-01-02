@@ -1,7 +1,7 @@
-import { User as PUser, Prisma } from '../../generated/prisma-client';
+import { PUser, Prisma } from '../../generated/prisma-client';
 import { generateJWT } from '../util';
 import { pUserToRwUser } from '../resolver/RwUser';
-import { IRwAuthResponse } from '../resolver/Authorization';
+import { IRwAuthResponse } from '../resolver/authorization';
 
 export interface ISigninOptions {
   prisma: Prisma;

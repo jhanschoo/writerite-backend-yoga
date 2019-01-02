@@ -2,42 +2,42 @@ import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
 
-import { prisma, User } from '../generated/prisma-client';
-import { Roles, IWrContext } from '../src/types';
+import { prisma, PUser } from '../generated/prisma-client';
+import { Roles, IRwContext } from '../src/types';
 
 import { rwUserQuery } from '../src/resolver/Query/RwUser';
 
 const { rwUser, rwUsers } = rwUserQuery;
 
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IWrContext;
+const baseCtx = { prisma, pubsub } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
 const NEW_EMAIL = 'ghi@xyz';
 
-describe('User resolvers', async () => {
-  let USER: User;
-  let OTHER_USER: User;
+describe('RwUser resolvers', async () => {
+  let USER: PUser;
+  let OTHER_USER: PUser;
   const commonBeforeEach = async () => {
-    await prisma.deleteManyUsers({});
-    USER = await prisma.createUser({ email: EMAIL });
-    OTHER_USER = await prisma.createUser({ email: OTHER_EMAIL });
+    await prisma.deleteManyPUsers({});
+    USER = await prisma.createPUser({ email: EMAIL });
+    OTHER_USER = await prisma.createPUser({ email: OTHER_EMAIL });
   };
   const commonAfterEach = async () => {
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPUsers({});
   };
 
   beforeEach(async () => {
-    await prisma.deleteManySimpleUserRoomMessages({});
-    await prisma.deleteManyRooms({});
-    await prisma.deleteManySimpleCards({});
-    await prisma.deleteManyDecks({});
-    await prisma.deleteManyUsers({});
+    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPSimpleCards({});
+    await prisma.deleteManyPDecks({});
+    await prisma.deleteManyPUsers({});
   });
 
-  describe('user', async () => {
+  describe('rwUser', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -56,7 +56,7 @@ describe('User resolvers', async () => {
     });
   });
 
-  describe('users', async () => {
+  describe('rwUsers', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
@@ -72,7 +72,7 @@ describe('User resolvers', async () => {
         sub: {
           roles: [Roles.user],
         },
-      } as IWrContext, baseInfo);
+      } as IRwContext, baseInfo);
       expect(userObj).toBeNull();
     });
 
@@ -84,7 +84,7 @@ describe('User resolvers', async () => {
           id: USER.id,
           roles: [Roles.user, Roles.admin],
         },
-      } as IWrContext, baseInfo);
+      } as IRwContext, baseInfo);
       expect(userObjs).toContainEqual(expect.objectContaining({
         id: USER.id,
       }));

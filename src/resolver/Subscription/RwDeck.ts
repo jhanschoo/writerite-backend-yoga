@@ -1,6 +1,6 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IWrContext, IUpdate } from '../../types';
+import { IRwContext, IUpdate } from '../../types';
 
 import { IRwDeck } from '../RwDeck';
 
@@ -12,7 +12,7 @@ export function rwDeckTopicFromRwUser(id: string) {
   return `deck:owner:${id}`;
 }
 
-const rwDeckUpdates: IFieldResolver<any, IWrContext, any> = (
+const rwDeckUpdates: IFieldResolver<any, IRwContext, any> = (
   _parent, _args, { sub, pubsub },
 ): AsyncIterator<IRwDeckPayload> | null => {
   if (!sub) {

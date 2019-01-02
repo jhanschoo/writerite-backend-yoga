@@ -1,39 +1,39 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IWrContext } from '../../types';
+import { IRwContext } from '../../types';
 
 import { IRwRoom, IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
 
 const rwRoom: IFieldResolver<any, any, { id: string }> = async (
   _parent, { id }, { prisma },
 ): Promise<IBakedRwRoom | null> => {
-  const pRoom = await prisma.room({ id });
+  const pRoom = await prisma.pRoom({ id });
   if (!pRoom) {
     return null;
   }
   return pRoomToRwRoom(pRoom, prisma);
 };
 
-const activeRwRooms: IFieldResolver<any, IWrContext, any> = async (
+const activeRwRooms: IFieldResolver<any, IRwContext, any> = async (
   _parent, _args, { prisma, sub },
 ): Promise<IRwRoom[] | null> => {
   if (!sub) {
     return null;
   }
-  const pRooms = await prisma.rooms({ where: { active: true } });
+  const pRooms = await prisma.pRooms({ where: { active: true } });
   if (!pRooms) {
     return null;
   }
   return pRooms.map((pRoom) => pRoomToRwRoom(pRoom, prisma));
 };
 
-const rwRooms: IFieldResolver<any, IWrContext, any> = async (
+const rwRooms: IFieldResolver<any, IRwContext, any> = async (
   _parent, _args, { prisma, sub },
 ): Promise<IRwRoom[] | null> => {
   if (!sub) {
     return null;
   }
-  const pRooms = await prisma.rooms({
+  const pRooms = await prisma.pRooms({
     where: {
       OR: [
         { owner: { id: sub.id } },

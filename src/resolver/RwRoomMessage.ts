@@ -1,6 +1,6 @@
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import { ResTo, AFunResTo } from '../types';
-import { SimpleUserRoomMessage as PSimpleUserRoomMessage, Prisma } from '../../generated/prisma-client';
+import { PSimpleUserRoomMessage, Prisma } from '../../generated/prisma-client';
 import { fieldGetter } from '../util';
 
 export interface IRwRoomMessage {
@@ -31,7 +31,7 @@ export function pSimpleUserRoomMessageToRwRoomMessage(
     content: simpleUserRoomMessageNode.content,
     sender: async () => {
       return pUserToRwUser(
-        await prisma.simpleUserRoomMessage({
+        await prisma.pSimpleUserRoomMessage({
           id: simpleUserRoomMessageNode.id,
         }).sender(),
         prisma,

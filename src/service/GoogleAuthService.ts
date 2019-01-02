@@ -15,15 +15,15 @@ export class GoogleAuthService extends AbstractAuthService {
     if (!googleId || googleId !== identifier) {
       return null;
     }
-    if (await prisma.$exists.user({ email })) {
-      if (!await prisma.$exists.user({ email, googleId })) {
+    if (await prisma.$exists.pUser({ email })) {
+      if (!await prisma.$exists.pUser({ email, googleId })) {
         return null;
       }
       return GoogleAuthService.authResponseFromUser(
-        await prisma.user({ email }), { persist, prisma },
+        await prisma.pUser({ email }), { persist, prisma },
       );
     }
-    const pUser = await prisma.createUser(
+    const pUser = await prisma.createPUser(
       { email, googleId, defaultRoles: { set: ['user'] } },
     );
     return GoogleAuthService.authResponseFromUser(pUser, { persist, prisma });

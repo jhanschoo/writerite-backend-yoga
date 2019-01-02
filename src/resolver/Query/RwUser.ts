@@ -1,17 +1,17 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { Roles, IWrContext } from '../../types';
+import { Roles, IRwContext } from '../../types';
 
 import { IRwUser, pUserToRwUser } from '../RwUser';
 
-const rwUsers: IFieldResolver<any, IWrContext, any> = async (
+const rwUsers: IFieldResolver<any, IRwContext, any> = async (
   _parent, _args, { prisma, sub },
 ): Promise<IRwUser[] | null> => {
   if (!sub) {
     return null;
   }
   if (sub.roles.includes(Roles.admin)) {
-    const pUsers = await prisma.users();
+    const pUsers = await prisma.pUsers();
     if (!pUsers) {
       return null;
     }
@@ -20,10 +20,10 @@ const rwUsers: IFieldResolver<any, IWrContext, any> = async (
   return null;
 };
 
-const rwUser: IFieldResolver<any, any, { id: string }> = async (
+const rwUser: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent, { id }, { prisma },
 ): Promise<IRwUser | null> => {
-  const pUser = await prisma.user({ id });
+  const pUser = await prisma.pUser({ id });
   if (!pUser) {
     return null;
   }

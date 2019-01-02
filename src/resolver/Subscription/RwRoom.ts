@@ -1,6 +1,6 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IUpdate, IWrContext, MutationType } from '../../types';
+import { IUpdate, IRwContext, MutationType } from '../../types';
 
 import { IRwRoom } from '../RwRoom';
 
@@ -24,7 +24,7 @@ export function rwRoomTopicFromRwUser(id: string) {
   return `room:user:${id}`;
 }
 
-const rwRoomUpdates: IFieldResolver<any, IWrContext, any> = async (
+const rwRoomUpdates: IFieldResolver<any, IRwContext, any> = async (
   _parent, _args, { pubsub, sub },
 ): Promise<AsyncIterator<IRwRoomPayload> | null> => {
   if (!sub) {
@@ -33,7 +33,7 @@ const rwRoomUpdates: IFieldResolver<any, IWrContext, any> = async (
   return pubsub.asyncIterator<IRwRoomPayload>(rwRoomTopicFromRwUser(sub.id));
 };
 
-const activeRwRoomUpdates: IFieldResolver<any, IWrContext, any> = async (
+const activeRwRoomUpdates: IFieldResolver<any, IRwContext, any> = async (
   _parent, _args, { pubsub },
 ): Promise<AsyncIterator<IRwRoomPayload> | null> => {
   return pubsub.asyncIterator<IRwRoomPayload>(activeRwRoomTopic());
