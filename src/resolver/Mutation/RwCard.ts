@@ -2,7 +2,7 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwContext } from '../../types';
 
-import { IRwCard, pCardToRwCard } from '../RwCard';
+import { pCardToRwCard, IBakedRwCard } from '../RwCard';
 
 // Mutation resolvers
 
@@ -12,7 +12,7 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
   _parent,
   { id, front, back, deckId },
   { prisma, sub },
-): Promise<IRwCard | null> => {
+): Promise<IBakedRwCard | null> => {
   if (!sub) {
     return null;
   }
@@ -39,7 +39,7 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
 
 const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent, { id }, { prisma, sub },
-): Promise<IRwCard | null> => {
+): Promise<IBakedRwCard | null> => {
   if (!sub) {
     return null;
   }

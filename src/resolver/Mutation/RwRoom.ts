@@ -4,7 +4,7 @@ import randomWords from 'random-words';
 import { IRwContext, MutationType } from '../../types';
 
 import { IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
-import { IRwRoomPayload, rwRoomTopicFromRwUser } from '../Subscription/RwRoom';
+import { IBakedRwRoomPayload, rwRoomTopicFromRwUser } from '../Subscription/RwRoom';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
   name?: string,
@@ -23,7 +23,7 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
     return null;
   }
   const roomObj = pRoomToRwRoom(pRoom, prisma);
-  const roomUpdate: IRwRoomPayload = {
+  const roomUpdate: IBakedRwRoomPayload = {
     rwRoomUpdates: {
       mutation: MutationType.CREATED,
       new: roomObj,
@@ -38,7 +38,7 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
 const rwRoomAddOccupant: IFieldResolver<any, IRwContext, {
   id: string, occupantId: string,
 }> = async (
-  parent: any, { id, occupantId }, { prisma },
+  _parent: any, { id, occupantId }, { prisma },
 ): Promise<IBakedRwRoom | null> => {
   if (!await prisma.$exists.pRoom({ id })) {
     return null;

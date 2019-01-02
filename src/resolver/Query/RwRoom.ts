@@ -2,9 +2,9 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwContext } from '../../types';
 
-import { IRwRoom, IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
+import { IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
 
-const rwRoom: IFieldResolver<any, any, { id: string }> = async (
+const rwRoom: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent, { id }, { prisma },
 ): Promise<IBakedRwRoom | null> => {
   const pRoom = await prisma.pRoom({ id });
@@ -14,9 +14,9 @@ const rwRoom: IFieldResolver<any, any, { id: string }> = async (
   return pRoomToRwRoom(pRoom, prisma);
 };
 
-const activeRwRooms: IFieldResolver<any, IRwContext, any> = async (
+const activeRwRooms: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { prisma, sub },
-): Promise<IRwRoom[] | null> => {
+): Promise<IBakedRwRoom[] | null> => {
   if (!sub) {
     return null;
   }
@@ -27,9 +27,9 @@ const activeRwRooms: IFieldResolver<any, IRwContext, any> = async (
   return pRooms.map((pRoom) => pRoomToRwRoom(pRoom, prisma));
 };
 
-const rwRooms: IFieldResolver<any, IRwContext, any> = async (
+const rwRooms: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { prisma, sub },
-): Promise<IRwRoom[] | null> => {
+): Promise<IBakedRwRoom[] | null> => {
   if (!sub) {
     return null;
   }

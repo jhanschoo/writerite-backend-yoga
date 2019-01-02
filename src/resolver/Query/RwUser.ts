@@ -4,7 +4,7 @@ import { Roles, IRwContext } from '../../types';
 
 import { IRwUser, pUserToRwUser } from '../RwUser';
 
-const rwUsers: IFieldResolver<any, IRwContext, any> = async (
+const rwUsers: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { prisma, sub },
 ): Promise<IRwUser[] | null> => {
   if (!sub) {

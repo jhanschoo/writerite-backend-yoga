@@ -12,7 +12,7 @@ export function rwDeckTopicFromRwUser(id: string) {
   return `deck:owner:${id}`;
 }
 
-const rwDeckUpdates: IFieldResolver<any, IRwContext, any> = (
+const rwDeckUpdates: IFieldResolver<any, IRwContext, {}> = (
   _parent, _args, { sub, pubsub },
 ): AsyncIterator<IRwDeckPayload> | null => {
   if (!sub) {

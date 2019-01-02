@@ -2,19 +2,19 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IUpdate, IRwContext, MutationType } from '../../types';
 
-import { IRwRoom } from '../RwRoom';
+import { IBakedRwRoom } from '../RwRoom';
 
-interface IActiveRwRoomUpdatesPayload {
-  activeRwRoomUpdates: IUpdate<IRwRoom, MutationType>;
+interface IBakedActiveRwRoomUpdatesPayload {
+  activeRwRoomUpdates: IUpdate<IBakedRwRoom, MutationType>;
 }
 
-interface IRwRoomUpdatesPayload {
-  rwRoomUpdates: IUpdate<IRwRoom, MutationType>;
+interface IBakedRwRoomUpdatesPayload {
+  rwRoomUpdates: IUpdate<IBakedRwRoom, MutationType>;
 }
 
-export type IRwRoomPayload =
-  | IActiveRwRoomUpdatesPayload
-  | IRwRoomUpdatesPayload;
+export type IBakedRwRoomPayload =
+  | IBakedActiveRwRoomUpdatesPayload
+  | IBakedRwRoomUpdatesPayload;
 
 export function activeRwRoomTopic() {
   return 'room:active';
@@ -24,19 +24,19 @@ export function rwRoomTopicFromRwUser(id: string) {
   return `room:user:${id}`;
 }
 
-const rwRoomUpdates: IFieldResolver<any, IRwContext, any> = async (
+const rwRoomUpdates: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { pubsub, sub },
-): Promise<AsyncIterator<IRwRoomPayload> | null> => {
+): Promise<AsyncIterator<IBakedRwRoomPayload> | null> => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IRwRoomPayload>(rwRoomTopicFromRwUser(sub.id));
+  return pubsub.asyncIterator<IBakedRwRoomPayload>(rwRoomTopicFromRwUser(sub.id));
 };
 
-const activeRwRoomUpdates: IFieldResolver<any, IRwContext, any> = async (
+const activeRwRoomUpdates: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { pubsub },
-): Promise<AsyncIterator<IRwRoomPayload> | null> => {
-  return pubsub.asyncIterator<IRwRoomPayload>(activeRwRoomTopic());
+): Promise<AsyncIterator<IBakedRwRoomPayload> | null> => {
+  return pubsub.asyncIterator<IBakedRwRoomPayload>(activeRwRoomTopic());
 };
 
 export const roomSubscription = {

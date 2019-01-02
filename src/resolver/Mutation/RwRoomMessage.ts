@@ -3,7 +3,7 @@ import { IFieldResolver } from 'graphql-tools';
 import { MutationType, IRwContext } from '../../types';
 
 import { IBakedRwRoomMessage, pSimpleUserRoomMessageToRwRoomMessage } from '../RwRoomMessage';
-import { IRwRoomMessagePayload, rwRoomMessageTopicFromRwRoom } from '../Subscription/RwRoomMessage';
+import { IBakedRwRoomMessagePayload, rwRoomMessageTopicFromRwRoom } from '../Subscription/RwRoomMessage';
 
 const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   roomId: string, messageContent: string,
@@ -34,7 +34,7 @@ const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
     return null;
   }
   const roomMessageObj = pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma);
-  const roomMessageUpdate: IRwRoomMessagePayload = {
+  const roomMessageUpdate: IBakedRwRoomMessagePayload = {
     rwRoomMessageUpdatesOfRoom: {
       mutation: MutationType.CREATED,
       new: roomMessageObj,

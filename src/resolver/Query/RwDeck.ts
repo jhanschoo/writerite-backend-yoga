@@ -2,13 +2,13 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwContext } from '../../types';
 
-import { IRwDeck, IBakedRwDeck, pDeckToRwDeck } from '../RwDeck';
+import { IBakedRwDeck, pDeckToRwDeck } from '../RwDeck';
 
-const rwDecks: IFieldResolver<any, IRwContext, any> = async (
+const rwDecks: IFieldResolver<any, IRwContext, {}> = async (
   _parent: any,
   _args: any,
   { prisma, sub }: IRwContext,
-): Promise<IRwDeck[] | null> => {
+): Promise<IBakedRwDeck[] | null> => {
   if (!sub) {
     return null;
   }
