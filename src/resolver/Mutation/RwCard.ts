@@ -63,7 +63,7 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
 
 const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent, { id }, { prisma, sub, pubsub },
-): Promise<IBakedRwCard | null> => {
+): Promise<string | null> => {
   if (!sub) {
     return null;
   }
@@ -77,16 +77,15 @@ const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
   if (!pCard) {
     return null;
   }
-  const rwCard = pCardToRwCard(pCard, prisma);
   const rwCardUpdate: IBakedRwCardDeletedPayload = {
     rwCardUpdatesOfDeck: {
       mutation: MutationType.DELETED,
       new: null,
-      oldId: rwCard.id,
+      oldId: pCard.id,
     },
   };
   pubsub.publish(rwCardTopicFromRwDeck(pDecks[0].id), rwCardUpdate);
-  return pCardToRwCard(pCard, prisma);
+  return pCard.id;
 };
 
 export const rwCardMutation = {
