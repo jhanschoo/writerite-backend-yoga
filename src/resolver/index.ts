@@ -13,11 +13,11 @@ const resolvers: IResolvers = {
   Query,
   Mutation,
   Subscription,
-  Card: RwCard,
-  Deck: RwDeck,
-  Room: RwRoom,
-  RoomMessage: RwRoomMessage,
-  User: RwUser,
+  RwCard,
+  RwDeck,
+  RwRoom,
+  RwRoomMessage,
+  RwUser,
 } as IResolvers;
 
 export default resolvers;

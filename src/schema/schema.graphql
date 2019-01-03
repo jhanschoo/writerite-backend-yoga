@@ -29,7 +29,7 @@ type Mutation {
     authorizer: String!
     identifier: String!
     persist: Boolean
-  ): AuthResponse
+  ): RwAuthResponse
   # Deck
   rwDeckSave(id: ID, name: String): RwDeck
   rwDeckDelete(id: ID!): ID

@@ -142,7 +142,9 @@ describe('RwCard resolvers', async () => {
       expect(cardObj).toHaveProperty('id');
       expect(cardObj).toHaveProperty('front', NEW_FRONT);
       expect(cardObj).toHaveProperty('back', NEW_BACK);
-      const savedCard = await prisma.pSimpleCard({ id: await resolveField(cardObj.id) });
+      const savedCard = await prisma.pSimpleCard({
+        id: await resolveField(cardObj.id),
+      });
       expect(savedCard).toHaveProperty('id');
       expect(savedCard).toHaveProperty('front', NEW_FRONT);
       expect(savedCard).toHaveProperty('back', NEW_BACK);
