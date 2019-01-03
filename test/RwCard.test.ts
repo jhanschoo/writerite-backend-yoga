@@ -4,12 +4,14 @@ import { PubSub } from 'graphql-yoga';
 
 import { rwCardQuery } from '../src/resolver/Query/RwCard';
 import { rwCardMutation } from '../src/resolver/Mutation/RwCard';
+import { rwCardSubscription } from '../src/resolver/Subscription/RwCard';
 import { prisma, PDeck, PUser, PSimpleCard } from '../generated/prisma-client';
 import { IRwContext } from '../src/types';
 import { resolveField } from '../src/util';
 
 const { rwCard, rwCardsOfDeck } = rwCardQuery;
 const { rwCardSave, rwCardDelete } = rwCardMutation;
+const { rwCardUpdatesOfDeck } = rwCardSubscription;
 
 const pubsub = new PubSub();
 const baseCtx = { prisma, pubsub } as IRwContext;
@@ -269,5 +271,93 @@ describe('RwCard resolvers', async () => {
         baseInfo,
       )).resolves.toBeNull();
     });
+  });
+
+  describe('rwCardUpdatesOfDeck', () => {
+    beforeEach(commonBeforeEach);
+    afterEach(commonAfterEach);
+
+    test('it should return null on no deck present', async () => {
+      expect.assertions(1);
+      const subscr = await rwCardUpdatesOfDeck.subscribe(
+        null, { deckId: '1234567' }, baseCtx, baseInfo,
+      );
+      expect(subscr).toBeNull();
+    });
+    test('it should return an AsyncIterator on deck present', async () => {
+      expect.assertions(1);
+      const subscr = await rwCardUpdatesOfDeck.subscribe(
+        null, { deckId: DECK.id }, baseCtx, baseInfo,
+      );
+      expect(subscr).toHaveProperty('next');
+    });
+    test('subscription on deck present is done if no new cards', async () => {
+      expect.assertions(1);
+      const subscr = await rwCardUpdatesOfDeck.subscribe(
+        null, { deckId: DECK.id }, baseCtx, baseInfo,
+      );
+      expect(subscr).toBeTruthy();
+      if (subscr) {
+        subscr.next().then(() => {
+          throw new Error();
+        });
+      }
+      return await new Promise((res) => setTimeout(res, 500));
+    });
+    test(
+      `subscription on room reproduces message posted in room using
+      rwRoomMessageCreate since subscription`,
+      async () => {
+        expect.assertions(5);
+        const subscr = await rwCardUpdatesOfDeck.subscribe(
+          null, { deckId: DECK.id }, baseCtx, baseInfo,
+        );
+        const cardObj = await rwCardSave(
+          null,
+          { deckId: DECK.id, front: NEW_FRONT, back: NEW_BACK },
+          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+          baseInfo,
+        );
+        expect(cardObj).toBeTruthy();
+        if (cardObj) {
+          expect(subscr).toBeTruthy();
+          if (!subscr) {
+            throw new Error('`subscr` not obtained');
+          }
+          const newCard = await subscr.next();
+          if (newCard.value && newCard.value.rwCardUpdatesOfDeck) {
+            const payload: any = newCard.value.rwCardUpdatesOfDeck;
+            expect(payload.mutation).toBe('CREATED');
+            expect(payload.new).toEqual(cardObj);
+          } else {
+            expect(newCard.value).toBeTruthy();
+            expect(newCard.value.rwCardUpdatesOfDeck).toBeTruthy();
+          }
+          expect(newCard.done).toBe(false);
+        }
+      });
+    test(
+      `subscription on room does not reproduce message posted in
+      room using rwRoomMessageCreate before subscription`,
+      async () => {
+        expect.assertions(1);
+        await rwCardSave(
+          null,
+          { deckId: DECK.id, front: NEW_FRONT, back: NEW_BACK },
+          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+          baseInfo,
+        );
+        const subscr = await rwCardUpdatesOfDeck.subscribe(
+          null, { deckId: DECK.id }, baseCtx, baseInfo,
+        );
+        expect(subscr).toBeTruthy();
+        if (subscr) {
+          const nextResult = subscr.next();
+          nextResult.then(() => {
+            throw new Error();
+          });
+        }
+        return await new Promise((res) => setTimeout(res, 500));
+      });
   });
 });

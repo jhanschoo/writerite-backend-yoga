@@ -1,20 +1,36 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IUpdate, IRwContext, MutationType } from '../../types';
+import {
+  IUpdate, IRwContext, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
+} from '../../types';
 
 import { IBakedRwRoom } from '../RwRoom';
 
-interface IBakedActiveRwRoomUpdatesPayload {
-  activeRwRoomUpdates: IUpdate<IBakedRwRoom, MutationType>;
+export interface IBakedActiveRwRoomCreatedPayload {
+  activeRwRoomUpdates: ICreatedUpdate<IBakedRwRoom>;
+}
+export interface IBakedActiveRwRoomUpdatedPayload {
+  activeRwRoomUpdates: IUpdatedUpdate<IBakedRwRoom>;
+}
+export interface IBakedActiveRwRoomDeletedPayload {
+  activeRwRoomUpdates: IDeletedUpdate<IBakedRwRoom>;
+}
+export interface IBakedActiveRwRoomPayload {
+  activeRwRoomUpdates: IUpdate<IBakedRwRoom>;
 }
 
-interface IBakedRwRoomUpdatesPayload {
-  rwRoomUpdates: IUpdate<IBakedRwRoom, MutationType>;
+export interface IBakedRwRoomCreatedPayload {
+  rwRoomUpdates: ICreatedUpdate<IBakedRwRoom>;
 }
-
-export type IBakedRwRoomPayload =
-  | IBakedActiveRwRoomUpdatesPayload
-  | IBakedRwRoomUpdatesPayload;
+export interface IBakedRwRoomUpdatedPayload {
+  rwRoomUpdates: IUpdatedUpdate<IBakedRwRoom>;
+}
+export interface IBakedRwRoomDeletedPayload {
+  rwRoomUpdates: IDeletedUpdate<IBakedRwRoom>;
+}
+export interface IBakedRwRoomPayload {
+  rwRoomUpdates: IUpdate<IBakedRwRoom>;
+}
 
 export function activeRwRoomTopic() {
   return 'room:active';
@@ -35,8 +51,8 @@ const rwRoomUpdates: IFieldResolver<any, IRwContext, {}> = async (
 
 const activeRwRoomUpdates: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { pubsub },
-): Promise<AsyncIterator<IBakedRwRoomPayload> | null> => {
-  return pubsub.asyncIterator<IBakedRwRoomPayload>(activeRwRoomTopic());
+): Promise<AsyncIterator<IBakedActiveRwRoomPayload> | null> => {
+  return pubsub.asyncIterator<IBakedActiveRwRoomPayload>(activeRwRoomTopic());
 };
 
 export const rwRoomSubscription = {

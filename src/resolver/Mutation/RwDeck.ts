@@ -3,7 +3,12 @@ import { IFieldResolver } from 'graphql-tools';
 import { MutationType, IRwContext } from '../../types';
 
 import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
-import { rwDeckTopicFromRwUser, IBakedRwDeckPayload } from '../Subscription/RwDeck';
+import {
+  rwDeckTopicFromRwUser,
+  IBakedRwDeckUpdatedPayload,
+  IBakedRwDeckCreatedPayload,
+  IBakedRwDeckDeletedPayload,
+} from '../Subscription/RwDeck';
 
 const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
@@ -25,16 +30,16 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const deckObj = pDeckToRwDeck(pDeck, prisma);
-    const deckUpdate: IBakedRwDeckPayload = {
+    const rwDeck = pDeckToRwDeck(pDeck, prisma);
+    const rwDeckUpdate: IBakedRwDeckUpdatedPayload = {
       rwDeckUpdates: {
         mutation: MutationType.UPDATED,
-        new: deckObj,
+        new: rwDeck,
         oldId: null,
       },
     };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
-    return deckObj;
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
+    return rwDeck;
   } else {
     const pDeck = await prisma.createPDeck({
       name: (name && name.trim()) || 'New Deck',
@@ -43,16 +48,16 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const deckObj = pDeckToRwDeck(pDeck, prisma);
-    const deckUpdate: IBakedRwDeckPayload = {
+    const rwDeck = pDeckToRwDeck(pDeck, prisma);
+    const rwDeckUpdate: IBakedRwDeckCreatedPayload = {
       rwDeckUpdates: {
         mutation: MutationType.CREATED,
-        new: deckObj,
+        new: rwDeck,
         oldId: null,
       },
     };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
-    return deckObj;
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
+    return rwDeck;
   }
 };
 
@@ -73,14 +78,14 @@ const rwDeckDelete: IFieldResolver<any, IRwContext, {
   if (!pDeck) {
     return null;
   }
-  const deckUpdate: IBakedRwDeckPayload = {
+  const rwDeckUpdate: IBakedRwDeckDeletedPayload = {
     rwDeckUpdates: {
       mutation: MutationType.DELETED,
       new: null,
       oldId: pDeck.id,
     },
   };
-  pubsub.publish(rwDeckTopicFromRwUser(sub.id), deckUpdate);
+  pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
   return pDeck.id;
 };
 

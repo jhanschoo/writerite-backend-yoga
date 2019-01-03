@@ -3,7 +3,10 @@ import { IFieldResolver } from 'graphql-tools';
 import { MutationType, IRwContext } from '../../types';
 
 import { IBakedRwRoomMessage, pSimpleUserRoomMessageToRwRoomMessage } from '../RwRoomMessage';
-import { IBakedRwRoomMessagePayload, rwRoomMessageTopicFromRwRoom } from '../Subscription/RwRoomMessage';
+import {
+  rwRoomMessageTopicFromRwRoom,
+  IBakedRwRoomMessageCreatedPayload,
+} from '../Subscription/RwRoomMessage';
 
 const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   roomId: string, messageContent: string,
@@ -33,16 +36,16 @@ const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   if (!pRoomMessage) {
     return null;
   }
-  const roomMessageObj = pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma);
-  const roomMessageUpdate: IBakedRwRoomMessagePayload = {
+  const rwRoomMessage = pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma);
+  const rwRoomMessageUpdate: IBakedRwRoomMessageCreatedPayload = {
     rwRoomMessageUpdatesOfRoom: {
       mutation: MutationType.CREATED,
-      new: roomMessageObj,
+      new: rwRoomMessage,
       oldId: null,
     },
   };
-  pubsub.publish(rwRoomMessageTopicFromRwRoom(roomId), roomMessageUpdate);
-  return roomMessageObj;
+  pubsub.publish(rwRoomMessageTopicFromRwRoom(roomId), rwRoomMessageUpdate);
+  return rwRoomMessage;
 };
 
 export const rwRoomMessageMutation = {

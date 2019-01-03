@@ -3,7 +3,12 @@ import { IFieldResolver } from 'graphql-tools';
 import { IRwContext, MutationType } from '../../types';
 
 import { pCardToRwCard, IBakedRwCard } from '../RwCard';
-import { IBakedRwCardPayload, rwCardTopicFromRwDeck } from '../Subscription/RwCard';
+import {
+  rwCardTopicFromRwDeck,
+  IBakedRwCardUpdatedPayload,
+  IBakedRwCardCreatedPayload,
+  IBakedRwCardDeletedPayload,
+} from '../Subscription/RwCard';
 
 // Mutation resolvers
 
@@ -22,7 +27,7 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
       const pCard = await prisma.updatePSimpleCard({ data: { front, back }, where: { id } });
       if (pCard) {
         const rwCard = pCardToRwCard(pCard, prisma);
-        const rwCardUpdate: IBakedRwCardPayload = {
+        const rwCardUpdate: IBakedRwCardUpdatedPayload = {
           rwCardUpdatesOfDeck: {
             mutation: MutationType.UPDATED,
             new: rwCard,
@@ -43,7 +48,7 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
       return null;
     }
     const rwCard = pCardToRwCard(pCard, prisma);
-    const rwCardUpdate: IBakedRwCardPayload = {
+    const rwCardUpdate: IBakedRwCardCreatedPayload = {
       rwCardUpdatesOfDeck: {
         mutation: MutationType.CREATED,
         new: rwCard,
@@ -73,7 +78,7 @@ const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
     return null;
   }
   const rwCard = pCardToRwCard(pCard, prisma);
-  const rwCardUpdate: IBakedRwCardPayload = {
+  const rwCardUpdate: IBakedRwCardDeletedPayload = {
     rwCardUpdatesOfDeck: {
       mutation: MutationType.DELETED,
       new: null,

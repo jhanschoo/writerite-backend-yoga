@@ -1,9 +1,20 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IRwContext, IUpdate } from '../../types';
+import {
+  IRwContext, IUpdate, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
+} from '../../types';
 
 import { IBakedRwDeck } from '../RwDeck';
 
+export interface IBakedRwDeckCreatedPayload {
+  rwDeckUpdates: ICreatedUpdate<IBakedRwDeck>;
+}
+export interface IBakedRwDeckUpdatedPayload {
+  rwDeckUpdates: IUpdatedUpdate<IBakedRwDeck>;
+}
+export interface IBakedRwDeckDeletedPayload {
+  rwDeckUpdates: IDeletedUpdate<IBakedRwDeck>;
+}
 export interface IBakedRwDeckPayload {
   rwDeckUpdates: IUpdate<IBakedRwDeck>;
 }

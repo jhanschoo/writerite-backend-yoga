@@ -41,11 +41,29 @@ export interface ICurrentUser {
   roles: Roles[];
 }
 
-export interface IUpdate<T, M = MutationType> {
-  mutation: M;
-  new: T | null;
-  oldId: string | null;
+export interface ICreatedUpdate<T> {
+  mutation: MutationType.CREATED;
+  new: T;
+  oldId: null;
 }
+
+export interface IUpdatedUpdate<T> {
+  mutation: MutationType.UPDATED;
+  new: T;
+  oldId: null;
+}
+
+export interface IDeletedUpdate<T> {
+  mutation: MutationType.DELETED;
+  new: null;
+  oldId: string;
+}
+
+export type IUpdate<T> =
+  | ICreatedUpdate<T>
+  | IUpdatedUpdate<T>
+  | IDeletedUpdate<T>
+  ;
 
 export interface IAuthConfig {
   GOOGLE_CLIENT_ID: string;

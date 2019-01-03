@@ -270,7 +270,7 @@ describe('RwRoom resolvers', async () => {
     });
     test(
       `subscription on room reproduces message posted in room using
-      roomMessageCreate since subscription`,
+      rwRoomMessageCreate since subscription`,
       async () => {
         expect.assertions(5);
         const subscr = await rwRoomMessageUpdatesOfRoom.subscribe(
@@ -302,7 +302,7 @@ describe('RwRoom resolvers', async () => {
       });
     test(
       `subscription on room does not reproduce message posted in
-      room using roomMessageCreate before subscription`,
+      room using rwRoomMessageCreate before subscription`,
       async () => {
         expect.assertions(1);
         await rwRoomMessageCreate(

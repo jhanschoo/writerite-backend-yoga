@@ -62,12 +62,12 @@ describe('RwUser resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const userObj1 = await rwUsers(null, null, baseCtx, baseInfo);
+      const userObj1 = await rwUsers(null, {}, baseCtx, baseInfo);
       expect(userObj1).toBeNull();
     });
     test('it should return null if not authorized as admin', async () => {
       expect.assertions(1);
-      const userObj = await rwUsers(null, null, {
+      const userObj = await rwUsers(null, {}, {
         ...baseCtx,
         sub: {
           roles: [Roles.user],
@@ -75,10 +75,9 @@ describe('RwUser resolvers', async () => {
       } as IRwContext, baseInfo);
       expect(userObj).toBeNull();
     });
-
     test('it should return users if they exist', async () => {
       expect.assertions(1);
-      const userObjs = await rwUsers(null, null, {
+      const userObjs = await rwUsers(null, {}, {
         ...baseCtx,
         sub: {
           id: USER.id,

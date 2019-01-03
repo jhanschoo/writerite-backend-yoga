@@ -4,7 +4,10 @@ import randomWords from 'random-words';
 import { IRwContext, MutationType } from '../../types';
 
 import { IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
-import { IBakedRwRoomPayload, rwRoomTopicFromRwUser } from '../Subscription/RwRoom';
+import {
+  rwRoomTopicFromRwUser,
+  IBakedRwRoomCreatedPayload,
+} from '../Subscription/RwRoom';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
   name?: string,
@@ -22,16 +25,16 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
   if (!pRoom) {
     return null;
   }
-  const roomObj = pRoomToRwRoom(pRoom, prisma);
-  const roomUpdate: IBakedRwRoomPayload = {
+  const rwRoom = pRoomToRwRoom(pRoom, prisma);
+  const rwRoomUpdate: IBakedRwRoomCreatedPayload = {
     rwRoomUpdates: {
       mutation: MutationType.CREATED,
-      new: roomObj,
+      new: rwRoom,
       oldId: null,
     },
   };
-  pubsub.publish(rwRoomTopicFromRwUser(sub.id), roomUpdate);
-  return roomObj;
+  pubsub.publish(rwRoomTopicFromRwUser(sub.id), rwRoomUpdate);
+  return rwRoom;
 };
 
 // TODO: access control: owner or self only
@@ -47,12 +50,12 @@ const rwRoomAddOccupant: IFieldResolver<any, IRwContext, {
     return null;
   }
   const pRoom = await prisma.pRoom({ id });
-  const roomObj = pRoomToRwRoom(pRoom, prisma);
-  const roomOwner = await roomObj.owner(null);
-  const pOccupants = await roomObj.occupants(null);
+  const rwRoom = pRoomToRwRoom(pRoom, prisma);
+  const roomOwner = await rwRoom.owner(null);
+  const pOccupants = await rwRoom.occupants(null);
   const occupantIds = pOccupants.map((user) => user.id);
   if (occupantId === roomOwner.id || occupantIds.includes(occupantId)) {
-    return roomObj;
+    return rwRoom;
   }
   const pUpdatedRoom = await prisma.updatePRoom({
     data: {

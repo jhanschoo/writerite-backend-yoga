@@ -1,9 +1,20 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IRwContext, IUpdate } from '../../types';
+import {
+  IRwContext, IUpdate, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
+} from '../../types';
 
 import { IBakedRwCard } from '../RwCard';
 
+export interface IBakedRwCardCreatedPayload {
+  rwCardUpdatesOfDeck: ICreatedUpdate<IBakedRwCard>;
+}
+export interface IBakedRwCardUpdatedPayload {
+  rwCardUpdatesOfDeck: IUpdatedUpdate<IBakedRwCard>;
+}
+export interface IBakedRwCardDeletedPayload {
+  rwCardUpdatesOfDeck: IDeletedUpdate<IBakedRwCard>;
+}
 export interface IBakedRwCardPayload {
   rwCardUpdatesOfDeck: IUpdate<IBakedRwCard>;
 }
@@ -17,7 +28,7 @@ const rwCardUpdatesOfDeck: IFieldResolver<any, IRwContext, {
 }> = async (
   _parent, { deckId }, { prisma, pubsub },
 ): Promise<AsyncIterator<IBakedRwCardPayload> | null> => {
-  if (!await prisma.$exists.pRoom({ id: deckId })) {
+  if (!await prisma.$exists.pDeck({ id: deckId })) {
     return null;
   }
   return pubsub.asyncIterator<IBakedRwCardPayload>(

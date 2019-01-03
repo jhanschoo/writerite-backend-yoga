@@ -1,11 +1,25 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IUpdate, IRwContext } from '../../types';
+import {
+  IUpdate, IRwContext, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
+} from '../../types';
 
 import { IBakedRwRoomMessage } from '../RwRoomMessage';
 
 export function rwRoomMessageTopicFromRwRoom(id: string) {
   return `room-message:${id}`;
+}
+
+export interface IBakedRwRoomMessageCreatedPayload {
+  rwRoomMessageUpdatesOfRoom: ICreatedUpdate<IBakedRwRoomMessage>;
+}
+
+export interface IBakedRwRoomMessageUpdatedPayload {
+  rwRoomMessageUpdatesOfRoom: IUpdatedUpdate<IBakedRwRoomMessage>;
+}
+
+export interface IBakedRwRoomMessageDeletedPayload {
+  rwRoomMessageUpdatesOfRoom: IDeletedUpdate<IBakedRwRoomMessage>;
 }
 
 export interface IBakedRwRoomMessagePayload {
