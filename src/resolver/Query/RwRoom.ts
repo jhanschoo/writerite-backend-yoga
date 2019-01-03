@@ -33,14 +33,7 @@ const rwRooms: IFieldResolver<any, IRwContext, {}> = async (
   if (!sub) {
     return null;
   }
-  const pRooms = await prisma.pRooms({
-    where: {
-      OR: [
-        { owner: { id: sub.id } },
-        { occupants_some: { id: sub.id } },
-      ],
-    },
-  });
+  const pRooms = await prisma.pRooms();
   if (!pRooms) {
     return null;
   }

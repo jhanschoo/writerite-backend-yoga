@@ -39,7 +39,7 @@ const activeRwRoomUpdates: IFieldResolver<any, IRwContext, {}> = async (
   return pubsub.asyncIterator<IBakedRwRoomPayload>(activeRwRoomTopic());
 };
 
-export const roomSubscription = {
+export const rwRoomSubscription = {
   activeRwRoomUpdates: {
     subscribe: activeRwRoomUpdates,
   },

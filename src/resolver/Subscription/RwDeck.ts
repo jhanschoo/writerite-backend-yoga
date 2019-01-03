@@ -2,10 +2,10 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwContext, IUpdate } from '../../types';
 
-import { IRwDeck } from '../RwDeck';
+import { IBakedRwDeck } from '../RwDeck';
 
-export interface IRwDeckPayload {
-  rwDeckUpdates: IUpdate<IRwDeck>;
+export interface IBakedRwDeckPayload {
+  rwDeckUpdates: IUpdate<IBakedRwDeck>;
 }
 
 export function rwDeckTopicFromRwUser(id: string) {
@@ -14,11 +14,11 @@ export function rwDeckTopicFromRwUser(id: string) {
 
 const rwDeckUpdates: IFieldResolver<any, IRwContext, {}> = (
   _parent, _args, { sub, pubsub },
-): AsyncIterator<IRwDeckPayload> | null => {
+): AsyncIterator<IBakedRwDeckPayload> | null => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IRwDeckPayload>(
+  return pubsub.asyncIterator<IBakedRwDeckPayload>(
     rwDeckTopicFromRwUser(sub.id),
   );
 };

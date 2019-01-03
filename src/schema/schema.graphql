@@ -46,6 +46,8 @@ type Subscription {
   _empty: String
   # Deck
   rwDeckUpdates: RwDeckUpdate!
+  # Card
+  rwCardUpdatesOfDeck(deckId: ID!): RwCardUpdate!
   # Room
   activeRwRoomUpdates: RwRoomUpdate!
   rwRoomUpdates: RwRoomUpdate!
@@ -62,6 +64,12 @@ enum RwMutationType {
 type RwDeckUpdate {
   mutation: RwMutationType!
   new: RwDeck
+  oldId: ID
+}
+
+type RwCardUpdate {
+  mutation: RwMutationType!
+  new: RwCard
   oldId: ID
 }
 

@@ -4,6 +4,18 @@ import { IRwContext } from '../../types';
 
 import { IBakedRwDeck, pDeckToRwDeck } from '../RwDeck';
 
+const rwDeck: IFieldResolver<any, IRwContext, { id: string }> = async (
+  _parent,
+  { id },
+  { prisma },
+): Promise<IBakedRwDeck | null> => {
+  const pDeck = await prisma.pDeck({ id });
+  if (!pDeck) {
+    return null;
+  }
+  return pDeckToRwDeck(pDeck, prisma);
+};
+
 const rwDecks: IFieldResolver<any, IRwContext, {}> = async (
   _parent: any,
   _args: any,
@@ -19,18 +31,6 @@ const rwDecks: IFieldResolver<any, IRwContext, {}> = async (
     return null;
   }
   return pDecks.map((pDeck) => pDeckToRwDeck(pDeck, prisma));
-};
-
-const rwDeck: IFieldResolver<any, IRwContext, { id: string }> = async (
-  _parent,
-  { id },
-  { prisma },
-): Promise<IBakedRwDeck | null> => {
-  const pDeck = await prisma.pDeck({ id });
-  if (!pDeck) {
-    return null;
-  }
-  return pDeckToRwDeck(pDeck, prisma);
 };
 
 export const rwDeckQuery = {

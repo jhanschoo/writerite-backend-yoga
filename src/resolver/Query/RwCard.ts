@@ -26,7 +26,7 @@ const rwCardsOfDeck: IFieldResolver<any, IRwContext, { deckId: string }> = async
   if (!await prisma.$exists.pDeck({ id: deckId })) {
     return null;
   }
-  const pCards = await prisma.pDeck({ id: deckId }).cards();
+  const pCards = await prisma.pSimpleCards({ where: { deck: { id: deckId } } });
   if (!pCards) {
     return null;
   }
