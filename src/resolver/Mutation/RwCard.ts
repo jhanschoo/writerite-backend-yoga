@@ -1,8 +1,9 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { IRwContext } from '../../types';
+import { IRwContext, MutationType } from '../../types';
 
 import { pCardToRwCard, IBakedRwCard } from '../RwCard';
+import { IBakedRwCardPayload, rwCardTopicFromRwDeck } from '../Subscription/RwCard';
 
 // Mutation resolvers
 
@@ -11,15 +12,24 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
 }> = async (
   _parent,
   { id, front, back, deckId },
-  { prisma, sub },
+  { prisma, sub, pubsub },
 ): Promise<IBakedRwCard | null> => {
   if (!sub) {
     return null;
   }
   if (id) {
-    if (await prisma.$exists.pSimpleCard({ id, deck: { id: (deckId as string), owner: { id: sub.id } } })) {
+    if (await prisma.$exists.pSimpleCard({ id, deck: { id: deckId, owner: { id: sub.id } } })) {
       const pCard = await prisma.updatePSimpleCard({ data: { front, back }, where: { id } });
       if (pCard) {
+        const rwCard = pCardToRwCard(pCard, prisma);
+        const rwCardUpdate: IBakedRwCardPayload = {
+          rwCardUpdatesOfDeck: {
+            mutation: MutationType.UPDATED,
+            new: rwCard,
+            oldId: null,
+          },
+        };
+        pubsub.publish(rwCardTopicFromRwDeck(deckId), rwCardUpdate);
         return pCardToRwCard(pCard, prisma);
       }
     }
@@ -32,24 +42,45 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
     if (!pCard) {
       return null;
     }
-    return pCardToRwCard(pCard, prisma);
+    const rwCard = pCardToRwCard(pCard, prisma);
+    const rwCardUpdate: IBakedRwCardPayload = {
+      rwCardUpdatesOfDeck: {
+        mutation: MutationType.CREATED,
+        new: rwCard,
+        oldId: null,
+      },
+    };
+    pubsub.publish(rwCardTopicFromRwDeck(deckId), rwCardUpdate);
+    return rwCard;
   }
   return null;
 };
 
 const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
-  _parent, { id }, { prisma, sub },
+  _parent, { id }, { prisma, sub, pubsub },
 ): Promise<IBakedRwCard | null> => {
   if (!sub) {
     return null;
   }
-  if (!await prisma.$exists.pSimpleCard({ id, deck: { owner: { id: sub.id } } })) {
+  const pDecks = await prisma.pDecks({
+    where: { cards_some: { id }, owner: { id: sub.id } },
+  });
+  if (pDecks.length !== 1) {
     return null;
   }
   const pCard = await prisma.deletePSimpleCard({ id });
   if (!pCard) {
     return null;
   }
+  const rwCard = pCardToRwCard(pCard, prisma);
+  const rwCardUpdate: IBakedRwCardPayload = {
+    rwCardUpdatesOfDeck: {
+      mutation: MutationType.DELETED,
+      new: null,
+      oldId: rwCard.id,
+    },
+  };
+  pubsub.publish(rwCardTopicFromRwDeck(pDecks[0].id), rwCardUpdate);
   return pCardToRwCard(pCard, prisma);
 };
 
