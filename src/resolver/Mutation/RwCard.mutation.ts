@@ -5,10 +5,10 @@ import { IRwContext, MutationType } from '../../types';
 import { pCardToRwCard, IBakedRwCard } from '../RwCard';
 import {
   rwCardTopicFromRwDeck,
-  IBakedRwCardUpdatedPayload,
-  IBakedRwCardCreatedPayload,
-  IBakedRwCardDeletedPayload,
-} from '../Subscription/RwCard';
+  IPSimpleCardUpdatedPayload,
+  IPSimpleCardCreatedPayload,
+  IPSimpleCardDeletedPayload,
+} from '../Subscription/RwCard.subscription';
 
 // Mutation resolvers
 
@@ -26,15 +26,14 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
     if (await prisma.$exists.pSimpleCard({ id, deck: { id: deckId, owner: { id: sub.id } } })) {
       const pCard = await prisma.updatePSimpleCard({ data: { front, back }, where: { id } });
       if (pCard) {
-        const rwCard = pCardToRwCard(pCard, prisma);
-        const rwCardUpdate: IBakedRwCardUpdatedPayload = {
+        const pCardUpdate: IPSimpleCardUpdatedPayload = {
           rwCardUpdatesOfDeck: {
             mutation: MutationType.UPDATED,
-            new: rwCard,
+            new: pCard,
             oldId: null,
           },
         };
-        pubsub.publish(rwCardTopicFromRwDeck(deckId), rwCardUpdate);
+        pubsub.publish(rwCardTopicFromRwDeck(deckId), pCardUpdate);
         return pCardToRwCard(pCard, prisma);
       }
     }
@@ -47,16 +46,15 @@ const rwCardSave: IFieldResolver<any, IRwContext, {
     if (!pCard) {
       return null;
     }
-    const rwCard = pCardToRwCard(pCard, prisma);
-    const rwCardUpdate: IBakedRwCardCreatedPayload = {
+    const pCardUpdate: IPSimpleCardCreatedPayload = {
       rwCardUpdatesOfDeck: {
         mutation: MutationType.CREATED,
-        new: rwCard,
+        new: pCard,
         oldId: null,
       },
     };
-    pubsub.publish(rwCardTopicFromRwDeck(deckId), rwCardUpdate);
-    return rwCard;
+    pubsub.publish(rwCardTopicFromRwDeck(deckId), pCardUpdate);
+    return pCardToRwCard(pCard, prisma);
   }
   return null;
 };
@@ -77,14 +75,14 @@ const rwCardDelete: IFieldResolver<any, IRwContext, { id: string }> = async (
   if (!pCard) {
     return null;
   }
-  const rwCardUpdate: IBakedRwCardDeletedPayload = {
+  const pCardUpdate: IPSimpleCardDeletedPayload = {
     rwCardUpdatesOfDeck: {
       mutation: MutationType.DELETED,
       new: null,
       oldId: pCard.id,
     },
   };
-  pubsub.publish(rwCardTopicFromRwDeck(pDecks[0].id), rwCardUpdate);
+  pubsub.publish(rwCardTopicFromRwDeck(pDecks[0].id), pCardUpdate);
   return pCard.id;
 };
 

@@ -5,10 +5,10 @@ import { MutationType, IRwContext } from '../../types';
 import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
 import {
   rwDeckTopicFromRwUser,
-  IBakedRwDeckUpdatedPayload,
-  IBakedRwDeckCreatedPayload,
-  IBakedRwDeckDeletedPayload,
-} from '../Subscription/RwDeck';
+  IPDeckUpdatedPayload,
+  IPDeckCreatedPayload,
+  IPDeckDeletedPayload,
+} from '../Subscription/RwDeck.subscription';
 
 const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
@@ -30,16 +30,15 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const rwDeck = pDeckToRwDeck(pDeck, prisma);
-    const rwDeckUpdate: IBakedRwDeckUpdatedPayload = {
+    const pDeckUpdate: IPDeckUpdatedPayload = {
       rwDeckUpdates: {
         mutation: MutationType.UPDATED,
-        new: rwDeck,
+        new: pDeck,
         oldId: null,
       },
     };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
-    return rwDeck;
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
+    return pDeckToRwDeck(pDeck, prisma);
   } else {
     const pDeck = await prisma.createPDeck({
       name: (name && name.trim()) || 'New Deck',
@@ -48,16 +47,15 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const rwDeck = pDeckToRwDeck(pDeck, prisma);
-    const rwDeckUpdate: IBakedRwDeckCreatedPayload = {
+    const pDeckUpdate: IPDeckCreatedPayload = {
       rwDeckUpdates: {
         mutation: MutationType.CREATED,
-        new: rwDeck,
+        new: pDeck,
         oldId: null,
       },
     };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
-    return rwDeck;
+    pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
+    return pDeckToRwDeck(pDeck, prisma);
   }
 };
 
@@ -78,14 +76,14 @@ const rwDeckDelete: IFieldResolver<any, IRwContext, {
   if (!pDeck) {
     return null;
   }
-  const rwDeckUpdate: IBakedRwDeckDeletedPayload = {
+  const pDeckUpdate: IPDeckDeletedPayload = {
     rwDeckUpdates: {
       mutation: MutationType.DELETED,
       new: null,
       oldId: pDeck.id,
     },
   };
-  pubsub.publish(rwDeckTopicFromRwUser(sub.id), rwDeckUpdate);
+  pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
   return pDeck.id;
 };
 

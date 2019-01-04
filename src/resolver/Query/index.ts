@@ -1,8 +1,8 @@
-import { rwCardQuery } from './RwCard';
-import { rwDeckQuery } from './RwDeck';
-import { rwRoomQuery } from './RwRoom';
-import { rwUserQuery } from './RwUser';
-import { rwRoomMessageQuery } from './RwRoomMessage';
+import { rwCardQuery } from './RwCard.query';
+import { rwDeckQuery } from './RwDeck.query';
+import { rwRoomQuery } from './RwRoom.query';
+import { rwUserQuery } from './RwUser.query';
+import { rwRoomMessageQuery } from './RwRoomMessage.query';
 
 // tslint:disable-next-line: variable-name
 const Query = {

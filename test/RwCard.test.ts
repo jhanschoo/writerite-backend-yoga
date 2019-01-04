@@ -1,11 +1,11 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
-import { PubSub } from 'graphql-yoga';
 import redis from 'redis';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
-import { rwCardQuery } from '../src/resolver/Query/RwCard';
-import { rwCardMutation } from '../src/resolver/Mutation/RwCard';
-import { rwCardSubscription } from '../src/resolver/Subscription/RwCard';
+import { rwCardQuery } from '../src/resolver/Query/RwCard.query';
+import { rwCardMutation } from '../src/resolver/Mutation/RwCard.mutation';
+import { rwCardSubscription } from '../src/resolver/Subscription/RwCard.subscription';
 import { prisma, PDeck, PUser, PSimpleCard } from '../generated/prisma-client';
 import { IRwContext } from '../src/types';
 import { resolveField } from '../src/util';
@@ -15,7 +15,7 @@ const { rwCardSave, rwCardDelete } = rwCardMutation;
 const { rwCardUpdatesOfDeck } = rwCardSubscription;
 
 const redisClient = redis.createClient();
-const pubsub = new PubSub();
+const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
@@ -304,10 +304,9 @@ describe('RwCard resolvers', async () => {
       return await new Promise((res) => setTimeout(res, 500));
     });
     test(
-      `subscription on room reproduces message posted in room using
-      rwRoomMessageCreate since subscription`,
+      `subscription on room reproduces message posted in room using rwRoomMessageCreate since subscription`,
       async () => {
-        expect.assertions(5);
+        expect.assertions(7);
         const subscr = await rwCardUpdatesOfDeck.subscribe(
           null, { deckId: DECK.id }, baseCtx, baseInfo,
         );
@@ -327,10 +326,9 @@ describe('RwCard resolvers', async () => {
           if (newCard.value && newCard.value.rwCardUpdatesOfDeck) {
             const payload: any = newCard.value.rwCardUpdatesOfDeck;
             expect(payload.mutation).toBe('CREATED');
-            expect(payload.new).toEqual(cardObj);
-          } else {
-            expect(newCard.value).toBeTruthy();
-            expect(newCard.value.rwCardUpdatesOfDeck).toBeTruthy();
+            expect(payload.new.id).toEqual(cardObj.id);
+            expect(payload.new.front).toEqual(cardObj.front);
+            expect(payload.new.back).toEqual(cardObj.back);
           }
           expect(newCard.done).toBe(false);
         }

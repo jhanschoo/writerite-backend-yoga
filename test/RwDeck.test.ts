@@ -1,19 +1,19 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
-import { PubSub } from 'graphql-yoga';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import redis from 'redis';
 
 import { prisma, PDeck, PUser } from '../generated/prisma-client';
 import { IRwContext } from '../src/types';
 
-import { rwDeckQuery } from '../src/resolver/Query/RwDeck';
-import { rwDeckMutation } from '../src/resolver/Mutation/RwDeck';
+import { rwDeckQuery } from '../src/resolver/Query/RwDeck.query';
+import { rwDeckMutation } from '../src/resolver/Mutation/RwDeck.mutation';
 
 const { rwDeck, rwDecks } = rwDeckQuery;
 const { rwDeckSave, rwDeckDelete } = rwDeckMutation;
 
 const redisClient = redis.createClient();
-const pubsub = new PubSub();
+const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 

@@ -6,8 +6,8 @@ import { IRwContext, MutationType } from '../../types';
 import { IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
 import {
   rwRoomTopicFromRwUser,
-  IBakedRwRoomCreatedPayload,
-} from '../Subscription/RwRoom';
+  IPRoomCreatedPayload,
+} from '../Subscription/RwRoom.subscription';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
   name?: string, deckId: string,
@@ -26,17 +26,16 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
   if (!pRoom) {
     return null;
   }
-  const rwRoom = pRoomToRwRoom(pRoom, prisma);
-  const rwRoomUpdate: IBakedRwRoomCreatedPayload = {
+  const pRoomUpdate: IPRoomCreatedPayload = {
     rwRoomUpdates: {
       mutation: MutationType.CREATED,
-      new: rwRoom,
+      new: pRoom,
       oldId: null,
     },
   };
-  pubsub.publish(rwRoomTopicFromRwUser(sub.id), rwRoomUpdate);
+  pubsub.publish(rwRoomTopicFromRwUser(sub.id), pRoomUpdate);
   redisClient.publish('writerite:room:activating', pRoom.id);
-  return rwRoom;
+  return pRoomToRwRoom(pRoom, prisma);
 };
 
 // TODO: access control: owner or self only

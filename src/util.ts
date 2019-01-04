@@ -2,13 +2,41 @@ import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
 
-import { ResTo, ICurrentUser, Roles } from './types';
+import { ResTo, ICurrentUser, Roles, IUpdate, MutationType } from './types';
+import { Prisma, prisma } from '../generated/prisma-client';
 
 const SALT_ROUNDS = 10;
 
 export function fieldGetter<T>(field: string): ResTo<T> {
   return (parent: any) => {
     return parent[field] instanceof Function ? parent[field]() : parent[field];
+  };
+}
+
+export function subscriptionResolver<T, U>(
+  baker: (pObj: T, prisma: Prisma) => U,
+): (pObjPayload: IUpdate<T>) => IUpdate<U> {
+  return (pObjPayload: IUpdate<T>) => {
+    switch (pObjPayload.mutation) {
+      case MutationType.CREATED:
+        return {
+          mutation: MutationType.CREATED,
+          new: baker(pObjPayload.new, prisma),
+          oldId: null,
+        };
+      case MutationType.UPDATED:
+        return {
+          mutation: MutationType.CREATED,
+          new: baker(pObjPayload.new, prisma),
+          oldId: null,
+        };
+      case MutationType.DELETED:
+        return {
+          mutation: MutationType.DELETED,
+          new: null,
+          oldId: pObjPayload.oldId,
+        };
+    }
   };
 }
 

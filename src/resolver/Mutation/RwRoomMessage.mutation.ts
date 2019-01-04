@@ -6,7 +6,7 @@ import { IBakedRwRoomMessage, pRoomMessageToRwRoomMessage } from '../RwRoomMessa
 import {
   rwRoomMessageTopicFromRwRoom,
   IBakedRwRoomMessageCreatedPayload,
-} from '../Subscription/RwRoomMessage';
+} from '../Subscription/RwRoomMessage.subscription';
 
 const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   roomId: string, content: string,

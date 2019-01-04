@@ -1,8 +1,8 @@
-import { authorizationMutation } from './authorization';
-import { rwCardMutation } from './RwCard';
-import { rwDeckMutation } from './RwDeck';
-import { rwRoomMutation } from './RwRoom';
-import { rwRoomMessageMutation } from './RwRoomMessage';
+import { authorizationMutation } from './authorization.mutation';
+import { rwCardMutation } from './RwCard.mutation';
+import { rwDeckMutation } from './RwDeck.mutation';
+import { rwRoomMutation } from './RwRoom.mutation';
+import { rwRoomMessageMutation } from './RwRoomMessage.mutation';
 
 // tslint:disable-next-line: variable-name
 const Mutation = {

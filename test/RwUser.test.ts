@@ -1,17 +1,17 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
-import { PubSub } from 'graphql-yoga';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import redis from 'redis';
 
 import { prisma, PUser } from '../generated/prisma-client';
 import { Roles, IRwContext } from '../src/types';
 
-import { rwUserQuery } from '../src/resolver/Query/RwUser';
+import { rwUserQuery } from '../src/resolver/Query/RwUser.query';
 
 const { rwUser, rwUsers } = rwUserQuery;
 
 const redisClient = redis.createClient();
-const pubsub = new PubSub();
+const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 

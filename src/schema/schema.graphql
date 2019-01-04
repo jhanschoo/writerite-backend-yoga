@@ -49,7 +49,6 @@ type Subscription {
   # Card
   rwCardUpdatesOfDeck(deckId: ID!): RwCardUpdate!
   # Room
-  activeRwRoomUpdates: RwRoomUpdate!
   rwRoomUpdates: RwRoomUpdate!
   # RoomMessage
   rwRoomMessageUpdatesOfRoom(roomId: ID!): RwRoomMessageUpdate!

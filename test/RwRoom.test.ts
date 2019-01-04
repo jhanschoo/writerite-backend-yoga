@@ -1,18 +1,18 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
-import { PubSub } from 'graphql-yoga';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import redis from 'redis';
 
 import { prisma, PRoom, PUser, PDeck } from '../generated/prisma-client';
 import { IRwContext } from '../src/types';
 
-import { rwRoomQuery } from '../src/resolver/Query/RwRoom';
-import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom';
-import { rwRoomMessageMutation } from '../src/resolver/Mutation/RwRoomMessage';
-import { rwRoomMessageSubscription } from '../src/resolver/Subscription/RwRoomMessage';
+import { rwRoomQuery } from '../src/resolver/Query/RwRoom.query';
+import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom.mutation';
+import { rwRoomMessageMutation } from '../src/resolver/Mutation/RwRoomMessage.mutation';
+import { rwRoomMessageSubscription } from '../src/resolver/Subscription/RwRoomMessage.subscription';
 
 const redisClient = redis.createClient();
-const pubsub = new PubSub();
+const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
@@ -309,7 +309,7 @@ describe('RwRoom resolvers', async () => {
       `subscription on room reproduces message posted in room using
       rwRoomMessageCreate since subscription`,
       async () => {
-        expect.assertions(5);
+        expect.assertions(6);
         const subscr = await rwRoomMessageUpdatesOfRoom.subscribe(
           null, { roomId: ROOM.id }, baseCtx, baseInfo,
         );
@@ -329,10 +329,8 @@ describe('RwRoom resolvers', async () => {
           if (newMessage.value && newMessage.value.rwRoomMessageUpdatesOfRoom) {
             const payload: any = newMessage.value.rwRoomMessageUpdatesOfRoom;
             expect(payload.mutation).toBe('CREATED');
-            expect(payload.new).toEqual(roomMessageObj);
-          } else {
-            expect(newMessage.value).toBeTruthy();
-            expect(newMessage.value.rwRoomMessageUpdatesOfRoom).toBeTruthy();
+            expect(payload.new.id).toEqual(roomMessageObj.id);
+            expect(payload.new.content).toEqual(roomMessageObj.content);
           }
           expect(newMessage.done).toBe(false);
         }

@@ -1,6 +1,7 @@
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import { Prisma } from '../generated/prisma-client';
 import { PubSub } from 'graphql-yoga';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { RedisClient } from 'redis';
 
 export type AFunResTo<T> = ((parent: any) => Promise<T>);
@@ -15,7 +16,7 @@ export interface IRwContext {
   req: ContextParameters;
   sub?: ICurrentUser;
   prisma: Prisma;
-  pubsub: PubSub;
+  pubsub: PubSub | RedisPubSub;
   redisClient: RedisClient;
 }
 

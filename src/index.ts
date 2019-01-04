@@ -2,8 +2,9 @@ import fs from 'fs';
 import config from 'config';
 import './assertConfig';
 
-import { GraphQLServer, PubSub } from 'graphql-yoga';
+import { GraphQLServer } from 'graphql-yoga';
 import helmet from 'helmet';
+import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 import { prisma } from '../generated/prisma-client';
 import resolvers from './resolver';
@@ -23,7 +24,7 @@ redisClient.on('error', (err) => {
 });
 
 // TODO: use redis instead when needed
-const pubsub = new PubSub();
+const pubsub = new RedisPubSub();
 const acolyteJWT = generateJWT({
   id: 'acolyte',
   email: 'acolyte@writerite.site',
