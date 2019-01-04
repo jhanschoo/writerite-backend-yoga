@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
+import redis from 'redis';
 
 import { rwCardQuery } from '../src/resolver/Query/RwCard';
 import { rwCardMutation } from '../src/resolver/Mutation/RwCard';
@@ -13,8 +14,9 @@ const { rwCard, rwCardsOfDeck } = rwCardQuery;
 const { rwCardSave, rwCardDelete } = rwCardMutation;
 const { rwCardUpdatesOfDeck } = rwCardSubscription;
 
+const redisClient = redis.createClient();
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IRwContext;
+const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const EMAIL = 'abc@xyz';
@@ -66,7 +68,7 @@ describe('RwCard resolvers', async () => {
   };
 
   beforeEach(async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
     await prisma.deleteManyPSimpleCards({});
     await prisma.deleteManyPDecks({});
@@ -239,8 +241,8 @@ describe('RwCard resolvers', async () => {
       expect(rwCardDelete(null, { id: CARD.id }, baseCtx, baseInfo)).resolves.toBeNull();
     });
     test('it should delete if deck\'s owner is sub.id', async () => {
-      expect.assertions(5);
-      const cardObj = await rwCardDelete(
+      expect.assertions(2);
+      const cardId = await rwCardDelete(
         null,
         { id: CARD.id },
         {
@@ -251,13 +253,8 @@ describe('RwCard resolvers', async () => {
         } as IRwContext,
         baseInfo,
       );
-      expect(cardObj).toBeTruthy();
-      if (cardObj) {
-        expect(cardObj).toHaveProperty('id', CARD.id);
-        expect(cardObj).toHaveProperty('front', FRONT);
-        expect(cardObj).toHaveProperty('back', BACK);
-        expect(prisma.pSimpleCard({ id: await resolveField(cardObj.id) })).resolves.toBeNull();
-      }
+      expect(cardId).toBe(CARD.id);
+      expect(prisma.pSimpleCard({ id: await resolveField(cardId) })).resolves.toBeNull();
     });
     test('it should not delete if deck\'s owner is not sub.id', async () => {
       expect.assertions(1);

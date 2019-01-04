@@ -35,6 +35,7 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
     },
   };
   pubsub.publish(rwRoomTopicFromRwUser(sub.id), rwRoomUpdate);
+  redisClient.publish('writerite:room:activating', pRoom.id);
   return rwRoom;
 };
 

@@ -1,6 +1,7 @@
 import { ContextParameters } from 'graphql-yoga/dist/types';
 import { Prisma } from '../generated/prisma-client';
 import { PubSub } from 'graphql-yoga';
+import { RedisClient } from 'redis';
 
 export type AFunResTo<T> = ((parent: any) => Promise<T>);
 export type FunResTo<T> = ((parent: any) => T);
@@ -15,6 +16,7 @@ export interface IRwContext {
   sub?: ICurrentUser;
   prisma: Prisma;
   pubsub: PubSub;
+  redisClient: RedisClient;
 }
 
 export enum AuthorizerType {
@@ -33,6 +35,7 @@ export enum MutationType {
 export enum Roles {
   user = 'user',
   admin = 'admin',
+  acolyte = 'acolyte',
 }
 
 export interface ICurrentUser {

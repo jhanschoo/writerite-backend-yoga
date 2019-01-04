@@ -59,7 +59,7 @@ export function generateB64UUID() {
 export function generateJWT(sub: any, persist = false) {
   const timeNow = KJUR.jws.IntDate.get('now');
   const expiryTime = KJUR.jws.IntDate.get(
-    persist ? 'now + 1month' : 'now + 1day',
+    persist ? 'now + 1year' : 'now + 1day',
   );
 
   const header = {
@@ -76,7 +76,7 @@ export function generateJWT(sub: any, persist = false) {
     sub,
   };
 
-  const jwt = KJUR.jws.JWS.sign(null, header, payload, PRIVATE_KEY);
+  const jwt = KJUR.jws.JWS.sign(null, header, payload, PRIVATE_KEY) as string;
   return jwt;
 }
 

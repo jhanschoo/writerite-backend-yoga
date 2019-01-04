@@ -2,9 +2,7 @@ import { PRoom, Prisma } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import {
-  IRwRoomMessage,
-  IBakedRwRoomMessage,
-  pSimpleUserRoomMessageToRwRoomMessage,
+  IRwRoomMessage, IBakedRwRoomMessage, pRoomMessageToRwRoomMessage,
 } from './RwRoomMessage';
 import { fieldGetter } from '../util';
 
@@ -46,6 +44,6 @@ export function pRoomToRwRoom(pRoom: PRoom, prisma: Prisma): IBakedRwRoom {
     ).map((pUser) => pUserToRwUser(pUser, prisma)),
     messages: async () => (
       await prisma.pRoom({ id: pRoom.id }).messages()
-    ).map((pRoomMessage) => pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma)),
+    ).map((pRoomMessage) => pRoomMessageToRwRoomMessage(pRoomMessage, prisma)),
   };
 }

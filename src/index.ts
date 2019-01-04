@@ -8,14 +8,29 @@ import helmet from 'helmet';
 import { prisma } from '../generated/prisma-client';
 import resolvers from './resolver';
 
-import { getClaims } from './util';
+import redis from 'redis';
+
+import { getClaims, generateJWT } from './util';
 import { IHttpsConfig } from './types';
 
 const { NODE_ENV } = process.env;
 const HTTPS = config.get<IHttpsConfig>('HTTPS');
 
+const redisClient = redis.createClient();
+redisClient.on('error', (err) => {
+  // tslint:disable-next-line: no-console
+  console.error(`redisClient error: ${err}`);
+});
+
 // TODO: use redis instead when needed
 const pubsub = new PubSub();
+const acolyteJWT = generateJWT({
+  id: 'acolyte',
+  email: 'acolyte@writerite.site',
+  roles: ['acolyte'],
+}, true);
+
+redisClient.set('writerite:acolyte:jwt', acolyteJWT);
 
 const server = new GraphQLServer({
   context: (req) => ({
@@ -23,6 +38,7 @@ const server = new GraphQLServer({
     ...getClaims(req),
     prisma,
     pubsub,
+    redisClient,
   }),
   mocks: NODE_ENV === 'testing',
   resolvers,

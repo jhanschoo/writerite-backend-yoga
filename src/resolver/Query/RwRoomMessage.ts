@@ -2,16 +2,16 @@ import { IFieldResolver } from 'graphql-tools';
 
 import { IRwContext } from '../../types';
 
-import { IBakedRwRoomMessage, pSimpleUserRoomMessageToRwRoomMessage } from '../RwRoomMessage';
+import { IBakedRwRoomMessage, pRoomMessageToRwRoomMessage } from '../RwRoomMessage';
 
 const rwRoomMessage: IFieldResolver<any, IRwContext, { id: string }> = async (
   _parent, { id }, { prisma },
 ): Promise<IBakedRwRoomMessage | null> => {
-  const pRoomMessage = await prisma.pSimpleUserRoomMessage({ id });
+  const pRoomMessage = await prisma.pRoomMessage({ id });
   if (!pRoomMessage) {
     return null;
   }
-  return pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma);
+  return pRoomMessageToRwRoomMessage(pRoomMessage, prisma);
 };
 
 const rwRoomMessagesOfRoom: IFieldResolver<any, IRwContext, { roomId: string }> = async (
@@ -20,7 +20,7 @@ const rwRoomMessagesOfRoom: IFieldResolver<any, IRwContext, { roomId: string }> 
   if (!sub) {
     return null;
   }
-  const pRoomMessages = await prisma.pSimpleUserRoomMessages({
+  const pRoomMessages = await prisma.pRoomMessages({
     where: {
       room: { id: roomId },
     },
@@ -28,7 +28,7 @@ const rwRoomMessagesOfRoom: IFieldResolver<any, IRwContext, { roomId: string }> 
   if (!pRoomMessages) {
     return null;
   }
-  return pRoomMessages.map((pRoomMessage) => pSimpleUserRoomMessageToRwRoomMessage(pRoomMessage, prisma));
+  return pRoomMessages.map((pRoomMessage) => pRoomMessageToRwRoomMessage(pRoomMessage, prisma));
 };
 
 export const rwRoomMessageQuery = {

@@ -1,6 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
+import redis from 'redis';
 
 import { prisma, PUser } from '../generated/prisma-client';
 import { Roles, IRwContext } from '../src/types';
@@ -9,8 +10,9 @@ import { rwUserQuery } from '../src/resolver/Query/RwUser';
 
 const { rwUser, rwUsers } = rwUserQuery;
 
+const redisClient = redis.createClient();
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IRwContext;
+const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const EMAIL = 'abc@xyz';
@@ -30,7 +32,7 @@ describe('RwUser resolvers', async () => {
   };
 
   beforeEach(async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
     await prisma.deleteManyPSimpleCards({});
     await prisma.deleteManyPDecks({});

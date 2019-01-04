@@ -37,9 +37,9 @@ type Mutation {
   rwCardSave(id: ID, front: String!, back: String!, deckId: ID!): RwCard
   rwCardDelete(id: ID!): ID
   # Room
-  rwRoomCreate(name: String): RwRoom
+  rwRoomCreate(name: String, deckId: ID!): RwRoom
   rwRoomAddOccupant(id: ID! occupantId: ID!): RwRoom
-  rwRoomMessageCreate(roomId: ID! messageContent: String!): RwRoomMessage
+  rwRoomMessageCreate(roomId: ID! content: String!): RwRoomMessage
 }
 
 type Subscription {
@@ -107,9 +107,10 @@ type RwCard {
 
 type RwRoom {
   id: ID!
-  name: String
+  name: String!
   owner: RwUser!
   occupants: [RwUser!]!
+  deck: RwDeck!
   messages: [RwRoomMessage!]!
 }
 

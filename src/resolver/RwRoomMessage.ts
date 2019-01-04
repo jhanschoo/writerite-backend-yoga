@@ -1,41 +1,44 @@
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import { ResTo, AFunResTo } from '../types';
-import { PSimpleUserRoomMessage, Prisma } from '../../generated/prisma-client';
+import { PRoomMessage, Prisma } from '../../generated/prisma-client';
 import { fieldGetter } from '../util';
 
 export interface IRwRoomMessage {
   id: ResTo<string>;
   content: ResTo<string>;
-  sender: ResTo<IRwUser>;
+  sender: ResTo<IRwUser | null> | null;
 }
 
 // tslint:disable-next-line: variable-name
 export const RwRoomMessage: IRwRoomMessage = {
-  id: fieldGetter('id'),
-  content: fieldGetter('content'),
-  sender: fieldGetter('sender'),
+  id: fieldGetter<string>('id'),
+  content: fieldGetter<string>('content'),
+  sender: fieldGetter<IRwUser | null>('sender'),
 };
 
 export interface IBakedRwRoomMessage extends IRwRoomMessage {
   id: string;
   content: string;
-  sender: AFunResTo<IBakedRwUser>;
+  sender: AFunResTo<IBakedRwUser | null>;
 }
 
-export function pSimpleUserRoomMessageToRwRoomMessage(
-  simpleUserRoomMessageNode: PSimpleUserRoomMessage,
+export function pRoomMessageToRwRoomMessage(
+  pRoomMessage: PRoomMessage,
   prisma: Prisma,
 ): IBakedRwRoomMessage {
   return {
-    id: simpleUserRoomMessageNode.id,
-    content: simpleUserRoomMessageNode.content,
+    id: pRoomMessage.id,
+    content: pRoomMessage.content,
     sender: async () => {
-      return pUserToRwUser(
-        await prisma.pSimpleUserRoomMessage({
-          id: simpleUserRoomMessageNode.id,
-        }).sender(),
-        prisma,
-      );
+      const pUsers = await prisma.pUsers({
+        where: {
+          sentMessages_some: { id: pRoomMessage.id },
+        },
+      });
+      if (pUsers.length !== 1) {
+        return null;
+      }
+      return pUserToRwUser(pUsers[0], prisma);
     },
   };
 }

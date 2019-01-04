@@ -1,8 +1,9 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { PubSub } from 'graphql-yoga';
+import redis from 'redis';
 
-import { prisma, PRoom, PUser } from '../generated/prisma-client';
+import { prisma, PRoom, PUser, PDeck } from '../generated/prisma-client';
 import { IRwContext } from '../src/types';
 
 import { rwRoomQuery } from '../src/resolver/Query/RwRoom';
@@ -10,8 +11,9 @@ import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom';
 import { rwRoomMessageMutation } from '../src/resolver/Mutation/RwRoomMessage';
 import { rwRoomMessageSubscription } from '../src/resolver/Subscription/RwRoomMessage';
 
+const redisClient = redis.createClient();
 const pubsub = new PubSub();
-const baseCtx = { prisma, pubsub } as IRwContext;
+const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
 
 const { rwRoom } = rwRoomQuery;
@@ -23,41 +25,56 @@ const EMAIL = 'abc@xyz';
 const OTHER_EMAIL = 'def@xyz';
 const NEW_EMAIL = 'ghi@xyz';
 const NEW_CONTENT = 'baz';
+const DECK_NAME = 'd1';
 const ROOM_NAME = 'r1';
 
 describe('RwRoom resolvers', async () => {
   let USER: PUser;
   let OTHER_USER: PUser;
+  let DECK: PDeck;
+  let OTHER_DECK: PDeck;
   let ROOM: PRoom;
   let OTHER_ROOM: PRoom;
   const commonBeforeEach = async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPDecks({});
     await prisma.deleteManyPUsers({});
     USER = await prisma.createPUser({ email: EMAIL });
     OTHER_USER = await prisma.createPUser({ email: OTHER_EMAIL });
+    DECK = await prisma.createPDeck({
+      name: DECK_NAME,
+      owner: { connect: { id: USER.id } },
+    });
+    OTHER_DECK = await prisma.createPDeck({
+      name: DECK_NAME,
+      owner: { connect: { id: USER.id } },
+    });
     ROOM = await prisma.createPRoom({
       active: true,
       name: ROOM_NAME,
       owner: { connect: { id: USER.id } },
+      deck: { connect: { id: DECK.id } },
       occupants: {
         connect: { id: USER.id },
       },
     });
     OTHER_ROOM = await prisma.createPRoom({
-      active: true, name: ROOM_NAME, owner: {
-        connect: { id: OTHER_USER.id },
-      },
+      active: true,
+      name: ROOM_NAME,
+      owner: { connect: { id: OTHER_USER.id } },
+      deck: { connect: { id: OTHER_DECK.id } },
     });
   };
   const commonAfterEach = async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
+    await prisma.deleteManyPDecks({});
     await prisma.deleteManyPUsers({});
   };
 
   beforeEach(async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
     await prisma.deleteManyPSimpleCards({});
     await prisma.deleteManyPDecks({});
@@ -88,12 +105,12 @@ describe('RwRoom resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const roomObj = await rwRoomCreate(null, {}, baseCtx, baseInfo);
+      const roomObj = await rwRoomCreate(null, { deckId: DECK.id }, baseCtx, baseInfo);
       expect(roomObj).toBeNull();
     });
     test('it creates a room once sub.id is present', async () => {
       expect.assertions(3);
-      const roomObj = await rwRoomCreate(null, {}, {
+      const roomObj = await rwRoomCreate(null, { deckId: DECK.id }, {
         ...baseCtx, sub: { id: USER.id },
       } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
@@ -105,7 +122,7 @@ describe('RwRoom resolvers', async () => {
     });
     test('it creates a room with given name', async () => {
       expect.assertions(3);
-      const roomObj = await rwRoomCreate(null, { name: ROOM_NAME }, {
+      const roomObj = await rwRoomCreate(null, { deckId: DECK.id, name: ROOM_NAME }, {
         ...baseCtx, sub: { id: USER.id },
       } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
@@ -183,14 +200,14 @@ describe('RwRoom resolvers', async () => {
       expect.assertions(2);
       const roomMessageObj1 = await rwRoomMessageCreate(
         null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
+        { roomId: ROOM.id, content: NEW_CONTENT },
         baseCtx,
         baseInfo,
       );
       expect(roomMessageObj1).toBeNull();
       const roomMessageObj2 = await rwRoomMessageCreate(
         null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
+        { roomId: ROOM.id, content: NEW_CONTENT },
         baseCtx,
         baseInfo,
       );
@@ -200,8 +217,8 @@ describe('RwRoom resolvers', async () => {
       expect.assertions(1);
       const roomMessageObj = await rwRoomMessageCreate(
         null,
-        { roomId: '1234567', messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+        { roomId: '1234567', content: NEW_CONTENT },
+        { ...baseCtx, sub: { id: USER.id, roles: ['user'] } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeNull();
@@ -210,18 +227,18 @@ describe('RwRoom resolvers', async () => {
       expect.assertions(1);
       const roomMessageObj = await rwRoomMessageCreate(
         null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: OTHER_USER.id } } as IRwContext,
+        { roomId: ROOM.id, content: NEW_CONTENT },
+        { ...baseCtx, sub: { id: OTHER_USER.id, roles: ['user'] } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeNull();
     });
-    test('it should add message null if sub.id is an occupant', async () => {
+    test('it should add message if sub.id is an occupant', async () => {
       expect.assertions(3);
       const roomMessageObj = await rwRoomMessageCreate(
         null,
-        { roomId: ROOM.id, messageContent: NEW_CONTENT },
-        { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+        { roomId: ROOM.id, content: NEW_CONTENT },
+        { ...baseCtx, sub: { id: USER.id, roles: ['user'] } } as IRwContext,
         baseInfo,
       );
       expect(roomMessageObj).toBeTruthy();
@@ -234,6 +251,26 @@ describe('RwRoom resolvers', async () => {
       expect(roomMessages).toContainEqual(
         expect.objectContaining({ content: NEW_CONTENT }),
       );
+    });
+    test('it should add message if sub.id is an acolyte', async () => {
+      expect.assertions(4);
+      const roomMessageObj = await rwRoomMessageCreate(
+        null,
+        { roomId: ROOM.id, content: NEW_CONTENT },
+        { ...baseCtx, sub: { roles: ['acolyte'] } } as IRwContext,
+        baseInfo,
+      );
+      expect(roomMessageObj).toBeTruthy();
+      const pRoom = await prisma.pRoom({ id: ROOM.id });
+      expect(pRoom).toBeTruthy();
+      if (!pRoom) {
+        return null;
+      }
+      const roomMessages = await prisma.pRoom({ id: pRoom.id }).messages();
+      expect(roomMessages).toContainEqual(
+        expect.objectContaining({ content: NEW_CONTENT }),
+      );
+      expect(await roomMessageObj.sender()).toBeNull();
     });
   });
 
@@ -278,8 +315,8 @@ describe('RwRoom resolvers', async () => {
         );
         const roomMessageObj = await rwRoomMessageCreate(
           null,
-          { roomId: ROOM.id, messageContent: NEW_CONTENT },
-          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+          { roomId: ROOM.id, content: NEW_CONTENT },
+          { ...baseCtx, sub: { id: USER.id, roles: ['user'] } } as IRwContext,
           baseInfo,
         );
         expect(roomMessageObj).toBeTruthy();
@@ -307,8 +344,8 @@ describe('RwRoom resolvers', async () => {
         expect.assertions(1);
         await rwRoomMessageCreate(
           null,
-          { roomId: ROOM.id, messageContent: NEW_CONTENT },
-          { ...baseCtx, sub: { id: USER.id } } as IRwContext,
+          { roomId: ROOM.id, content: NEW_CONTENT },
+          { ...baseCtx, sub: { id: USER.id, roles: ['user'] } } as IRwContext,
           baseInfo,
         );
         const subscr = await rwRoomMessageUpdatesOfRoom.subscribe(

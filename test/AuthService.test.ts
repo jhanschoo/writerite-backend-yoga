@@ -57,7 +57,7 @@ class LocalAuthServiceTrueVerify extends LocalAuthService {
 
 describe('AuthService', async () => {
   beforeEach(async () => {
-    await prisma.deleteManyPSimpleUserRoomMessages({});
+    await prisma.deleteManyPRoomMessages({});
     await prisma.deleteManyPRooms({});
     await prisma.deleteManyPSimpleCards({});
     await prisma.deleteManyPDecks({});
