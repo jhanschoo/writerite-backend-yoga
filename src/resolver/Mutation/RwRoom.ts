@@ -10,8 +10,8 @@ import {
 } from '../Subscription/RwRoom';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
-  name?: string,
-}> = async (_parent, { name }, { prisma, pubsub, sub }): Promise<IBakedRwRoom | null> => {
+  name?: string, deckId: string,
+}> = async (_parent, { name, deckId }, { prisma, pubsub, sub, redisClient }): Promise<IBakedRwRoom | null> => {
   if (!sub) {
     return null;
   }
@@ -21,6 +21,7 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
       exactly: 1, wordsPerString: 3, separator: '-',
     })[0] as string),
     owner: { connect: { id: sub.id } },
+    deck: { connect: { id: deckId } },
   });
   if (!pRoom) {
     return null;
