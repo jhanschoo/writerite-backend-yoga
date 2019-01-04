@@ -1,13 +1,13 @@
 import { IFieldResolver } from 'graphql-tools';
 import randomWords from 'random-words';
 
-import { IRwContext, MutationType } from '../../types';
+import { IRwContext, MutationType, ICreatedUpdate } from '../../types';
 
 import { IBakedRwRoom, pRoomToRwRoom } from '../RwRoom';
 import {
   rwRoomTopicFromRwUser,
-  IPRoomCreatedPayload,
 } from '../Subscription/RwRoom.subscription';
+import { PRoom } from '../../../generated/prisma-client';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
   name?: string, deckId: string,
@@ -26,12 +26,10 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
   if (!pRoom) {
     return null;
   }
-  const pRoomUpdate: IPRoomCreatedPayload = {
-    rwRoomUpdates: {
-      mutation: MutationType.CREATED,
-      new: pRoom,
-      oldId: null,
-    },
+  const pRoomUpdate: ICreatedUpdate<PRoom> = {
+    mutation: MutationType.CREATED,
+    new: pRoom,
+    oldId: null,
   };
   pubsub.publish(rwRoomTopicFromRwUser(sub.id), pRoomUpdate);
   redisClient.publish('writerite:room:activating', pRoom.id);

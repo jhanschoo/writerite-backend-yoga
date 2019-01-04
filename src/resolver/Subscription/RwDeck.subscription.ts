@@ -1,25 +1,10 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import {
-  IRwContext, IUpdate, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
-} from '../../types';
+import { IRwContext, IUpdate } from '../../types';
 
-import { IBakedRwDeck, pDeckToRwDeck } from '../RwDeck';
+import { pDeckToRwDeck } from '../RwDeck';
 import { PDeck } from '../../../generated/prisma-client';
-import { subscriptionResolver } from '../../util';
-
-export interface IPDeckCreatedPayload {
-  rwDeckUpdates: ICreatedUpdate<PDeck>;
-}
-export interface IPDeckUpdatedPayload {
-  rwDeckUpdates: IUpdatedUpdate<PDeck>;
-}
-export interface IPDeckDeletedPayload {
-  rwDeckUpdates: IDeletedUpdate<PDeck>;
-}
-export interface IPDeckPayload {
-  rwDeckUpdates: IUpdate<PDeck>;
-}
+import { updateMapFactory } from '../../util';
 
 export function rwDeckTopicFromRwUser(id: string) {
   return `deck:owner:${id}`;
@@ -27,18 +12,18 @@ export function rwDeckTopicFromRwUser(id: string) {
 
 const rwDeckUpdatesSubscribe: IFieldResolver<any, IRwContext, {}> = (
   _parent, _args, { sub, pubsub },
-): AsyncIterator<IPDeckPayload> | null => {
+): AsyncIterator<IUpdate<PDeck>> | null => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IPDeckPayload>(
+  return pubsub.asyncIterator<IUpdate<PDeck>>(
     rwDeckTopicFromRwUser(sub.id),
   );
 };
 
 export const rwDeckSubscription = {
   rwDeckUpdates: {
-    resolve: subscriptionResolver(pDeckToRwDeck),
+    resolve: updateMapFactory(pDeckToRwDeck),
     subscribe: rwDeckUpdatesSubscribe,
   },
 };

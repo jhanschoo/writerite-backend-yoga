@@ -1,44 +1,29 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import {
-  IUpdate, IRwContext, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
-} from '../../types';
+import { IUpdate, IRwContext } from '../../types';
 
-import { IBakedRwRoomMessage } from '../RwRoomMessage';
+import { pRoomMessageToRwRoomMessage } from '../RwRoomMessage';
+import { PRoomMessage } from '../../../generated/prisma-client';
+import { updateMapFactory } from '../../util';
 
 export function rwRoomMessageTopicFromRwRoom(id: string) {
   return `room-message:${id}`;
 }
 
-export interface IBakedRwRoomMessageCreatedPayload {
-  rwRoomMessageUpdatesOfRoom: ICreatedUpdate<IBakedRwRoomMessage>;
-}
-
-export interface IBakedRwRoomMessageUpdatedPayload {
-  rwRoomMessageUpdatesOfRoom: IUpdatedUpdate<IBakedRwRoomMessage>;
-}
-
-export interface IBakedRwRoomMessageDeletedPayload {
-  rwRoomMessageUpdatesOfRoom: IDeletedUpdate<IBakedRwRoomMessage>;
-}
-
-export interface IBakedRwRoomMessagePayload {
-  rwRoomMessageUpdatesOfRoom: IUpdate<IBakedRwRoomMessage>;
-}
-
-const rwRoomMessageUpdatesOfRoom: IFieldResolver<any, IRwContext, {
+const rwRoomMessageUpdatesOfRoomSubscribe: IFieldResolver<any, IRwContext, {
   roomId: string,
 }> = async (
   _parent, { roomId }, { prisma, pubsub },
-): Promise<AsyncIterator<IBakedRwRoomMessagePayload> | null> => {
+): Promise<AsyncIterator<IUpdate<PRoomMessage>> | null> => {
   if (!await prisma.$exists.pRoom({ id: roomId })) {
     return null;
   }
-  return pubsub.asyncIterator<IBakedRwRoomMessagePayload>(rwRoomMessageTopicFromRwRoom(roomId));
+  return pubsub.asyncIterator<IUpdate<PRoomMessage>>(rwRoomMessageTopicFromRwRoom(roomId));
 };
 
 export const rwRoomMessageSubscription = {
   rwRoomMessageUpdatesOfRoom: {
-    subscribe: rwRoomMessageUpdatesOfRoom,
+    resolve: updateMapFactory(pRoomMessageToRwRoomMessage),
+    subscribe: rwRoomMessageUpdatesOfRoomSubscribe,
   },
 };

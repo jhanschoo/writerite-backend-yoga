@@ -13,7 +13,7 @@ export function fieldGetter<T>(field: string): ResTo<T> {
   };
 }
 
-export function subscriptionResolver<T, U>(
+export function updateMapFactory<T, U>(
   baker: (pObj: T, prisma: Prisma) => U,
 ): (pObjPayload: IUpdate<T>) => IUpdate<U> {
   return (pObjPayload: IUpdate<T>) => {
@@ -26,7 +26,7 @@ export function subscriptionResolver<T, U>(
         };
       case MutationType.UPDATED:
         return {
-          mutation: MutationType.CREATED,
+          mutation: MutationType.UPDATED,
           new: baker(pObjPayload.new, prisma),
           oldId: null,
         };

@@ -1,12 +1,12 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { MutationType, IRwContext, Roles } from '../../types';
+import { MutationType, IRwContext, Roles, ICreatedUpdate } from '../../types';
 
 import { IBakedRwRoomMessage, pRoomMessageToRwRoomMessage } from '../RwRoomMessage';
 import {
   rwRoomMessageTopicFromRwRoom,
-  IBakedRwRoomMessageCreatedPayload,
 } from '../Subscription/RwRoomMessage.subscription';
+import { PRoomMessage } from '../../../generated/prisma-client';
 
 const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   roomId: string, content: string,
@@ -37,19 +37,16 @@ const rwRoomMessageCreate: IFieldResolver<any, IRwContext, {
   if (!pRoomMessage) {
     return null;
   }
-  const rwRoomMessage = pRoomMessageToRwRoomMessage(pRoomMessage, prisma);
-  const rwRoomMessageUpdate: IBakedRwRoomMessageCreatedPayload = {
-    rwRoomMessageUpdatesOfRoom: {
-      mutation: MutationType.CREATED,
-      new: rwRoomMessage,
-      oldId: null,
-    },
+  const pRoomMessageUpdate: ICreatedUpdate<PRoomMessage> = {
+    mutation: MutationType.CREATED,
+    new: pRoomMessage,
+    oldId: null,
   };
-  pubsub.publish(rwRoomMessageTopicFromRwRoom(roomId), rwRoomMessageUpdate);
+  pubsub.publish(rwRoomMessageTopicFromRwRoom(roomId), pRoomMessageUpdate);
   if (!isAcolyte) {
     redisClient.publish(`writerite:room::${roomId}`, `${sub.id}:${content}`);
   }
-  return rwRoomMessage;
+  return pRoomMessageToRwRoomMessage(pRoomMessage, prisma);
 };
 
 export const rwRoomMessageMutation = {

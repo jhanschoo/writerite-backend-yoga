@@ -1,23 +1,10 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import {
-  IUpdate, IRwContext, ICreatedUpdate, IUpdatedUpdate, IDeletedUpdate,
-} from '../../types';
+import { IUpdate, IRwContext } from '../../types';
 
 import { PRoom } from '../../../generated/prisma-client';
-
-export interface IPRoomCreatedPayload {
-  rwRoomUpdates: ICreatedUpdate<PRoom>;
-}
-export interface IPRoomUpdatedPayload {
-  rwRoomUpdates: IUpdatedUpdate<PRoom>;
-}
-export interface IPRoomDeletedPayload {
-  rwRoomUpdates: IDeletedUpdate<PRoom>;
-}
-export interface IPRoomPayload {
-  rwRoomUpdates: IUpdate<PRoom>;
-}
+import { pRoomToRwRoom } from '../RwRoom';
+import { updateMapFactory } from '../../util';
 
 export function rwRoomTopicFromRwUser(id: string) {
   return `room:user:${id}`;
@@ -25,15 +12,16 @@ export function rwRoomTopicFromRwUser(id: string) {
 
 const rwRoomUpdatesSubscribe: IFieldResolver<any, IRwContext, {}> = async (
   _parent, _args, { pubsub, sub },
-): Promise<AsyncIterator<IPRoomPayload> | null> => {
+): Promise<AsyncIterator<IUpdate<PRoom>> | null> => {
   if (!sub) {
     return null;
   }
-  return pubsub.asyncIterator<IPRoomPayload>(rwRoomTopicFromRwUser(sub.id));
+  return pubsub.asyncIterator<IUpdate<PRoom>>(rwRoomTopicFromRwUser(sub.id));
 };
 
 export const rwRoomSubscription = {
   rwRoomUpdates: {
+    resolve: updateMapFactory(pRoomToRwRoom),
     subscribe: rwRoomUpdatesSubscribe,
   },
 };

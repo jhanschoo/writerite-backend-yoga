@@ -1,14 +1,12 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { MutationType, IRwContext } from '../../types';
+import { MutationType, IRwContext, IUpdate, IUpdatedUpdate, ICreatedUpdate, IDeletedUpdate } from '../../types';
 
 import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
 import {
   rwDeckTopicFromRwUser,
-  IPDeckUpdatedPayload,
-  IPDeckCreatedPayload,
-  IPDeckDeletedPayload,
 } from '../Subscription/RwDeck.subscription';
+import { PDeck } from '../../../generated/prisma-client';
 
 const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
@@ -30,12 +28,10 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const pDeckUpdate: IPDeckUpdatedPayload = {
-      rwDeckUpdates: {
-        mutation: MutationType.UPDATED,
-        new: pDeck,
-        oldId: null,
-      },
+    const pDeckUpdate: IUpdatedUpdate<PDeck> = {
+      mutation: MutationType.UPDATED,
+      new: pDeck,
+      oldId: null,
     };
     pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
     return pDeckToRwDeck(pDeck, prisma);
@@ -47,12 +43,10 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
     if (!pDeck) {
       return null;
     }
-    const pDeckUpdate: IPDeckCreatedPayload = {
-      rwDeckUpdates: {
-        mutation: MutationType.CREATED,
-        new: pDeck,
-        oldId: null,
-      },
+    const pDeckUpdate: ICreatedUpdate<PDeck> = {
+      mutation: MutationType.CREATED,
+      new: pDeck,
+      oldId: null,
     };
     pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
     return pDeckToRwDeck(pDeck, prisma);
@@ -76,12 +70,10 @@ const rwDeckDelete: IFieldResolver<any, IRwContext, {
   if (!pDeck) {
     return null;
   }
-  const pDeckUpdate: IPDeckDeletedPayload = {
-    rwDeckUpdates: {
-      mutation: MutationType.DELETED,
-      new: null,
-      oldId: pDeck.id,
-    },
+  const pDeckUpdate: IDeletedUpdate<PDeck> = {
+    mutation: MutationType.DELETED,
+    new: null,
+    oldId: pDeck.id,
   };
   pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
   return pDeck.id;
