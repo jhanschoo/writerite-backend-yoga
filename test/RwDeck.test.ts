@@ -54,11 +54,6 @@ describe('RwDeck resolvers', async () => {
     beforeEach(commonBeforeEach);
     afterEach(commonAfterEach);
 
-    test('it should return null if sub is not present', async () => {
-      expect.assertions(1);
-      expect(rwDecks(null, {}, baseCtx, baseInfo))
-        .resolves.toBeNull();
-    });
     test('it should return user\'s decks if they exist', async () => {
       expect.assertions(1);
       const retrievedDecks = await rwDecks(null, {}, {
@@ -66,15 +61,6 @@ describe('RwDeck resolvers', async () => {
       } as IRwContext, baseInfo);
       expect(retrievedDecks).toContainEqual(expect.objectContaining({
         id: DECK.id,
-      }));
-    });
-    test('it should not return other users\' decks if they exist', async () => {
-      expect.assertions(1);
-      const retrievedDecks = await rwDecks(null, {}, {
-        ...baseCtx, sub: { id: USER.id },
-      } as IRwContext, baseInfo);
-      expect(retrievedDecks).not.toContainEqual(expect.objectContaining({
-        id: OTHER_DECK.id,
       }));
     });
   });

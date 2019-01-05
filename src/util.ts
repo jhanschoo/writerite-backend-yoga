@@ -1,11 +1,34 @@
 import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
+import { AuthenticationError, ApolloError } from 'apollo-server';
 
 import { ResTo, ICurrentUser, Roles, IUpdate, MutationType } from './types';
 import { Prisma, prisma } from '../generated/prisma-client';
 
 const SALT_ROUNDS = 10;
+
+export const wrAuthenticationError = () => {
+  return new AuthenticationError('writerite: valid JWT not present');
+};
+
+export const wrNotFoundError = (obj?: string) => {
+  return new ApolloError(`writerite: no ${obj || 'object'} was found that the client has access to`);
+};
+
+export const wrGuardPrismaNullError = <T>(obj: T | null) => {
+  if (obj === null) {
+    throw new ApolloError('writerite: prisma operation not successful');
+  }
+  return obj;
+};
+
+export const throwIfDevel = (e: Error) => {
+  if (process.env.NODE_ENV === 'development') {
+    throw e;
+  }
+  return null;
+};
 
 export function fieldGetter<T>(field: string): ResTo<T> {
   return (parent: any) => {

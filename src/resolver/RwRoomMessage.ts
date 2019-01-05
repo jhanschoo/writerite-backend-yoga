@@ -1,7 +1,7 @@
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import { ResTo, AFunResTo } from '../types';
 import { PRoomMessage, Prisma } from '../../generated/prisma-client';
-import { fieldGetter } from '../util';
+import { fieldGetter, wrGuardPrismaNullError } from '../util';
 
 export interface IRwRoomMessage {
   id: ResTo<string>;
@@ -35,6 +35,7 @@ export function pRoomMessageToRwRoomMessage(
           sentMessages_some: { id: pRoomMessage.id },
         },
       });
+      wrGuardPrismaNullError(pUsers);
       if (pUsers.length !== 1) {
         return null;
       }

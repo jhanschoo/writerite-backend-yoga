@@ -73,28 +73,28 @@ describe('AuthService', async () => {
       await prisma.deleteManyPUsers({});
     });
 
-    test('returns null if verify fails', async () => {
+    test('rejects if verify fails', async () => {
       expect.assertions(1);
       const googleAuth = new GoogleAuthService();
-      expect(await googleAuth.signin({
+      await expect(googleAuth.signin({
         prisma,
         email: EMAIL_GOOGLE,
         token: BAD_TOKEN,
         identifier: BAD_GOOGLE_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
     });
-    test('returns null if verify returns different googleId', async () => {
+    test('rejects if verify returns different googleId', async () => {
       expect.assertions(3);
       const googleAuth = new GoogleAuthServiceTrueVerify();
-      expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(false);
-      expect(await googleAuth.signin({
+      await expect(prisma.$exists.pUser({ email: EMAIL_GOOGLE })).resolves.toBe(false);
+      await expect(googleAuth.signin({
         prisma,
         email: EMAIL_GOOGLE,
         token: GOOD_TOKEN,
         identifier:
         BAD_GOOGLE_ID,
-      })).toBeNull();
-      expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(false);
+      })).rejects.toBeInstanceOf(Error);
+      await expect(prisma.$exists.pUser({ email: EMAIL_GOOGLE })).resolves.toBe(false);
     });
     test('creates user if verify returns same googleId and no user currently exists', async () => {
       expect.assertions(4);
@@ -128,7 +128,7 @@ describe('AuthService', async () => {
       expect(signinP).toHaveProperty('token');
       expect(signinP).toHaveProperty('user');
     });
-    test('returns null if user with matching email exists with different googleId', async () => {
+    test('rejects if user with matching email exists with different googleId', async () => {
       expect.assertions(4);
       const googleAuth = new GoogleAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(false);
@@ -138,28 +138,28 @@ describe('AuthService', async () => {
       expect(await prisma.$exists.pUser({
         email: EMAIL_GOOGLE, googleId: BAD_GOOGLE_ID,
       })).toBe(true);
-      expect(await googleAuth.signin({
+      await expect(googleAuth.signin({
         prisma,
         email: EMAIL_GOOGLE,
         token: GOOD_TOKEN,
         identifier: GOOD_GOOGLE_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({
         email: EMAIL_GOOGLE, googleId: BAD_GOOGLE_ID,
       })).toBe(true);
     });
-    test('returns null if user with matching email exists that has null googleId', async () => {
+    test('rejects if user with matching email exists that has null googleId', async () => {
       expect.assertions(4);
       const googleAuth = new GoogleAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(false);
       await prisma.createPUser({ email: EMAIL_GOOGLE });
       expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(true);
-      expect(await googleAuth.signin({
+      await expect(googleAuth.signin({
         prisma,
         email: EMAIL_GOOGLE,
         token: GOOD_TOKEN,
         identifier: GOOD_GOOGLE_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({ email: EMAIL_GOOGLE })).toBe(true);
     });
   });
@@ -173,26 +173,26 @@ describe('AuthService', async () => {
       await prisma.deleteManyPUsers({});
     });
 
-    test('returns null if verify fails', async () => {
+    test('rejects if verify fails', async () => {
       expect.assertions(1);
       const facebookAuth = new FacebookAuthService();
-      expect(await facebookAuth.signin({
+      await expect(facebookAuth.signin({
         prisma,
         email: EMAIL_FACEBOOK,
         token: BAD_TOKEN,
         identifier: BAD_FACEBOOK_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
     });
-    test('returns null if verify returns different facebookId', async () => {
+    test('rejects if verify returns different facebookId', async () => {
       expect.assertions(3);
       const facebookAuth = new FacebookAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(false);
-      expect(await facebookAuth.signin({
+      await expect(facebookAuth.signin({
         prisma,
         email: EMAIL_FACEBOOK,
         token: GOOD_TOKEN,
         identifier: BAD_FACEBOOK_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(false);
     });
     test('creates user if verify returns same facebookId and no user currently exists', async () => {
@@ -230,35 +230,35 @@ describe('AuthService', async () => {
         email: EMAIL_FACEBOOK, facebookId: GOOD_FACEBOOK_ID,
       })).toBe(true);
     });
-    test('returns null if user with matching email exists with different facebookId', async () => {
+    test('rejects if user with matching email exists with different facebookId', async () => {
       expect.assertions(4);
       const facebookAuth = new FacebookAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(false);
       await prisma.createPUser({ email: EMAIL_FACEBOOK, facebookId: BAD_FACEBOOK_ID });
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK, facebookId: BAD_FACEBOOK_ID })).toBe(true);
-      expect(await facebookAuth.signin({
+      await expect(facebookAuth.signin({
         prisma,
         email: EMAIL_FACEBOOK,
         token: GOOD_TOKEN,
         identifier: GOOD_FACEBOOK_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({
         email: EMAIL_FACEBOOK,
         facebookId: BAD_FACEBOOK_ID,
       })).toBe(true);
     });
-    test('returns null if user with matching email exists that has null facebookId', async () => {
+    test('rejects if user with matching email exists that has null facebookId', async () => {
       expect.assertions(4);
       const facebookAuth = new FacebookAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(false);
       const user = await prisma.createPUser({ email: EMAIL_FACEBOOK });
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(true);
-      expect(await facebookAuth.signin({
+      await expect(facebookAuth.signin({
         prisma,
         email: EMAIL_FACEBOOK,
         token: GOOD_TOKEN,
         identifier: GOOD_GOOGLE_ID,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({ email: EMAIL_FACEBOOK })).toBe(true);
     });
   });
@@ -272,15 +272,15 @@ describe('AuthService', async () => {
       await prisma.deleteManyPUsers({});
     });
 
-    test('returns null if verify fails', async () => {
+    test('rejects if verify fails', async () => {
       expect.assertions(1);
       const localAuth = new LocalAuthService();
-      expect(await localAuth.signin({
+      await expect(localAuth.signin({
         prisma,
         email: EMAIL_LOCAL,
         token: BAD_TOKEN,
         identifier: GOOD_PASSWORD,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
     });
     test('creates user if verify returns "true" and no user currently exists', async () => {
       expect.assertions(4);
@@ -313,33 +313,33 @@ describe('AuthService', async () => {
       expect(signinP).toHaveProperty('user');
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL, passwordHash })).toBe(true);
     });
-    test('returns null if user with matching email but wrong password exists', async () => {
+    test('rejects if user with matching email but wrong password exists', async () => {
       expect.assertions(4);
       const localAuth = new LocalAuthServiceTrueVerify();
       const passwordHash = await hashPassword(GOOD_PASSWORD);
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL })).toBe(false);
       await prisma.createPUser({ email: EMAIL_LOCAL, passwordHash });
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL, passwordHash })).toBe(true);
-      expect(await localAuth.signin({
+      await expect(localAuth.signin({
         prisma,
         email: EMAIL_LOCAL,
         token: GOOD_TOKEN,
         identifier: BAD_PASSWORD,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL, passwordHash })).toBe(true);
     });
-    test('returns null if user with matching email exists that has null passwordHash', async () => {
+    test('rejects if user with matching email exists that has null passwordHash', async () => {
       expect.assertions(4);
       const localAuth = new LocalAuthServiceTrueVerify();
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL })).toBe(false);
       await prisma.createPUser({ email: EMAIL_LOCAL });
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL })).toBe(true);
-      expect(await localAuth.signin({
+      await expect(localAuth.signin({
         prisma,
         email: EMAIL_LOCAL,
         token: GOOD_TOKEN,
         identifier: BAD_PASSWORD,
-      })).toBeNull();
+      })).rejects.toBeInstanceOf(Error);
       expect(await prisma.$exists.pUser({ email: EMAIL_LOCAL })).toBe(true);
     });
   });

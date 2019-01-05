@@ -14,7 +14,6 @@ type Query {
   # RwRoom
   rwRoom(id: ID!): RwRoom
   rwRooms: [RwRoom!]
-  activeRwRooms: [RwRoom!]
   # RwRoomMessage
   rwRoomMessage(id: ID!): RwRoomMessage
   rwRoomMessagesOfRoom(roomId: ID!): [RwRoomMessage!]

@@ -4,19 +4,20 @@ import { IUpdate, IRwContext } from '../../types';
 
 import { PRoom } from '../../../generated/prisma-client';
 import { pRoomToRwRoom } from '../RwRoom';
-import { updateMapFactory } from '../../util';
+import { updateMapFactory, throwIfDevel } from '../../util';
 
-export function rwRoomTopicFromRwUser(id: string) {
-  return `room:user:${id}`;
+export function rwRoomTopic() {
+  return `room`;
 }
 
 const rwRoomUpdatesSubscribe: IFieldResolver<any, IRwContext, {}> = async (
-  _parent, _args, { pubsub, sub },
+  _parent, _args, { pubsub },
 ): Promise<AsyncIterator<IUpdate<PRoom>> | null> => {
-  if (!sub) {
-    return null;
+  try {
+    return pubsub.asyncIterator<IUpdate<PRoom>>(rwRoomTopic());
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  return pubsub.asyncIterator<IUpdate<PRoom>>(rwRoomTopicFromRwUser(sub.id));
 };
 
 export const rwRoomSubscription = {

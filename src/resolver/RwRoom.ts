@@ -1,10 +1,10 @@
-import { PRoom, Prisma } from '../../generated/prisma-client';
+import { PRoom, Prisma, PUser, PRoomMessage } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import {
   IRwRoomMessage, IBakedRwRoomMessage, pRoomMessageToRwRoomMessage,
 } from './RwRoomMessage';
-import { fieldGetter } from '../util';
+import { fieldGetter, wrGuardPrismaNullError } from '../util';
 import { IRwDeck, IBakedRwDeck, pDeckToRwDeck } from './RwDeck';
 
 export interface IRwRoom {
@@ -40,18 +40,18 @@ export function pRoomToRwRoom(pRoom: PRoom, prisma: Prisma): IBakedRwRoom {
     name: pRoom.name,
     active: pRoom.active,
     owner: async () => pUserToRwUser(
-      await prisma.pRoom({ id: pRoom.id }).owner(),
+      wrGuardPrismaNullError(await prisma.pRoom({ id: pRoom.id }).owner()),
       prisma,
     ),
-    occupants: async () => (
-      await prisma.pRoom({ id: pRoom.id }).occupants()
+    occupants: async () => wrGuardPrismaNullError<PUser[]>(
+      await prisma.pRoom({ id: pRoom.id }).occupants(),
     ).map((pUser) => pUserToRwUser(pUser, prisma)),
     deck: async () => pDeckToRwDeck(
-      await prisma.pRoom({ id: pRoom.id }).deck(),
+      wrGuardPrismaNullError(await prisma.pRoom({ id: pRoom.id }).deck()),
       prisma,
     ),
-    messages: async () => (
-      await prisma.pRoom({ id: pRoom.id }).messages()
+    messages: async () => wrGuardPrismaNullError<PRoomMessage[]>(
+      await prisma.pRoom({ id: pRoom.id }).messages(),
     ).map((pRoomMessage) => pRoomMessageToRwRoomMessage(pRoomMessage, prisma)),
   };
 }

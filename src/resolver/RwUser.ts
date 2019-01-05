@@ -1,6 +1,6 @@
-import { Prisma, PUser } from '../../generated/prisma-client';
+import { Prisma, PUser, PDeck } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
-import { fieldGetter } from '../util';
+import { fieldGetter, wrGuardPrismaNullError } from '../util';
 
 import { IRwDeck, IBakedRwDeck, pDeckToRwDeck } from './RwDeck';
 
@@ -32,7 +32,7 @@ export function pUserToRwUser(pUser: PUser, prisma: Prisma): IBakedRwUser {
     email: pUser.email,
     roles: pUser.defaultRoles,
     decks: async () => (
-      await prisma.pUser({ id: pUser.id }).decks()
+      wrGuardPrismaNullError<PDeck[]>(await prisma.pUser({ id: pUser.id }).decks())
     ).map((pDeck) => pDeckToRwDeck(pDeck, prisma)),
   };
 }

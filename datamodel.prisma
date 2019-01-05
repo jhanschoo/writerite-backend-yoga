@@ -29,6 +29,7 @@ type PSimpleCard { # implements Card {
   deck: PDeck! @relation(name: "PDeckContainingPSimpleCards")
   front: String!
   back: String!
+  sortKey: String!
   createdAt: DateTime!
   updatedAt: DateTime!
 }

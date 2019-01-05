@@ -3,6 +3,8 @@ import fetch from 'node-fetch';
 
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 import { IAuthConfig } from '../types';
+import { ApolloError } from 'apollo-server';
+import { wrGuardPrismaNullError } from '../util';
 
 const { FACEBOOK_APP_ID, FACEBOOK_APP_SECRET } = config.get<IAuthConfig>('AUTH');
 let FB_ACCESS_TOKEN = 'FB_ACCESS_TOKEN not set!';
@@ -24,21 +26,24 @@ export class FacebookAuthService extends AbstractAuthService {
   public async signin({ prisma, email, token, identifier, persist }: ISigninOptions) {
     const facebookId = await this.verify(token);
     if (!facebookId || facebookId !== identifier) {
-      return null;
+      throw new ApolloError('writerite: failed facebook authentication');
     }
     if (await prisma.$exists.pUser({ email })) {
-      if (await prisma.$exists.pUser({ email, facebookId })) {
-        return FacebookAuthService.authResponseFromUser(
-          await prisma.pUser({ email }), { persist, prisma },
-        );
-      } else {
-        return null;
+      if (!await prisma.$exists.pUser({ email, facebookId })) {
+        throw new ApolloError('writerite: user already exists');
       }
+      const pUser = await prisma.pUser({ email });
+      wrGuardPrismaNullError(pUser);
+      return FacebookAuthService.authResponseFromUser(
+        pUser, { persist, prisma },
+      );
+    } else {
+      const pUser = await prisma.createPUser(
+        { email, facebookId, defaultRoles: { set: ['user'] } },
+      );
+      wrGuardPrismaNullError(pUser);
+      return FacebookAuthService.authResponseFromUser(pUser, { persist, prisma });
     }
-    const user = await prisma.createPUser(
-      { email, facebookId, defaultRoles: { set: ['user'] } },
-    );
-    return FacebookAuthService.authResponseFromUser(user, { persist, prisma });
   }
 
   protected async verify(token: string) {

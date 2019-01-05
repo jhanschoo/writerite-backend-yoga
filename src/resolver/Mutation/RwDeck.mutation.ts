@@ -1,12 +1,15 @@
 import { IFieldResolver } from 'graphql-tools';
 
-import { MutationType, IRwContext, IUpdate, IUpdatedUpdate, ICreatedUpdate, IDeletedUpdate } from '../../types';
+import {
+  MutationType, IRwContext, IUpdatedUpdate, ICreatedUpdate, IDeletedUpdate,
+} from '../../types';
 
 import { pDeckToRwDeck, IBakedRwDeck } from '../RwDeck';
 import {
-  rwDeckTopicFromRwUser,
+  rwDeckTopic,
 } from '../Subscription/RwDeck.subscription';
 import { PDeck } from '../../../generated/prisma-client';
+import { throwIfDevel, wrAuthenticationError, wrNotFoundError, wrGuardPrismaNullError } from '../../util';
 
 const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
@@ -14,42 +17,42 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
 }> = async (
   _parent, { id, name }, { sub, prisma, pubsub },
 ): Promise<IBakedRwDeck | null> => {
-  if (!sub) {
-    return null;
-  }
-  if (id) {
-    if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
-      return null;
+  try {
+    if (!sub) {
+      throw wrAuthenticationError();
     }
-    const pDeck = await prisma.updatePDeck({
-      data: (name && name.trim()) ? { name } : {},
-      where: { id },
-    });
-    if (!pDeck) {
-      return null;
+    if (id) {
+      if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
+        throw wrNotFoundError('deck');
+      }
+      const pDeck = await prisma.updatePDeck({
+        data: (name && name.trim()) ? { name: name.trim() } : {},
+        where: { id },
+      });
+      wrGuardPrismaNullError(pDeck);
+      const pDeckUpdate: IUpdatedUpdate<PDeck> = {
+        mutation: MutationType.UPDATED,
+        new: pDeck,
+        oldId: null,
+      };
+      pubsub.publish(rwDeckTopic(), pDeckUpdate);
+      return pDeckToRwDeck(pDeck, prisma);
+    } else {
+      const pDeck = await prisma.createPDeck({
+        name: (name && name.trim()) ? name.trim() : 'New Deck',
+        owner: { connect: { id: sub.id } },
+      });
+      wrGuardPrismaNullError(pDeck);
+      const pDeckUpdate: ICreatedUpdate<PDeck> = {
+        mutation: MutationType.CREATED,
+        new: pDeck,
+        oldId: null,
+      };
+      pubsub.publish(rwDeckTopic(), pDeckUpdate);
+      return pDeckToRwDeck(pDeck, prisma);
     }
-    const pDeckUpdate: IUpdatedUpdate<PDeck> = {
-      mutation: MutationType.UPDATED,
-      new: pDeck,
-      oldId: null,
-    };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
-    return pDeckToRwDeck(pDeck, prisma);
-  } else {
-    const pDeck = await prisma.createPDeck({
-      name: (name && name.trim()) || 'New Deck',
-      owner: { connect: { id: sub.id } },
-    });
-    if (!pDeck) {
-      return null;
-    }
-    const pDeckUpdate: ICreatedUpdate<PDeck> = {
-      mutation: MutationType.CREATED,
-      new: pDeck,
-      oldId: null,
-    };
-    pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
-    return pDeckToRwDeck(pDeck, prisma);
+  } catch (e) {
+    return throwIfDevel(e);
   }
 };
 
@@ -60,23 +63,25 @@ const rwDeckDelete: IFieldResolver<any, IRwContext, {
   { id },
   { sub, prisma, pubsub },
 ): Promise<string | null> => {
-  if (!sub) {
-    return null;
+  try {
+    if (!sub) {
+      throw wrAuthenticationError();
+    }
+    if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
+      throw wrNotFoundError('deck');
+    }
+    const pDeck = await prisma.deletePDeck({ id });
+    wrGuardPrismaNullError(pDeck);
+    const pDeckUpdate: IDeletedUpdate<PDeck> = {
+      mutation: MutationType.DELETED,
+      new: null,
+      oldId: pDeck.id,
+    };
+    pubsub.publish(rwDeckTopic(), pDeckUpdate);
+    return pDeck.id;
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  if (!await prisma.$exists.pDeck({ id, owner: { id: sub.id } })) {
-    return null;
-  }
-  const pDeck = await prisma.deletePDeck({ id });
-  if (!pDeck) {
-    return null;
-  }
-  const pDeckUpdate: IDeletedUpdate<PDeck> = {
-    mutation: MutationType.DELETED,
-    new: null,
-    oldId: pDeck.id,
-  };
-  pubsub.publish(rwDeckTopicFromRwUser(sub.id), pDeckUpdate);
-  return pDeck.id;
 };
 
 export const rwDeckMutation = {

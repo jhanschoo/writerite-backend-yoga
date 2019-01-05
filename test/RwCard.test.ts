@@ -53,12 +53,14 @@ describe('RwCard resolvers', async () => {
     DECK = await prisma.createPDeck({ name: NAME, owner: { connect: { id: USER.id } } });
     NEXT_DECK = await prisma.createPDeck({ name: NEXT_NAME, owner: { connect: { id: USER.id } } });
     OTHER_DECK = await prisma.createPDeck({ name: OTHER_NAME, owner: { connect: { id: OTHER_USER.id } } });
-    CARD = await prisma.createPSimpleCard({ front: FRONT, back: BACK, deck: { connect: { id: DECK.id } } });
+    CARD = await prisma.createPSimpleCard({
+      front: FRONT, back: BACK, sortKey: FRONT, deck: { connect: { id: DECK.id } },
+    });
     NEXT_CARD = await prisma.createPSimpleCard({
-      front: NEXT_FRONT, back: NEXT_BACK, deck: { connect: { id: NEXT_DECK.id } },
+      front: NEXT_FRONT, back: NEXT_BACK, sortKey: NEXT_FRONT, deck: { connect: { id: NEXT_DECK.id } },
     });
     OTHER_CARD = await prisma.createPSimpleCard({
-      front: OTHER_FRONT, back: OTHER_BACK, deck: { connect: { id: OTHER_DECK.id } },
+      front: OTHER_FRONT, back: OTHER_BACK, sortKey: OTHER_FRONT, deck: { connect: { id: OTHER_DECK.id } },
     });
   };
   const commonAfterEach = async () => {
@@ -323,8 +325,8 @@ describe('RwCard resolvers', async () => {
             throw new Error('`subscr` not obtained');
           }
           const newCard = await subscr.next();
-          if (newCard.value && newCard.value.rwCardUpdatesOfDeck) {
-            const payload: any = newCard.value.rwCardUpdatesOfDeck;
+          if (newCard.value && newCard.value) {
+            const payload: any = newCard.value;
             expect(payload.mutation).toBe('CREATED');
             expect(payload.new.id).toEqual(cardObj.id);
             expect(payload.new.front).toEqual(cardObj.front);

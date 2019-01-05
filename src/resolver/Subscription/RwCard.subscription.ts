@@ -4,7 +4,7 @@ import { IRwContext, IUpdate } from '../../types';
 
 import { pCardToRwCard } from '../RwCard';
 import { PSimpleCard } from '../../../generated/prisma-client';
-import { updateMapFactory } from '../../util';
+import { updateMapFactory, throwIfDevel, wrNotFoundError } from '../../util';
 
 export function rwCardTopicFromRwDeck(id: string) {
   return `card:deck:${id}`;
@@ -15,12 +15,16 @@ const rwCardUpdatesOfDeckSubscribe: IFieldResolver<any, IRwContext, {
 }> = async (
   _parent, { deckId }, { prisma, pubsub },
 ): Promise<AsyncIterator<IUpdate<PSimpleCard>> | null> => {
-  if (!await prisma.$exists.pDeck({ id: deckId })) {
-    return null;
+  try {
+    if (!await prisma.$exists.pDeck({ id: deckId })) {
+      throw wrNotFoundError('deck');
+    }
+    return pubsub.asyncIterator<IUpdate<PSimpleCard>>(
+      rwCardTopicFromRwDeck(deckId),
+    );
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  return pubsub.asyncIterator<IUpdate<PSimpleCard>>(
-    rwCardTopicFromRwDeck(deckId),
-  );
 };
 
 export const rwCardSubscription = {

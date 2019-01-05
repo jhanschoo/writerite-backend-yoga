@@ -8,6 +8,7 @@
   "license": "AGPL-3.0-or-later",
   "private": false,
   "dependencies": {
+    "apollo-server": "^2.3.1",
     "bcrypt": "^3.0.3",
     "config": "^3.0.1",
     "form-data": "^2.3.2",

@@ -1,6 +1,6 @@
-import { PDeck, Prisma } from '../../generated/prisma-client';
+import { PDeck, Prisma, PSimpleCard } from '../../generated/prisma-client';
 import { ResTo, AFunResTo } from '../types';
-import { fieldGetter } from '../util';
+import { fieldGetter, wrGuardPrismaNullError } from '../util';
 
 import { IRwUser, IBakedRwUser, pUserToRwUser } from './RwUser';
 import { IRwCard, IBakedRwCard, pCardToRwCard } from './RwCard';
@@ -32,11 +32,11 @@ export function pDeckToRwDeck(pDeck: PDeck, prisma: Prisma): IBakedRwDeck {
     id: pDeck.id,
     name: pDeck.name,
     owner: async () => pUserToRwUser(
-      await prisma.pDeck({ id: pDeck.id }).owner(),
+      wrGuardPrismaNullError(await prisma.pDeck({ id: pDeck.id }).owner()),
       prisma,
     ),
     cards: async () => (
-      await prisma.pDeck({ id: pDeck.id }).cards()
+      wrGuardPrismaNullError<PSimpleCard[]>(await prisma.pDeck({ id: pDeck.id }).cards())
     ).map((pCard) => pCardToRwCard(pCard, prisma)),
   };
 }

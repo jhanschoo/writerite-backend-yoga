@@ -2,9 +2,10 @@ import config from 'config';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 
-import { comparePassword, hashPassword } from '../util';
+import { comparePassword, hashPassword, wrGuardPrismaNullError } from '../util';
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 import { IAuthConfig } from '../types';
+import { ApolloError } from 'apollo-server';
 
 const { RECAPTCHA_SECRET } = config.get<IAuthConfig>('AUTH');
 
@@ -13,20 +14,22 @@ export class LocalAuthService extends AbstractAuthService {
   public async signin({ prisma, email, token, identifier: password, persist }: ISigninOptions) {
     if (await prisma.$exists.pUser({ email })) {
       const knownUser = await prisma.pUser({ email });
-      if (!knownUser || !knownUser.passwordHash || !await comparePassword(password, knownUser.passwordHash)) {
-        return null;
+      wrGuardPrismaNullError(knownUser);
+      if (!knownUser.passwordHash || !await comparePassword(password, knownUser.passwordHash)) {
+        throw new ApolloError('writerite: failed login');
       }
       return LocalAuthService.authResponseFromUser(knownUser, { persist, prisma });
     }
     const verified = await this.verify(token);
     if (!verified) {
-      return null;
+      throw new ApolloError('writerite: failed recaptcha authentication');
     }
     // create
     const passwordHash = await hashPassword(password);
     const user = prisma.createPUser(
       { email, passwordHash, defaultRoles: { set: ['user'] } },
     );
+    wrGuardPrismaNullError(user);
     return LocalAuthService.authResponseFromUser(await user, { persist, prisma });
   }
 

@@ -8,6 +8,7 @@ import { GoogleAuthService } from '../../service/GoogleAuthService';
 import { FacebookAuthService } from '../../service/FacebookAuthService';
 import { LocalAuthService } from '../../service/LocalAuthService';
 import { DevelopmentAuthService } from '../../service/DevelopmentAuthService';
+import { throwIfDevel } from '../../util';
 
 const googleAuth = new GoogleAuthService();
 const facebookAuth = new FacebookAuthService();
@@ -25,25 +26,29 @@ const signin: IFieldResolver<any, IRwContext, {
   { email, token, authorizer, identifier, persist },
   { prisma },
 ): Promise<IRwAuthResponse | null> => {
-  if (authorizer === AuthorizerType.LOCAL) {
-    return localAuth.signin({
-      prisma, email, token, identifier, persist,
-    });
-  }
-  if (authorizer === AuthorizerType.GOOGLE) {
-    return googleAuth.signin({
-      prisma, email, token, identifier, persist,
-    });
-  }
-  if (authorizer === AuthorizerType.FACEBOOK) {
-    return facebookAuth.signin({
-      prisma, email, token, identifier, persist,
-    });
-  }
-  if (authorizer === AuthorizerType.DEVELOPMENT) {
-    return developmentAuth.signin({
-      prisma, email, token, identifier, persist,
-    });
+  try {
+    if (authorizer === AuthorizerType.LOCAL) {
+      return localAuth.signin({
+        prisma, email, token, identifier, persist,
+      });
+    }
+    if (authorizer === AuthorizerType.GOOGLE) {
+      return googleAuth.signin({
+        prisma, email, token, identifier, persist,
+      });
+    }
+    if (authorizer === AuthorizerType.FACEBOOK) {
+      return facebookAuth.signin({
+        prisma, email, token, identifier, persist,
+      });
+    }
+    if (authorizer === AuthorizerType.DEVELOPMENT) {
+      return developmentAuth.signin({
+        prisma, email, token, identifier, persist,
+      });
+    }
+  } catch (e) {
+    return throwIfDevel(e);
   }
   return null;
 };

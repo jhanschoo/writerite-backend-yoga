@@ -3,34 +3,33 @@ import { IFieldResolver } from 'graphql-tools';
 import { IRwContext } from '../../types';
 
 import { IBakedRwDeck, pDeckToRwDeck } from '../RwDeck';
+import { throwIfDevel, wrGuardPrismaNullError } from '../../util';
 
 const rwDeck: IFieldResolver<any, IRwContext, { id: string }> = async (
-  _parent,
-  { id },
-  { prisma },
+  _parent, { id }, { prisma },
 ): Promise<IBakedRwDeck | null> => {
-  const pDeck = await prisma.pDeck({ id });
-  if (!pDeck) {
-    return null;
+  try {
+    const pDeck = await prisma.pDeck({ id });
+    wrGuardPrismaNullError(pDeck);
+    return pDeckToRwDeck(pDeck, prisma);
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  return pDeckToRwDeck(pDeck, prisma);
 };
 
 const rwDecks: IFieldResolver<any, IRwContext, {}> = async (
-  _parent: any,
-  _args: any,
-  { prisma, sub }: IRwContext,
+  _parent, _args, { prisma, sub },
 ): Promise<IBakedRwDeck[] | null> => {
-  if (!sub) {
-    return null;
+  try {
+    const pDecks = await prisma.pDecks();
+    if (!pDecks) {
+      return null;
+    }
+    wrGuardPrismaNullError(pDecks);
+    return pDecks.map((pDeck) => pDeckToRwDeck(pDeck, prisma));
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  const pDecks = await prisma.pDecks({
-    where: { owner: { id: sub.id } },
-  });
-  if (!pDecks) {
-    return null;
-  }
-  return pDecks.map((pDeck) => pDeckToRwDeck(pDeck, prisma));
 };
 
 export const rwDeckQuery = {

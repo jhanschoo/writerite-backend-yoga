@@ -4,7 +4,7 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import redis from 'redis';
 
 import { prisma, PRoom, PUser, PDeck } from '../generated/prisma-client';
-import { IRwContext } from '../src/types';
+import { IRwContext, ICurrentUser } from '../src/types';
 
 import { rwRoomQuery } from '../src/resolver/Query/RwRoom.query';
 import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom.mutation';
@@ -159,12 +159,14 @@ describe('RwRoom resolvers', async () => {
       );
       expect(roomObj).toBeNull();
     });
-    test('it makes no noticeable change when occupant is already in room', async () => {
+    test('it makes no noticeable change when occupant is already in room and sub is owner', async () => {
       expect.assertions(3);
       const priorOccupants = await prisma.pRoom({ id: ROOM.id }).occupants();
       expect(priorOccupants).toContainEqual(expect.objectContaining({ id: USER.id }));
       const roomObj = await rwRoomAddOccupant(
-        null, { id: ROOM.id, occupantId: USER.id }, baseCtx, baseInfo,
+        null, { id: ROOM.id, occupantId: USER.id }, { ...baseCtx, sub: {
+          id: USER.id,
+        } as ICurrentUser}, baseInfo,
       );
       expect(roomObj).toBeTruthy();
       if (roomObj) {
@@ -173,14 +175,16 @@ describe('RwRoom resolvers', async () => {
         expect(actualOccupants).toEqual(priorOccupants.map((user) => user.id).sort());
       }
     });
-    test('it adds occupant when occupant is not already in room', async () => {
+    test('it adds occupant when occupant is not already in room and sub is owner', async () => {
       expect.assertions(3);
       const priorOccupants = await prisma.pRoom({ id: ROOM.id }).occupants();
       expect(priorOccupants).not.toContainEqual(
         expect.objectContaining({ id: OTHER_USER.id }),
       );
       const roomObj = await rwRoomAddOccupant(
-        null, { id: ROOM.id, occupantId: OTHER_USER.id }, baseCtx, baseInfo,
+        null, { id: ROOM.id, occupantId: OTHER_USER.id }, { ...baseCtx, sub: {
+          id: USER.id,
+        } as ICurrentUser}, baseInfo,
       );
       expect(roomObj).toBeTruthy();
       if (roomObj) {
@@ -326,8 +330,8 @@ describe('RwRoom resolvers', async () => {
             throw new Error('`subscr` not obtained');
           }
           const newMessage = await subscr.next();
-          if (newMessage.value && newMessage.value.rwRoomMessageUpdatesOfRoom) {
-            const payload: any = newMessage.value.rwRoomMessageUpdatesOfRoom;
+          if (newMessage.value) {
+            const payload: any = newMessage.value;
             expect(payload.mutation).toBe('CREATED');
             expect(payload.new.id).toEqual(roomMessageObj.id);
             expect(payload.new.content).toEqual(roomMessageObj.content);

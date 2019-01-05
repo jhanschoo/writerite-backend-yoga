@@ -4,21 +4,22 @@ import { IRwContext, IUpdate } from '../../types';
 
 import { pDeckToRwDeck } from '../RwDeck';
 import { PDeck } from '../../../generated/prisma-client';
-import { updateMapFactory } from '../../util';
+import { updateMapFactory, throwIfDevel } from '../../util';
 
-export function rwDeckTopicFromRwUser(id: string) {
-  return `deck:owner:${id}`;
+export function rwDeckTopic() {
+  return `deck`;
 }
 
 const rwDeckUpdatesSubscribe: IFieldResolver<any, IRwContext, {}> = (
   _parent, _args, { sub, pubsub },
 ): AsyncIterator<IUpdate<PDeck>> | null => {
-  if (!sub) {
-    return null;
+  try {
+    return pubsub.asyncIterator<IUpdate<PDeck>>(
+      rwDeckTopic(),
+    );
+  } catch (e) {
+    return throwIfDevel(e);
   }
-  return pubsub.asyncIterator<IUpdate<PDeck>>(
-    rwDeckTopicFromRwUser(sub.id),
-  );
 };
 
 export const rwDeckSubscription = {
