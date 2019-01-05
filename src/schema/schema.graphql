@@ -98,6 +98,7 @@ type RwCard {
   id: ID!
   front: String!
   back: String!
+  sortKey: String!
   deck: RwDeck!
 }
 
