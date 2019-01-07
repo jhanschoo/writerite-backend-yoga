@@ -1,7 +1,7 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import redis from 'redis';
+import Redis from 'ioredis';
 
 import { prisma, PRoom, PUser, PDeck } from '../generated/prisma-client';
 import { IRwContext, ICurrentUser } from '../src/types';
@@ -11,7 +11,7 @@ import { rwRoomMutation } from '../src/resolver/Mutation/RwRoom.mutation';
 import { rwRoomMessageMutation } from '../src/resolver/Mutation/RwRoomMessage.mutation';
 import { rwRoomMessageSubscription } from '../src/resolver/Subscription/RwRoomMessage.subscription';
 
-const redisClient = redis.createClient();
+const redisClient = new Redis();
 const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };

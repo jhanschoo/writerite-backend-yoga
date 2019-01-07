@@ -1,6 +1,6 @@
 import { GraphQLResolveInfo } from 'graphql';
 import { MergeInfo } from 'graphql-tools';
-import redis from 'redis';
+import Redis from 'ioredis';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
 
 import { rwCardQuery } from '../src/resolver/Query/RwCard.query';
@@ -14,7 +14,7 @@ const { rwCard, rwCardsOfDeck } = rwCardQuery;
 const { rwCardSave, rwCardDelete } = rwCardMutation;
 const { rwCardUpdatesOfDeck } = rwCardSubscription;
 
-const redisClient = redis.createClient();
+const redisClient = new Redis();
 const pubsub = new RedisPubSub();
 const baseCtx = { prisma, pubsub, redisClient } as IRwContext;
 const baseInfo = {} as GraphQLResolveInfo & { mergeInfo: MergeInfo };
