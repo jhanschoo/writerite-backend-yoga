@@ -1,12 +1,19 @@
 import { Context } from 'graphql-yoga/dist/types';
 import bcrypt from 'bcrypt';
 import KJUR from 'jsrsasign';
+import randomWords from 'random-words';
 import { AuthenticationError, ApolloError } from 'apollo-server';
 
 import { ResTo, ICurrentUser, Roles, IUpdate, MutationType } from './types';
 import { Prisma, prisma } from '../generated/prisma-client';
 
 const SALT_ROUNDS = 10;
+
+export const randomThreeWords = () => {
+  return randomWords({
+    exactly: 1, wordsPerString: 3, separator: '-',
+  })[0] as string;
+};
 
 export const wrAuthenticationError = () => {
   return new AuthenticationError('writerite: valid JWT not present');

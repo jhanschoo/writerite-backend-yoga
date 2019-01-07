@@ -36,7 +36,8 @@ type Mutation {
   rwCardSave(id: ID, front: String!, back: String!, deckId: ID!): RwCard
   rwCardDelete(id: ID!): ID
   # Room
-  rwRoomCreate(name: String, deckId: ID!): RwRoom
+  rwRoomCreate(name: String): RwRoom
+  rwRoomServeDeck(id: ID! deckId: ID): RwRoom
   rwRoomAddOccupant(id: ID! occupantId: ID!): RwRoom
   rwRoomMessageCreate(roomId: ID! content: String!): RwRoomMessage
 }
@@ -109,7 +110,7 @@ type RwRoom {
   name: String!
   owner: RwUser!
   occupants: [RwUser!]!
-  deck: RwDeck!
+  servingDeck: RwDeck
   messages: [RwRoomMessage!]!
 }
 

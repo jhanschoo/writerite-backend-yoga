@@ -9,7 +9,9 @@ import {
   rwDeckTopic,
 } from '../Subscription/RwDeck.subscription';
 import { PDeck } from '../../../generated/prisma-client';
-import { throwIfDevel, wrAuthenticationError, wrNotFoundError, wrGuardPrismaNullError } from '../../util';
+import {
+  throwIfDevel, wrAuthenticationError, wrNotFoundError, wrGuardPrismaNullError, randomThreeWords,
+} from '../../util';
 
 const rwDeckSave: IFieldResolver<any, IRwContext, {
   id?: string,
@@ -39,7 +41,7 @@ const rwDeckSave: IFieldResolver<any, IRwContext, {
       return pDeckToRwDeck(pDeck, prisma);
     } else {
       const pDeck = await prisma.createPDeck({
-        name: (name && name.trim()) ? name.trim() : 'New Deck',
+        name: (name && name.trim()) ? name.trim() : randomThreeWords(),
         owner: { connect: { id: sub.id } },
       });
       wrGuardPrismaNullError(pDeck);

@@ -1,5 +1,4 @@
 import { IFieldResolver } from 'graphql-tools';
-import randomWords from 'random-words';
 
 import { IRwContext, MutationType, ICreatedUpdate, IUpdatedUpdate } from '../../types';
 
@@ -8,22 +7,20 @@ import {
   rwRoomTopic,
 } from '../Subscription/RwRoom.subscription';
 import { PRoom } from '../../../generated/prisma-client';
-import { throwIfDevel, wrAuthenticationError, wrNotFoundError, wrGuardPrismaNullError } from '../../util';
+import {
+  throwIfDevel, wrAuthenticationError, wrNotFoundError, wrGuardPrismaNullError, randomThreeWords,
+} from '../../util';
 
 const rwRoomCreate: IFieldResolver<any, IRwContext, {
-  name?: string, deckId: string,
-}> = async (_parent, { name, deckId }, { prisma, pubsub, sub, redisClient }): Promise<IBakedRwRoom | null> => {
+  name?: string,
+}> = async (_parent, { name }, { prisma, pubsub, sub }): Promise<IBakedRwRoom | null> => {
   try {
     if (!sub) {
       throw wrAuthenticationError();
     }
     const pRoom = await prisma.createPRoom({
-      active: true,
-      name: (name && name.trim()) || (randomWords({
-        exactly: 1, wordsPerString: 3, separator: '-',
-      })[0] as string),
+      name: (name && name.trim()) || randomThreeWords(),
       owner: { connect: { id: sub.id } },
-      deck: { connect: { id: deckId } },
     });
     wrGuardPrismaNullError(pRoom);
     const pRoomUpdate: ICreatedUpdate<PRoom> = {
@@ -32,7 +29,47 @@ const rwRoomCreate: IFieldResolver<any, IRwContext, {
       oldId: null,
     };
     pubsub.publish(rwRoomTopic(), pRoomUpdate);
-    redisClient.publish('writerite:room:activating', pRoom.id);
+    return pRoomToRwRoom(pRoom, prisma);
+  } catch (e) {
+    return throwIfDevel(e);
+  }
+};
+
+// TODO: access control: owner or self only
+const rwRoomServeDeck: IFieldResolver<any, IRwContext, {
+  id: string, deckId?: string,
+}> = async (
+  _parent: any, { id, deckId }, { prisma, sub, pubsub, redisClient },
+): Promise<IBakedRwRoom | null> => {
+  try {
+    if (!sub) {
+      throw wrAuthenticationError();
+    }
+    const pRooms = await prisma.pRooms({
+        where: {
+        id,
+        owner: { id: sub.id },
+      },
+    });
+    if (!pRooms || pRooms.length !== 1) {
+      throw wrNotFoundError('room');
+    }
+    const pRoom = await prisma.updatePRoom({
+      data: {
+        servingDeck: (deckId)
+          ? { connect: { id: deckId } }
+          : { disconnect: true },
+      },
+      where: { id },
+    });
+    wrGuardPrismaNullError(pRoom);
+    const pRoomUpdate: IUpdatedUpdate<PRoom> = {
+      mutation: MutationType.UPDATED,
+      new: pRoom,
+      oldId: null,
+    };
+    redisClient.publish('writerite:room:serving', `${id}:${deckId}`);
+    pubsub.publish(rwRoomTopic(), pRoomUpdate);
     return pRoomToRwRoom(pRoom, prisma);
   } catch (e) {
     return throwIfDevel(e);
@@ -83,5 +120,5 @@ const rwRoomAddOccupant: IFieldResolver<any, IRwContext, {
 };
 
 export const rwRoomMutation = {
-  rwRoomCreate, rwRoomAddOccupant,
+  rwRoomCreate, rwRoomServeDeck, rwRoomAddOccupant,
 };

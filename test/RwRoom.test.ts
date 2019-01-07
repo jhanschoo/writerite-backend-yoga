@@ -51,19 +51,15 @@ describe('RwRoom resolvers', async () => {
       owner: { connect: { id: USER.id } },
     });
     ROOM = await prisma.createPRoom({
-      active: true,
       name: ROOM_NAME,
       owner: { connect: { id: USER.id } },
-      deck: { connect: { id: DECK.id } },
       occupants: {
         connect: { id: USER.id },
       },
     });
     OTHER_ROOM = await prisma.createPRoom({
-      active: true,
       name: ROOM_NAME,
       owner: { connect: { id: OTHER_USER.id } },
-      deck: { connect: { id: OTHER_DECK.id } },
     });
   };
   const commonAfterEach = async () => {
@@ -105,12 +101,12 @@ describe('RwRoom resolvers', async () => {
 
     test('it should return null if sub is not present', async () => {
       expect.assertions(1);
-      const roomObj = await rwRoomCreate(null, { deckId: DECK.id }, baseCtx, baseInfo);
+      const roomObj = await rwRoomCreate(null, {}, baseCtx, baseInfo);
       expect(roomObj).toBeNull();
     });
     test('it creates a room once sub.id is present', async () => {
       expect.assertions(3);
-      const roomObj = await rwRoomCreate(null, { deckId: DECK.id }, {
+      const roomObj = await rwRoomCreate(null, {}, {
         ...baseCtx, sub: { id: USER.id },
       } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
@@ -122,7 +118,7 @@ describe('RwRoom resolvers', async () => {
     });
     test('it creates a room with given name', async () => {
       expect.assertions(3);
-      const roomObj = await rwRoomCreate(null, { deckId: DECK.id, name: ROOM_NAME }, {
+      const roomObj = await rwRoomCreate(null, { name: ROOM_NAME }, {
         ...baseCtx, sub: { id: USER.id },
       } as IRwContext, baseInfo);
       expect(roomObj).toHaveProperty('id');
