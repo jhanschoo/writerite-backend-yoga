@@ -9,29 +9,42 @@ import { RedisPubSub } from 'graphql-redis-subscriptions';
 import { prisma } from '../generated/prisma-client';
 import resolvers from './resolver';
 
-import redis from 'redis';
+import Redis from 'ioredis';
 
 import { getClaims, generateJWT } from './util';
-import { IHttpsConfig } from './types';
+import { IHttpsConfig, IRedisConfig } from './types';
 
 const { NODE_ENV } = process.env;
 const HTTPS = config.get<IHttpsConfig>('HTTPS');
+const REDIS = config.get<IRedisConfig>('REDIS');
 
-const redisClient = redis.createClient();
+const redisOptions = {
+  host: REDIS.HOST,
+  port: parseInt(REDIS.PORT, 10),
+};
+
+const redisClient = new Redis({ ...redisOptions, db: 2 });
 redisClient.on('error', (err) => {
   // tslint:disable-next-line: no-console
   console.error(`redisClient error: ${err}`);
 });
 
 // TODO: use redis instead when needed
-const pubsub = new RedisPubSub();
+const pubsub = new RedisPubSub({
+  publisher: new Redis({ ...redisOptions, db: 1 }),
+  subscriber: new Redis({ ...redisOptions, db: 1 }),
+});
+
 const acolyteJWT = generateJWT({
   id: 'acolyte',
   email: 'acolyte@writerite.site',
   roles: ['acolyte'],
 }, true);
 
-redisClient.set('writerite:acolyte:jwt', acolyteJWT);
+redisClient.set('writerite:acolyte:jwt', acolyteJWT).then(
+  // tslint:disable-next-line: no-console
+  () => console.log('acolyteJWT written'),
+);
 
 const server = new GraphQLServer({
   context: (req) => ({
@@ -55,9 +68,11 @@ server.start({
   },
   debug: NODE_ENV !== 'production',
   playground: false,
-  https: {
-    cert: fs.readFileSync(HTTPS.CERT_FILE),
-    key: fs.readFileSync(HTTPS.KEY_FILE),
-  },
+  https: (NODE_ENV !== 'production')
+    ? {
+      cert: fs.readFileSync(HTTPS.CERT_FILE),
+      key: fs.readFileSync(HTTPS.KEY_FILE),
+    }
+    : undefined,
   // tslint:disable-next-line no-console
-}, () => console.log(`Server is running on http://localhost:4000`));
+}, () => console.log(`Server is running`));

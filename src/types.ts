@@ -2,7 +2,7 @@ import { ContextParameters } from 'graphql-yoga/dist/types';
 import { Prisma } from '../generated/prisma-client';
 import { PubSub } from 'graphql-yoga';
 import { RedisPubSub } from 'graphql-redis-subscriptions';
-import { RedisClient } from 'redis';
+import { Redis } from 'ioredis';
 
 export type AFunResTo<T> = ((parent: any) => Promise<T>);
 export type FunResTo<T> = ((parent: any) => T);
@@ -17,7 +17,7 @@ export interface IRwContext {
   sub?: ICurrentUser;
   prisma: Prisma;
   pubsub: PubSub | RedisPubSub;
-  redisClient: RedisClient;
+  redisClient: Redis;
 }
 
 export enum AuthorizerType {
@@ -79,4 +79,9 @@ export interface IAuthConfig {
 export interface IHttpsConfig {
   CERT_FILE: string;
   KEY_FILE: string;
+}
+
+export interface IRedisConfig {
+  HOST: string;
+  PORT: string;
 }

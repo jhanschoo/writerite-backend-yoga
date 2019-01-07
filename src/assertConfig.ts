@@ -7,6 +7,8 @@ const PATHS = [
   'AUTH.RECAPTCHA_SECRET',
   'HTTPS.CERT_FILE',
   'HTTPS.KEY_FILE',
+  'REDIS.HOST',
+  'REDIS.PORT',
 ];
 
 PATHS.forEach((path) => {

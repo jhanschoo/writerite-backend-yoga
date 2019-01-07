@@ -8,6 +8,13 @@
   "license": "AGPL-3.0-or-later",
   "private": false,
   "dependencies": {
+    "@types/bcrypt": "^3.0.0",
+    "@types/config": "^0.0.34",
+    "@types/form-data": "^2.2.1",
+    "@types/helmet": "^0.0.42",
+    "@types/ioredis": "^4.0.4",
+    "@types/node-fetch": "^2.1.2",
+    "@types/ws": "^6.0.1",
     "apollo-server": "^2.3.1",
     "bcrypt": "^3.0.3",
     "config": "^3.0.1",
@@ -18,32 +25,26 @@
     "graphql-tools": "^4.0.3",
     "graphql-yoga": "^1.16.9",
     "helmet": "^3.13.0",
+    "ioredis": "^4.3.0",
     "jsrsasign": "^8.0.12",
     "node-fetch": "^2.2.0",
-    "random-words": "^1.1.0",
-    "redis": "^2.8.0"
-  },
-  "devDependencies": {
-    "@types/bcrypt": "^3.0.0",
-    "@types/config": "^0.0.34",
-    "@types/form-data": "^2.2.1",
-    "@types/helmet": "^0.0.42",
-    "@types/jest": "^23.3.11",
-    "@types/node-fetch": "^2.1.2",
-    "@types/redis": "^2.8.10",
-    "@types/ws": "^6.0.1",
-    "jest": "^23.6.0",
     "prisma": "^1.23.4",
     "prisma-binding": "^2.2.12",
     "prisma-client-lib": "^1.23.4",
+    "random-words": "^1.1.0",
+    "typescript": "^3.2.2"
+  },
+  "devDependencies": {
+    "@types/jest": "^23.3.11",
+    "jest": "^23.6.0",
     "ts-jest": "^23.10.5",
     "tslint": "^5.12.0",
-    "typescript": "^3.2.2",
     "typescript-tslint-plugin": "^0.2.1"
   },
   "scripts": {
     "build": "tsc",
     "start:dev": "tsc && NODE_ENV=development node dist/src/index.js",
+    "start:production": "tsc && NODE_ENV=production node dist/src/index.js",
     "start:test": "tsc && NODE_ENV=testing node dist/src/index.js",
     "test": "jest --runInBand"
   }
