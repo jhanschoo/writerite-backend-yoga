@@ -41,10 +41,11 @@ const acolyteJWT = generateJWT({
   roles: ['acolyte'],
 }, true);
 
-redisClient.set('writerite:acolyte:jwt', acolyteJWT).then(
-  // tslint:disable-next-line: no-console
-  () => console.log('acolyteJWT written'),
-);
+const writeJWT = () => {
+  redisClient.set('writerite:acolyte:jwt', acolyteJWT)
+    .then(() => setTimeout(writeJWT, 10000));
+};
+writeJWT();
 
 const server = new GraphQLServer({
   context: (req) => ({
