@@ -1,13 +1,16 @@
-import config from 'config';
+import '../assertConfig';
 import fetch from 'node-fetch';
 import FormData from 'form-data';
 
 import { comparePassword, hashPassword, wrGuardPrismaNullError } from '../util';
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
-import { IAuthConfig } from '../types';
 import { ApolloError } from 'apollo-server';
 
-const { RECAPTCHA_SECRET } = config.get<IAuthConfig>('AUTH');
+const { RECAPTCHA_SECRET } = process.env;
+
+if (!RECAPTCHA_SECRET) {
+  throw new Error('RECAPTCHA_SECRET envvar not found!');
+}
 
 export class LocalAuthService extends AbstractAuthService {
 

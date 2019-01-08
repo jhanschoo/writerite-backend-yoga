@@ -5,10 +5,10 @@ node_modules/
 generated/
 
 # logs
-yarn-error.log
+npm-debug.log
 
 # dist
 dist/
 
-# local
-config/
+# uncomment at a later step
+.env

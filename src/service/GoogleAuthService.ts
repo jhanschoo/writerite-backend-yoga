@@ -1,12 +1,15 @@
-import config from 'config';
+import '../assertConfig';
 import { OAuth2Client } from 'google-auth-library';
 
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
-import { IAuthConfig } from '../types';
 import { ApolloError } from 'apollo-server';
 import { wrGuardPrismaNullError } from '../util';
 
-const { GOOGLE_CLIENT_ID } = config.get<IAuthConfig>('AUTH');
+const { GOOGLE_CLIENT_ID } = process.env;
+
+if (!GOOGLE_CLIENT_ID) {
+  throw new Error('GOOGLE_CLIENT_ID envvar not found!');
+}
 
 const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
 
@@ -38,7 +41,8 @@ export class GoogleAuthService extends AbstractAuthService {
   protected async verify(idToken: string) {
     return new Promise<string | undefined>((res, rej) => {
       googleClient.verifyIdToken({
-        audience: GOOGLE_CLIENT_ID,
+        // TODO: figure out why coercion is needed in this case
+        audience: GOOGLE_CLIENT_ID as string,
         idToken,
       }).then((ticket) => {
         if (!ticket || ticket === null) {

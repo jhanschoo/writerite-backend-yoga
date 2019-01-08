@@ -1,18 +1,19 @@
-import config from 'config';
+import dotenv from 'dotenv';
+dotenv.config();
 
-const PATHS = [
-  'AUTH.GOOGLE_CLIENT_ID',
-  'AUTH.FACEBOOK_APP_ID',
-  'AUTH.FACEBOOK_APP_SECRET',
-  'AUTH.RECAPTCHA_SECRET',
-  'HTTPS.CERT_FILE',
-  'HTTPS.KEY_FILE',
-  'REDIS.HOST',
-  'REDIS.PORT',
+const ENVVARS = [
+  'GOOGLE_CLIENT_ID',
+  'FACEBOOK_APP_ID',
+  'FACEBOOK_APP_SECRET',
+  'RECAPTCHA_SECRET',
+  // 'CERT_FILE',
+  // 'KEY_FILE',
+  // 'REDIS_HOST',
+  // 'REDIS_PORT',
 ];
 
-PATHS.forEach((path) => {
-  if (!config.has(path)) {
-    throw new Error(`configuration value ${path} not found`);
+ENVVARS.forEach((varname) => {
+  if (!process.env[varname]) {
+    throw new Error(`configuration value ${varname} not found`);
   }
 });

@@ -1,12 +1,17 @@
-import config from 'config';
+import '../assertConfig';
 import fetch from 'node-fetch';
 
 import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
-import { IAuthConfig } from '../types';
 import { ApolloError } from 'apollo-server';
 import { wrGuardPrismaNullError } from '../util';
 
-const { FACEBOOK_APP_ID, FACEBOOK_APP_SECRET } = config.get<IAuthConfig>('AUTH');
+const { FACEBOOK_APP_ID, FACEBOOK_APP_SECRET } = process.env;
+if (!FACEBOOK_APP_ID) {
+  throw new Error('FACEBOOK_APP_ID envvar not found!');
+}
+if (!FACEBOOK_APP_SECRET) {
+  throw new Error('FACEBOOK_APP_SECRET envvar not found!');
+}
 let FB_ACCESS_TOKEN = 'FB_ACCESS_TOKEN not set!';
 
 const FB_ACCESS_TOKEN_QUERY = `https://graph.facebook.com/oauth/access_token?client_id=${

@@ -68,20 +68,3 @@ export type IUpdate<T> =
   | IUpdatedUpdate<T>
   | IDeletedUpdate<T>
   ;
-
-export interface IAuthConfig {
-  GOOGLE_CLIENT_ID: string;
-  FACEBOOK_APP_ID: string;
-  FACEBOOK_APP_SECRET: string;
-  RECAPTCHA_SECRET: string;
-}
-
-export interface IHttpsConfig {
-  CERT_FILE: string;
-  KEY_FILE: string;
-}
-
-export interface IRedisConfig {
-  HOST: string;
-  PORT: string;
-}

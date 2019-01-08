@@ -9,7 +9,7 @@
   "private": false,
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
-    "@types/config": "^0.0.34",
+    "@types/dotenv": "^6.1.0",
     "@types/form-data": "^2.2.1",
     "@types/helmet": "^0.0.42",
     "@types/ioredis": "^4.0.4",
@@ -17,7 +17,7 @@
     "@types/ws": "^6.0.1",
     "apollo-server": "^2.3.1",
     "bcrypt": "^3.0.3",
-    "config": "^3.0.1",
+    "dotenv": "^6.2.0",
     "form-data": "^2.3.2",
     "google-auth-library": "^2.0.2",
     "graphql": "^14.0.2",
