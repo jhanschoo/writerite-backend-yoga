@@ -40,12 +40,12 @@ Also rewrite the relevant fields on `writerite.ingress.yaml` if not deploying to
 
 Make sure that `helm` is installed on your computer. Then, with `kubectl` pointing to a new cluster,
 
-1. `kubectl apply -f kubernetes/`. Note that ClusterIssuer resourses will fail to create since they have not been defined. This will define resources for the following and wire them
+1. `kubectl apply -f kubernetes/` to read all json and yaml files in this directory to configure the cluster. Note that ClusterIssuer resourses will fail to create since they have not been defined. This will define resources for the following and wire them
   * `redis`, `postgres`, `prisma`, `writerite-backend-yoga` deployments and services, with a persistent volume claim to the `postgres` container. The `writerite-backend-yoga` service uses `NodePort` for compatibility with GKE ingress.
   * `tiller` service account, and grants it the `cluster-admin` cluster role. Note that this gives `tiller` broad permissions over the entire cluster.
   * `writerite` ingress for the cluster. While deprecated behavior, we currently rely on the ingress continuing to serve the http rules even when the `tls` part cannot be satisfactorily provided, in order to use the `http-01` ACME challenge. We shall no longer need this if we migrate to the `dns-01` challenge.
   * The secrets resource we previously defined.
-2. `sh kubernetes-imperative/helmImperativeConfig.sh`.
+2. `sh kubernetes/helmImperativeConfig.sh`.
   * This script installs `tiller` and allows it to use the aforementioned `tiller` service account.
   * It then uses tiller to set up `cert-manager`. `cert-manager` then creates resource definitions for automated certificate management.
 3. `kubectl apply -f kubernetes/`. This creates the resources previously not created.
