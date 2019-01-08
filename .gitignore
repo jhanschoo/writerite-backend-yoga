@@ -12,4 +12,5 @@ dist/
 
 # secrets and local config
 kubernetes-secrets/
+kubernetes-unused/
 .env
