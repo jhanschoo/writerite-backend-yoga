@@ -52,7 +52,7 @@ Make sure that `helm` is installed on your computer. Then, with `kubectl` pointi
 4. Get the external IP of your Ingress, and set up DNS to point your hostname to it.
 5. Wait for the ingress's controller (i.e. that which satisfies an ingress request) to update, after which the app should be exposed on https.
 
-The spec files in `kubernetes-debug/` describe `LoadBalancer` services that expose the respective pods externally as an externally exposed service.
+The spec files in `kubernetes-debug/` describe `LoadBalancer` services that expose the respective pods externally as an externally exposed service. You may create these services for debugging, or to achieve a similar objective my may use `kubectl port-forward`.
 
 ## Notes
 
