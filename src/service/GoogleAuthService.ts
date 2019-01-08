@@ -5,13 +5,16 @@ import { AbstractAuthService, ISigninOptions } from './AbstractAuthService';
 import { ApolloError } from 'apollo-server';
 import { wrGuardPrismaNullError } from '../util';
 
-const { GOOGLE_CLIENT_ID } = process.env;
+const { GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET } = process.env;
 
 if (!GOOGLE_CLIENT_ID) {
   throw new Error('GOOGLE_CLIENT_ID envvar not found!');
 }
+if (!GOOGLE_CLIENT_SECRET) {
+  throw new Error('GOOGLE_CLIENT_SECRET envvar not found!');
+}
 
-const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID);
+const googleClient = new OAuth2Client(GOOGLE_CLIENT_ID, GOOGLE_CLIENT_SECRET);
 
 export class GoogleAuthService extends AbstractAuthService {
 

@@ -7,7 +7,7 @@
 
 The following environment variables need to be set:
 
-* `GOOGLE_CLIENT_ID` from Google Sign-in
+* `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` from Google's OpenID Connect
 * `FACEBOOK_APP_ID` and `FACEBOOK_APP_SECRET` from Facebook Login
 * `RECAPTCHA_SECRET` from ReCAPTCHA
 * `PRISMA_ENDPOINT` the uri describing the prisma backend.
