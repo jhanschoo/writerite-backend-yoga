@@ -10,5 +10,6 @@ npm-debug.log
 # dist
 dist/
 
-# uncomment at a later step
+# secrets and local config
+kubernetes-secrets/
 .env
