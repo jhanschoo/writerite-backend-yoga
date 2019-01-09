@@ -64,9 +64,22 @@ The spec files in `kubernetes-debug/` describe `LoadBalancer` services that expo
   room conversation: these are not latency-critical and use GQL API
   calls.
 
-## TODO
+## Stack summary
 
-* Ensure image working
-* Ensure image working with npm i --production
-* ibid. with envvars
-* ibid. with no local-production config
+* Language: Typescript
+* Server: GraphQL, implemented in ExpressJS on NodeJS
+* Communication:
+  * PubSub: redis
+  * Frontend: pushes via GraphQL Subscriptions over WebSockets, usual CRUD via GraphQL Queries and Mutations over HTTP via Apollo Server using the graphql-yoga framework.
+* Authentication:
+  * Third-party (Google or Facebook) identity verification: hand-rolled authorization flow; server verifies with third-party an access token issued by third-party to the user that is then sent to the server over HTTPS.
+  * Authorization managed in hand-rolled solution using JWTs issued using `jsrsasign` to sign digest.
+    * TODO: ATM the keys are generated when the server starts up. Implement publication and rotation of keys needed to implement load-balancing.
+  * Passwords: hashed by `bcrypt`.
+* Persistence:
+  * Database: PostGreSQL through the Prisma Client ORM.
+    * TODO: figure out deduplication for heavily nested queries.
+* Testing: Jest
+* Deployment:
+  * Containerization: Docker
+  * Orchestration: Kubernetes
