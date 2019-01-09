@@ -67,7 +67,7 @@ The spec files in `kubernetes-debug/` describe `LoadBalancer` services that expo
 ## Stack summary
 
 * Language: Typescript
-* Server: GraphQL, implemented in ExpressJS on NodeJS
+* Server: graphql-yoga, implemented in ExpressJS on NodeJS
 * Communication:
   * PubSub: redis
   * Frontend: pushes via GraphQL Subscriptions over WebSockets, usual CRUD via GraphQL Queries and Mutations over HTTP via Apollo Server using the graphql-yoga framework.
