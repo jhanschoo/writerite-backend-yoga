@@ -83,3 +83,4 @@ The spec files in `kubernetes-debug/` describe `LoadBalancer` services that expo
 * Deployment:
   * Containerization: Docker
   * Orchestration: Kubernetes
+  * TLS Certificate management for cluster ingress: `cert-manager`.
