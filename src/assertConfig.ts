@@ -18,3 +18,5 @@ ENVVARS.forEach((varname) => {
     throw new Error(`configuration value ${varname} not found`);
   }
 });
+
+export default process.env;

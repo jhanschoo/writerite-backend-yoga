@@ -45,7 +45,7 @@ const acolyteJWT = generateJWT({
   id: 'acolyte',
   email: 'acolyte@writerite.site',
   roles: ['acolyte'],
-}, true);
+});
 
 const writeJWT = () => {
   redisClient.set('writerite:acolyte:jwt', acolyteJWT)
